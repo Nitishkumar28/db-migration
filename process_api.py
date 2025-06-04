@@ -6,11 +6,45 @@ from pydantic import BaseModel
 from typing import List
 from sqlalchemy import create_engine, inspect, text
 import pandas as pd
+import json
 import os
+
+# Better Type Detection
+from sqlalchemy.dialects.postgresql import (
+    UUID as PG_UUID,
+    VARCHAR as PG_VARCHAR,
+    CHAR as PG_CHAR,
+    TEXT as PG_TEXT,
+    INTEGER as PG_INTEGER,
+    SMALLINT as PG_SMALLINT,
+    BIGINT as PG_BIGINT,
+    NUMERIC as PG_NUMERIC,
+    REAL as PG_REAL,
+    DOUBLE_PRECISION as PG_DOUBLE_PRECISION,
+    BYTEA as PG_BYTEA,
+    JSON as PG_JSON,
+    JSONB as PG_JSONB,
+    TIMESTAMP as PG_TIMESTAMP,
+    TIME as PG_TIME,
+    DATE as PG_DATE,
+    BOOLEAN as PG_BOOLEAN,
+)
+
+from sqlalchemy.types import (
+    Integer as Generic_Integer,
+    String as Generic_String,
+    Numeric as Generic_Numeric,
+    Date as Generic_Date,
+    DateTime as Generic_DateTime,
+    Boolean as Generic_Boolean,
+    Float as Generic_Float,
+    LargeBinary as Generic_LargeBinary,
+    JSON as Generic_JSON,
+    Time as Generic_Time,
+)
 
 app = FastAPI()
 
-# handle frontend-backend communication (CORS)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -18,17 +52,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Serve static files like HTML, JS, CSS, and Images
 app.mount("/static", StaticFiles(directory="static"), name="static")
+
 
 class TableRequest(BaseModel):
     db_name: str
     tables: List[str]
 
+
 @app.get("/")
 def load_homepage():
-    file_path = os.path.join("static", "index.html")
-    return FileResponse(file_path)
+    return FileResponse(os.path.join("static", "index.html"))
+
 
 MYSQL_CONNECTION_STRING = 'mysql+pymysql://root:Nitish%40123@localhost:3306/demo'
 POSTGRES_CONNECTION_STRING = 'postgresql+psycopg2://postgres:Nitish%40123@localhost:5432/postgres'
@@ -38,41 +73,138 @@ postgres_engine = create_engine(POSTGRES_CONNECTION_STRING)
 
 already_exported_tables = {}
 
+
 class PostgresToMySQLDataTypeAdapter:
-    def __init__(self):
-        self.type_map = {
-            "INTEGER": "INT",
-            "BIGINT": "BIGINT",
-            "SMALLINT": "SMALLINT",
-            "VARCHAR": "VARCHAR(255)",
-            "CHAR": "CHAR(10)",
-            "TEXT": "TEXT",
-            "DATE": "DATE",
-            "BOOLEAN": "BOOLEAN",
-            "TIMESTAMP": "DATETIME",
-            "TIME": "TIME",
-            "NUMERIC": "DECIMAL(10,2)",
-            "DECIMAL": "DECIMAL(10,2)",
-            "REAL": "FLOAT",
-            "DOUBLE_PRECISION": "DOUBLE",
-            "BYTEA": "BLOB",
-            "JSON": "JSON",
-            "JSONB": "JSON",
-            "UUID": "CHAR(36)",
-        }
 
     def convert(self, column_type_obj) -> str:
-        type_name = column_type_obj.__class__.__name__.upper()
-        if type_name not in self.type_map:
-            print(f"[WARN] Unrecognized PostgreSQL type: {type_name}, defaulting to TEXT")
-        return self.type_map.get(type_name, "TEXT")
+        cls_name = column_type_obj.__class__.__name__.upper()
+
+        # 1) UUID -> CHAR(36)
+        if isinstance(column_type_obj, PG_UUID) or cls_name == "UUID":
+            return "CHAR(36)"
+
+        # 2) BIGINT
+        if isinstance(column_type_obj, PG_BIGINT) or cls_name == "BIGINT":
+            return "BIGINT"
+
+        # 3) SMALLINT
+        if isinstance(column_type_obj, PG_SMALLINT) or cls_name == "SMALLINT":
+            return "SMALLINT"
+
+        # 4) INTEGER -> INT
+        if isinstance(column_type_obj, PG_INTEGER) or isinstance(column_type_obj, Generic_Integer) or cls_name == "INTEGER":
+            return "INT"
+
+        # 5) VARCHAR(length)
+        if isinstance(column_type_obj, PG_VARCHAR) or (
+            isinstance(column_type_obj, Generic_String) and getattr(column_type_obj, "length", None)
+        ) or cls_name.startswith("VARCHAR"):
+            length = getattr(column_type_obj, "length", None) or 255
+            return f"VARCHAR({length})"
+
+        # 6) CHAR(length)
+        if isinstance(column_type_obj, PG_CHAR) or cls_name.startswith("CHAR"):
+            length = getattr(column_type_obj, "length", None) or 1
+            return f"CHAR({length})"
+
+        # 7) TEXT
+        if isinstance(column_type_obj, PG_TEXT) or cls_name == "TEXT":
+            return "TEXT"
+
+        # 8) DATE
+        if isinstance(column_type_obj, PG_DATE) or isinstance(column_type_obj, Generic_Date) or cls_name == "DATE":
+            return "DATE"
+
+        # 9) TIME
+        if isinstance(column_type_obj, PG_TIME) or isinstance(column_type_obj, Generic_Time) or cls_name == "TIME":
+            return "TIME"
+
+        # 10) TIMESTAMP (both with and without time zone) -> DATETIME
+        if isinstance(column_type_obj, PG_TIMESTAMP) or isinstance(column_type_obj, Generic_DateTime) or cls_name == "TIMESTAMP":
+            return "DATETIME"
+
+        # 11) BOOLEAN
+        if isinstance(column_type_obj, PG_BOOLEAN) or isinstance(column_type_obj, Generic_Boolean) or cls_name == "BOOLEAN":
+            return "BOOLEAN"
+
+        # 12) NUMERIC/DECIMAL -> DECIMAL
+        if isinstance(column_type_obj, PG_NUMERIC) or isinstance(column_type_obj, Generic_Numeric) or cls_name in ("NUMERIC", "DECIMAL"):
+            precision = getattr(column_type_obj, "precision", None) or 10
+            scale = getattr(column_type_obj, "scale", None) or 0
+            return f"DECIMAL({precision},{scale})"
+
+        # 13) REAL -> FLOAT
+        if isinstance(column_type_obj, PG_REAL) or (
+            isinstance(column_type_obj, Generic_Float) and getattr(column_type_obj, "precision", None) == 24
+        ) or cls_name == "REAL":
+            return "FLOAT"
+
+        # 14) DOUBLE PRECISION -> DOUBLE
+        if isinstance(column_type_obj, PG_DOUBLE_PRECISION) or (
+            isinstance(column_type_obj, Generic_Float) and getattr(column_type_obj, "precision", None) == 53
+        ) or cls_name in ("DOUBLE_PRECISION", "DOUBLE"):
+            return "DOUBLE"
+
+        # 15) BYTEA -> BLOB
+        if isinstance(column_type_obj, PG_BYTEA) or isinstance(column_type_obj, Generic_LargeBinary) or cls_name == "BYTEA":
+            return "BLOB"
+
+        # 16) JSON/JSONB →-> JSON
+        if isinstance(column_type_obj, PG_JSON) or isinstance(column_type_obj, PG_JSONB) or isinstance(column_type_obj, Generic_JSON) or cls_name in ("JSON", "JSONB"):
+            return "JSON"
+
+        # 17) Fallback to TEXT
+        return "TEXT"
+
+
+def generate_mysql_create_table(conn, db_name: str, table_name: str, adapter: PostgresToMySQLDataTypeAdapter):
+    db_base = POSTGRES_CONNECTION_STRING.rsplit('/', 1)[0]
+    pg_engine = create_engine(f"{db_base}/{db_name}")
+    inspector = inspect(pg_engine)
+
+    columns = inspector.get_columns(table_name)
+    try:
+        pk_info = inspector.get_pk_constraint(table_name)
+        pk_columns = pk_info.get("constrained_columns", []) or []
+    except Exception:
+        pk_columns = []
+
+    ddl_parts = [f"CREATE TABLE `{table_name}` ("]
+    col_defs = []
+
+    for col in columns:
+        name = col["name"]
+        col_type_obj = col["type"]
+        mysql_type = adapter.convert(col_type_obj)
+        nullable = "NULL" if col["nullable"] else "NOT NULL"
+        default_val = ""
+        col_defs.append(f"  `{name}` {mysql_type} {nullable} {default_val}".strip())
+
+    if pk_columns:
+        pk_list = ", ".join(f"`{c}`" for c in pk_columns)
+        col_defs.append(f"  PRIMARY KEY ({pk_list})")
+
+    ddl_parts.append(",\n".join(col_defs))
+    ddl_parts.append(");")
+    ddl_statement = "\n".join(ddl_parts)
+
+    # Debug print
+    print(f"===== DDL FOR TABLE {table_name} =====")
+    print(ddl_statement)
+    print("=====================================")
+
+    conn.execute(text(f"DROP TABLE IF EXISTS `{table_name}`;"))
+    conn.execute(text(ddl_statement))
+
 
 @app.get("/databases")
 def fetch_postgres_databases():
     with postgres_engine.connect() as conn:
-        databases = conn.execute(text("SELECT datname FROM pg_database WHERE datistemplate = false;")).fetchall()
-        return {"databases": [row[0] for row in databases]}
-    
+        rows = conn.execute(text(
+            "SELECT datname FROM pg_database WHERE datistemplate = false;"
+        )).fetchall()
+        return {"databases": [r[0] for r in rows]}
+
 
 @app.get("/tables/{database_name}")
 def fetch_tables(database_name: str):
@@ -95,31 +227,44 @@ def export_feature(request: TableRequest):
     skipped, exported = [], []
     adapter = PostgresToMySQLDataTypeAdapter()
 
-    for tbl in request.tables:
-        if tbl in already_exported_tables[request.db_name]:
-            skipped.append(tbl)
-        else:
+    with mysql_engine.connect() as mysql_conn:
+        for tbl in request.tables:
+            if tbl in already_exported_tables[request.db_name]:
+                skipped.append(tbl)
+                continue
+
+            generate_mysql_create_table(mysql_conn, request.db_name, tbl, adapter)
             df = pd.read_sql_table(tbl, source_db)
-            df.to_sql(tbl, mysql_engine, if_exists='replace', index=False)
+
+            for colname, dtype in df.dtypes.items():
+                if dtype == object:
+                    sample = df[colname].dropna()
+                    if not sample.empty and isinstance(sample.iloc[0], dict):
+                        df[colname] = df[colname].apply(lambda v: json.dumps(v) if isinstance(v, dict) else v)
+
+            df.to_sql(tbl, mysql_engine, if_exists='append', index=False)
+
             already_exported_tables[request.db_name].add(tbl)
             exported.append(tbl)
 
             indexes = inspector.get_indexes(tbl)
-            with mysql_engine.connect() as mysql_conn:
-                for idx in indexes:
-                    index_name = idx.get("name")
-                    columns = []
-                    for col in idx.get("column_names", []):
-                        col_type = df[col].dtype
-                        if str(col_type) == 'object':
-                            columns.append(f"{col}(255)")
-                        else:
-                            columns.append(f"{col}")
-                    unique = "UNIQUE" if idx.get("unique", False) else ""
-                    try:
-                        mysql_conn.execute(text(f"CREATE {unique} INDEX `{index_name}` ON `{tbl}` ({', '.join(columns)});"))
-                    except Exception as e:
-                        print(f"Index creation failed for {index_name} on {tbl}: {e}")
+            for idx in indexes:
+                index_name = idx.get("name")
+                cols = []
+                for c in idx.get("column_names", []):
+                    col_type = df[c].dtype
+                    if str(col_type) == 'object':
+                        cols.append(f"{c}(255)")
+                    else:
+                        cols.append(f"{c}")
+                unique = "UNIQUE" if idx.get("unique", False) else ""
+                try:
+                    mysql_conn.execute(text(
+                        f"CREATE {unique} INDEX `{index_name}` "
+                        f"ON `{tbl}` ({', '.join(cols)});"
+                    ))
+                except Exception as e:
+                    print(f"Index creation failed for {index_name} on {tbl}: {e}")
 
     return {
         "status": "partial" if skipped else "success",
@@ -136,7 +281,7 @@ def remove_from_mysql(request: TableRequest):
     for tbl in request.tables:
         try:
             with mysql_engine.connect() as conn:
-                conn.execute(text(f"DROP TABLE IF EXISTS `{tbl}`"))
+                conn.execute(text(f"DROP TABLE IF EXISTS `{tbl}`;"))
             removed_tables.append(tbl)
             already_exported_tables.get(request.db_name, set()).discard(tbl)
         except Exception as ex:
@@ -144,7 +289,6 @@ def remove_from_mysql(request: TableRequest):
 
     if failed:
         raise HTTPException(status_code=500, detail={"removed": removed_tables, "errors": failed})
-
     return {"removed": removed_tables}
 
 
@@ -152,13 +296,13 @@ def remove_from_mysql(request: TableRequest):
 def reset_mysql():
     dropped = []
     for dbname, table_set in list(already_exported_tables.items()):
-        for tbl in list(table_set):
-            try:
-                with mysql_engine.connect() as conn:
-                    conn.execute(text(f"DROP TABLE IF EXISTS `{tbl}`"))
-                dropped.append(tbl)
-            except Exception as e:
-                print(f"Failed to drop {tbl}: {e}")
+        with mysql_engine.connect() as conn:
+            for tbl in list(table_set):
+                try:
+                    conn.execute(text(f"DROP TABLE IF EXISTS `{tbl}`;"))
+                    dropped.append(tbl)
+                except Exception as e:
+                    print(f"Failed to drop {tbl}: {e}")
     already_exported_tables.clear()
     return {"reset": True, "dropped_tables": dropped}
 
@@ -168,9 +312,29 @@ def fetch_table_schema(db_name: str, table_name: str):
     db_base = POSTGRES_CONNECTION_STRING.rsplit('/', 1)[0]
     db_conn = create_engine(f"{db_base}/{db_name}")
     inspector = inspect(db_conn)
+
+    raw_columns = inspector.get_columns(table_name)
+    processed_columns = []
+    for col in raw_columns:
+        processed_columns.append({
+            "name": col["name"],
+            "type": str(col["type"]),
+            "nullable": col["nullable"],
+            "default": col.get("default")
+        })
+
+    raw_indexes = inspector.get_indexes(table_name)
+    processed_indexes = []
+    for idx in raw_indexes:
+        processed_indexes.append({
+            "name": idx.get("name"),
+            "column_names": idx.get("column_names", []),
+            "unique": idx.get("unique", False)
+        })
+
     return {
-        "columns": inspector.get_columns(table_name),
-        "indexes": inspector.get_indexes(table_name)
+        "columns": processed_columns,
+        "indexes": processed_indexes
     }
 
 
@@ -183,7 +347,7 @@ def list_indexes(db_name: str, table_name: str):
         raw_indexes = inspector.get_indexes(table_name)
         return {"indexes": [
             {
-                "name": idx["name"],
+                "name": idx.get("name"),
                 "columns": idx.get("column_names", []),
                 "unique": idx.get("unique", False)
             } for idx in raw_indexes
@@ -203,17 +367,15 @@ def generate_mysql_ddl(db_name: str, table_name: str) -> str:
     adapter = PostgresToMySQLDataTypeAdapter()
 
     for column in columns:
-        col_name = column['name']
-        pg_type = str(column['type'])
-        sql_type = adapter.convert(pg_type)
-        nullable = "NULL" if column['nullable'] else "NOT NULL"
-        default_val = f"DEFAULT {column['default']}" if column['default'] else ""
-
+        col_name     = column["name"]
+        col_type_obj = column["type"]
+        sql_type     = adapter.convert(col_type_obj)
+        nullable     = "NULL" if column["nullable"] else "NOT NULL"
+        default_val  = "" 
         col_defs.append(f"  `{col_name}` {sql_type} {nullable} {default_val}".strip())
 
     ddl_parts.append(",\n".join(col_defs))
     ddl_parts.append(");")
-
     return "\n".join(ddl_parts)
 
 

@@ -57,21 +57,18 @@
 
   <script>
     const dbSelect = document.getElementById('dbSelect');
-
     const tablesContainer = document.getElementById('tablesContainer');
     const tableCheckboxes = document.getElementById('tableCheckboxes');
-
     const exportBtn = document.getElementById('exportBtn');
     const removeBtn = document.getElementById('removeBtn');
     const resetBtn = document.getElementById('resetBtn');
-
     const schemaBtn = document.getElementById('schemaBtn');
     const indexBtn = document.getElementById('indexBtn');
-
     const message = document.getElementById('message');
     const selectAll = document.getElementById('selectAll');
     const schemaOutput = document.getElementById('schemaOutput');
 
+    // Fetch list of Postgres databases on page load
     fetch('http://localhost:8000/databases')
       .then(res => res.json())
       .then(data => {
@@ -84,6 +81,7 @@
         });
       });
 
+    // When a database is selected, fetch its tables
     dbSelect.addEventListener('change', () => {
       const dbName = dbSelect.value;
       tableCheckboxes.innerHTML = '';
@@ -98,7 +96,6 @@
         .then(data => {
           data.tables.forEach(table => {
             const label = document.createElement('label');
-
             const checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
             checkbox.value = table;
@@ -106,18 +103,19 @@
 
             label.appendChild(checkbox);
             label.appendChild(document.createTextNode(table));
-
             tableCheckboxes.appendChild(label);
           });
           tablesContainer.style.display = 'block';
         });
     });
 
+    // "Select All" checkbox logic
     selectAll.addEventListener('change', () => {
       const checkboxes = tableCheckboxes.querySelectorAll('input[type="checkbox"]');
       checkboxes.forEach(cb => cb.checked = selectAll.checked);
     });
 
+    // Export selected tables to MySQL
     exportBtn.addEventListener('click', () => {
       const selectedTables = Array.from(
         tableCheckboxes.querySelectorAll('input[type="checkbox"]:checked')
@@ -138,11 +136,13 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       })
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error('Export failed');
+        return res.json();
+      })
       .then(data => {
         const exported = data.exported_tables || [];
         const skipped = data.skipped_tables || [];
-
         let msg = '';
         if (exported.length) {
           msg += `Tables Exported: ${exported.join(', ')}. `;
@@ -153,11 +153,12 @@
         message.textContent = msg || 'No tables exported.';
       })
       .catch(err => {
-        console.error('Export failed:', err);
+        console.error(err);
         message.textContent = 'Export failed';
       });
     });
 
+    // Remove selected tables from MySQL
     removeBtn.addEventListener('click', () => {
       const selectedTables = Array.from(
         tableCheckboxes.querySelectorAll('input[type="checkbox"]:checked')
@@ -178,30 +179,36 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       })
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error('Remove failed');
+        return res.json();
+      })
       .then(data => {
         message.textContent = `Removed from MySQL: ${data.removed.join(', ')}`;
       })
       .catch(err => {
-        console.error('Remove failed:', err);
+        console.error(err);
         message.textContent = 'Failed to remove selected tables';
       });
     });
 
-
+    // Reset: remove all exported tables from MySQL
     resetBtn.addEventListener('click', () => {
       fetch('http://localhost:8000/reset', { method: 'POST' })
-        .then(res => res.json())
+        .then(res => {
+          if (!res.ok) throw new Error('Reset failed');
+          return res.json();
+        })
         .then(data => {
           message.textContent = `All tables removed from MySQL: ${data.dropped_tables.join(', ')}`;
         })
         .catch(err => {
-          console.error('Reset failed:', err);
+          console.error(err);
           message.textContent = 'Reset failed.';
         });
     });
 
-
+    // View original PostgreSQL schema (raw types) for selected tables
     schemaBtn.addEventListener('click', () => {
       const selectedTables = Array.from(
         tableCheckboxes.querySelectorAll('input[type="checkbox"]:checked')
@@ -212,25 +219,36 @@
         return;
       }
 
-
       const dbName = dbSelect.value;
       schemaOutput.textContent = 'Loading schemas...\n';
 
-
-      const ddlPromises = selectedTables.map(table =>
-        fetch(`http://localhost:8000/schema-ddl/${dbName}/${table}`)
-          .then(res => res.json())
-          .then(data => `Schema for ${table}:\n${data.ddl}`)
+      const schemaPromises = selectedTables.map(table =>
+        fetch(`http://localhost:8000/schema/${dbName}/${table}`)
+          .then(res => {
+            if (!res.ok) throw new Error('Schema fetch failed');
+            return res.json();
+          })
+          .then(data => {
+            let out = `Schema for ${table}:\n`;
+            data.columns.forEach(col => {
+              const typeStr = col.type;
+              const nullableStr = col.nullable ? 'NULL' : 'NOT NULL';
+              const defaultStr = col.default !== null && col.default !== undefined
+                ? `DEFAULT ${col.default}`
+                : '';
+              out += `  ${col.name}  ${typeStr}  ${nullableStr} ${defaultStr}\n`;
+            });
+            return out;
+          })
           .catch(() => `-- Failed to fetch schema for ${table} --`)
       );
 
-
-      Promise.all(ddlPromises).then(results => {
+      Promise.all(schemaPromises).then(results => {
         schemaOutput.textContent = results.join('\n\n');
       });
     });
 
-
+    // View indexes for selected tables
     indexBtn.addEventListener('click', () => {
       const selectedTables = Array.from(
         tableCheckboxes.querySelectorAll('input[type="checkbox"]:checked')
@@ -246,12 +264,14 @@
 
       const indexPromises = selectedTables.map(table =>
         fetch(`http://localhost:8000/indexes/${dbName}/${table}`)
-          .then(res => res.json())
+          .then(res => {
+            if (!res.ok) throw new Error('Indexes fetch failed');
+            return res.json();
+          })
           .then(data => {
             if (!data.indexes.length) {
               return `No indexes found for ${table}`;
             }
-
             const lines = data.indexes.map(idx =>
               `Index: ${idx.name}\n  Columns: ${idx.columns.join(', ')}\n  Unique: ${idx.unique}`
             );
