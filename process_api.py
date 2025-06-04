@@ -94,56 +94,56 @@ class PostgresToMySQLDataTypeAdapter:
         # 4) INTEGER -> INT
         if isinstance(column_type_obj, PG_INTEGER) or isinstance(column_type_obj, Generic_Integer) or cls_name == "INTEGER":
             return "INT"
+        
+        # 5) REAL -> FLOAT
+        if isinstance(column_type_obj, PG_REAL) or (
+            isinstance(column_type_obj, Generic_Float) and getattr(column_type_obj, "precision", None) == 24
+        ) or cls_name == "REAL":
+            return "FLOAT"
 
-        # 5) VARCHAR(length)
+        # 6) DOUBLE PRECISION -> DOUBLE
+        if isinstance(column_type_obj, PG_DOUBLE_PRECISION) or (
+            isinstance(column_type_obj, Generic_Float) and getattr(column_type_obj, "precision", None) == 53
+        ) or cls_name in ("DOUBLE_PRECISION", "DOUBLE"):
+            return "DOUBLE"
+        
+        # 7) CHAR(length)
+        if isinstance(column_type_obj, PG_CHAR) or cls_name.startswith("CHAR"):
+            length = getattr(column_type_obj, "length", None) or 1
+            return f"CHAR({length})"
+
+        # 8) VARCHAR(length)
         if isinstance(column_type_obj, PG_VARCHAR) or (
             isinstance(column_type_obj, Generic_String) and getattr(column_type_obj, "length", None)
         ) or cls_name.startswith("VARCHAR"):
             length = getattr(column_type_obj, "length", None) or 255
             return f"VARCHAR({length})"
 
-        # 6) CHAR(length)
-        if isinstance(column_type_obj, PG_CHAR) or cls_name.startswith("CHAR"):
-            length = getattr(column_type_obj, "length", None) or 1
-            return f"CHAR({length})"
-
-        # 7) TEXT
+        # 9) TEXT
         if isinstance(column_type_obj, PG_TEXT) or cls_name == "TEXT":
             return "TEXT"
 
-        # 8) DATE
+        # 10) DATE
         if isinstance(column_type_obj, PG_DATE) or isinstance(column_type_obj, Generic_Date) or cls_name == "DATE":
             return "DATE"
 
-        # 9) TIME
+        # 11) TIME
         if isinstance(column_type_obj, PG_TIME) or isinstance(column_type_obj, Generic_Time) or cls_name == "TIME":
             return "TIME"
 
-        # 10) TIMESTAMP (both with and without time zone) -> DATETIME
+        # 12) TIMESTAMP (both with and without time zone) -> DATETIME
         if isinstance(column_type_obj, PG_TIMESTAMP) or isinstance(column_type_obj, Generic_DateTime) or cls_name == "TIMESTAMP":
             return "DATETIME"
 
-        # 11) BOOLEAN
+        # 13) BOOLEAN
         if isinstance(column_type_obj, PG_BOOLEAN) or isinstance(column_type_obj, Generic_Boolean) or cls_name == "BOOLEAN":
             return "BOOLEAN"
 
-        # 12) NUMERIC/DECIMAL -> DECIMAL
+        # 14) NUMERIC/DECIMAL -> DECIMAL
         if isinstance(column_type_obj, PG_NUMERIC) or isinstance(column_type_obj, Generic_Numeric) or cls_name in ("NUMERIC", "DECIMAL"):
             precision = getattr(column_type_obj, "precision", None) or 10
             scale = getattr(column_type_obj, "scale", None) or 0
             return f"DECIMAL({precision},{scale})"
-
-        # 13) REAL -> FLOAT
-        if isinstance(column_type_obj, PG_REAL) or (
-            isinstance(column_type_obj, Generic_Float) and getattr(column_type_obj, "precision", None) == 24
-        ) or cls_name == "REAL":
-            return "FLOAT"
-
-        # 14) DOUBLE PRECISION -> DOUBLE
-        if isinstance(column_type_obj, PG_DOUBLE_PRECISION) or (
-            isinstance(column_type_obj, Generic_Float) and getattr(column_type_obj, "precision", None) == 53
-        ) or cls_name in ("DOUBLE_PRECISION", "DOUBLE"):
-            return "DOUBLE"
 
         # 15) BYTEA -> BLOB
         if isinstance(column_type_obj, PG_BYTEA) or isinstance(column_type_obj, Generic_LargeBinary) or cls_name == "BYTEA":
@@ -153,7 +153,7 @@ class PostgresToMySQLDataTypeAdapter:
         if isinstance(column_type_obj, PG_JSON) or isinstance(column_type_obj, PG_JSONB) or isinstance(column_type_obj, Generic_JSON) or cls_name in ("JSON", "JSONB"):
             return "JSON"
 
-        # 17) Fallback to TEXT
+        # 17) Default fallback to TEXT
         return "TEXT"
 
 
