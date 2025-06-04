@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Databases Exporting Page</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    label, select, button {
+      margin: 10px 0;
+      display: block;
+    }
+    .tables {
+      margin-top: 20px;
+    }
+    .tables label {
+      display: flex;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+    #message {
+      margin-top: 20px;
+      font-weight: bold;
+    }
+    #schemaOutput {
+      white-space: pre-wrap;
+      margin-top: 20px;
+      border: 1px solid #ccc;
+      padding: 10px;
+      background-color: #f8f8f8;
+    }
+  </style>
+</head>
+<body>
+  <h2>Exporting PostgreSQL Tables to MySQL</h2>
+
+  <label for="dbSelect">Select a database:</label>
+  <select id="dbSelect">
+    <option value="">Select</option>
+  </select>
+
+  <div class="tables" id="tablesContainer" style="display: none;">
+    <h3>Select Tables</h3>
+    <label><input type="checkbox" id="selectAll"> Select All</label>
+    <div id="tableCheckboxes"></div>
+    <button id="exportBtn">Export to MySQL</button>
+    <button id="removeBtn">Remove Selected from MySQL</button>
+    <button id="resetBtn">Remove All</button>
+    <button id="schemaBtn">View Schema of Selected Tables</button>
+    <button id="indexBtn">View Indexes of Selected Tables</button>
+  </div>
+
+  <div id="message"></div>
+  <pre id="schemaOutput"></pre>
+
+  <script>
+    const dbSelect = document.getElementById('dbSelect');
+
+    const tablesContainer = document.getElementById('tablesContainer');
+    const tableCheckboxes = document.getElementById('tableCheckboxes');
+
+    const exportBtn = document.getElementById('exportBtn');
+    const removeBtn = document.getElementById('removeBtn');
+    const resetBtn = document.getElementById('resetBtn');
+
+    const schemaBtn = document.getElementById('schemaBtn');
+    const indexBtn = document.getElementById('indexBtn');
+
+    const message = document.getElementById('message');
+    const selectAll = document.getElementById('selectAll');
+    const schemaOutput = document.getElementById('schemaOutput');
+
+    fetch('http://localhost:8000/databases')
+      .then(res => res.json())
+      .then(data => {
+        dbSelect.innerHTML = '<option value="">Select</option>';
+        data.databases.forEach(db => {
+          const opt = document.createElement('option');
+          opt.value = db;
+          opt.textContent = db;
+          dbSelect.appendChild(opt);
+        });
+      });
+
+    dbSelect.addEventListener('change', () => {
+      const dbName = dbSelect.value;
+      tableCheckboxes.innerHTML = '';
+      message.textContent = '';
+      schemaOutput.textContent = '';
+      tablesContainer.style.display = 'none';
+
+      if (!dbName) return;
+
+      fetch(`http://localhost:8000/tables/${dbName}`)
+        .then(res => res.json())
+        .then(data => {
+          data.tables.forEach(table => {
+            const label = document.createElement('label');
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.value = table;
+            checkbox.style.marginRight = '8px';
+
+            label.appendChild(checkbox);
+            label.appendChild(document.createTextNode(table));
+
+            tableCheckboxes.appendChild(label);
+          });
+          tablesContainer.style.display = 'block';
+        });
+    });
+
+    selectAll.addEventListener('change', () => {
+      const checkboxes = tableCheckboxes.querySelectorAll('input[type="checkbox"]');
+      checkboxes.forEach(cb => cb.checked = selectAll.checked);
+    });
+
+    exportBtn.addEventListener('click', () => {
+      const selectedTables = Array.from(
+        tableCheckboxes.querySelectorAll('input[type="checkbox"]:checked')
+      ).map(cb => cb.value);
+
+      if (!selectedTables.length) {
+        message.textContent = 'At least one table choice must be selected';
+        return;
+      }
+
+      const payload = {
+        db_name: dbSelect.value,
+        tables: selectedTables
+      };
+
+      fetch('http://localhost:8000/export', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      .then(res => res.json())
+      .then(data => {
+        const exported = data.exported_tables || [];
+        const skipped = data.skipped_tables || [];
+
+        let msg = '';
+        if (exported.length) {
+          msg += `Tables Exported: ${exported.join(', ')}. `;
+        }
+        if (skipped.length) {
+          msg += `Skipped (already exists): ${skipped.join(', ')}.`;
+        }
+        message.textContent = msg || 'No tables exported.';
+      })
+      .catch(err => {
+        console.error('Export failed:', err);
+        message.textContent = 'Export failed';
+      });
+    });
+
+    removeBtn.addEventListener('click', () => {
+      const selectedTables = Array.from(
+        tableCheckboxes.querySelectorAll('input[type="checkbox"]:checked')
+      ).map(cb => cb.value);
+
+      if (!selectedTables.length) {
+        message.textContent = 'At least one table must be selected.';
+        return;
+      }
+
+      const payload = {
+        db_name: dbSelect.value,
+        tables: selectedTables
+      };
+
+      fetch('http://localhost:8000/remove', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      .then(res => res.json())
+      .then(data => {
+        message.textContent = `Removed from MySQL: ${data.removed.join(', ')}`;
+      })
+      .catch(err => {
+        console.error('Remove failed:', err);
+        message.textContent = 'Failed to remove selected tables';
+      });
+    });
+
+
+    resetBtn.addEventListener('click', () => {
+      fetch('http://localhost:8000/reset', { method: 'POST' })
+        .then(res => res.json())
+        .then(data => {
+          message.textContent = `All tables removed from MySQL: ${data.dropped_tables.join(', ')}`;
+        })
+        .catch(err => {
+          console.error('Reset failed:', err);
+          message.textContent = 'Reset failed.';
+        });
+    });
+
+
+    schemaBtn.addEventListener('click', () => {
+      const selectedTables = Array.from(
+        tableCheckboxes.querySelectorAll('input[type="checkbox"]:checked')
+      ).map(cb => cb.value);
+
+      if (!selectedTables.length) {
+        message.textContent = 'Select at least one table to view schema.';
+        return;
+      }
+
+
+      const dbName = dbSelect.value;
+      schemaOutput.textContent = 'Loading schemas...\n';
+
+
+      const ddlPromises = selectedTables.map(table =>
+        fetch(`http://localhost:8000/schema-ddl/${dbName}/${table}`)
+          .then(res => res.json())
+          .then(data => `Schema for ${table}:\n${data.ddl}`)
+          .catch(() => `-- Failed to fetch schema for ${table} --`)
+      );
+
+
+      Promise.all(ddlPromises).then(results => {
+        schemaOutput.textContent = results.join('\n\n');
+      });
+    });
+
+
+    indexBtn.addEventListener('click', () => {
+      const selectedTables = Array.from(
+        tableCheckboxes.querySelectorAll('input[type="checkbox"]:checked')
+      ).map(cb => cb.value);
+
+      if (!selectedTables.length) {
+        message.textContent = 'Select at least one table to view indexes.';
+        return;
+      }
+
+      const dbName = dbSelect.value;
+      schemaOutput.textContent = 'Loading indexes...\n';
+
+      const indexPromises = selectedTables.map(table =>
+        fetch(`http://localhost:8000/indexes/${dbName}/${table}`)
+          .then(res => res.json())
+          .then(data => {
+            if (!data.indexes.length) {
+              return `No indexes found for ${table}`;
+            }
+
+            const lines = data.indexes.map(idx =>
+              `Index: ${idx.name}\n  Columns: ${idx.columns.join(', ')}\n  Unique: ${idx.unique}`
+            );
+            return `Indexes for ${table}:\n\n${lines.join('\n')}`;
+          })
+          .catch(() => `-- Failed to fetch indexes for ${table} --`)
+      );
+
+      Promise.all(indexPromises).then(results => {
+        schemaOutput.textContent = results.join('\n\n');
+      });
+    });
+  </script>
+</body>
+</html>
