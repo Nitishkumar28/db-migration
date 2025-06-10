@@ -8,6 +8,7 @@ from sqlalchemy import create_engine, inspect, text
 import pandas as pd
 import json
 import os
+import re
 
 # Better Type Detection
 from sqlalchemy.dialects.postgresql import (
@@ -58,6 +59,13 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 class TableModel(BaseModel):
     db_name: str
     tables: List[str]
+
+
+class TriggerModel(BaseModel):
+    name: str
+    timing: str
+    event: str
+    statement: str
 
 
 @app.get("/")
@@ -216,7 +224,10 @@ class PostgresToMySQLDataTypeAdapter:
 
 
 def generate_mysql_create_table(
-    connection, database_name: str, table_name: str, adapter: PostgresToMySQLDataTypeAdapter
+    connection,
+    database_name: str,
+    table_name: str,
+    adapter: PostgresToMySQLDataTypeAdapter,
 ):
     database = POSTGRES_CONNECTION_STRING.rsplit("/", 1)[0]
     postgre_eng = create_engine(f"{database}/{database_name}")
@@ -456,3 +467,150 @@ def fetch_table_ddl(database_name: str, table_name: str):
         return {"ddl": table_ddl}
     except Exception as err:
         raise HTTPException(status_code=500, detail=str(err))
+
+
+@app.get("/triggers/{database_name}/{table_name}", response_model=List[TriggerModel])
+def fetch_triggers(database_name: str, table_name: str):
+    database_conn_str = POSTGRES_CONNECTION_STRING.rsplit("/", 1)[0]
+    pg_url = f"{database_conn_str}/{database_name}"
+    engine = create_engine(pg_url)
+
+    sql = """
+    SELECT
+      trigger_name    AS name,
+      action_timing   AS timing,
+      event_manipulation AS event,
+      action_statement   AS statement
+    FROM information_schema.triggers
+    WHERE event_object_table = :tbl
+      AND trigger_schema = 'public';
+    """
+
+    with engine.connect() as conn:
+        rows = conn.execute(text(sql), {"tbl": table_name}).fetchall()
+
+    return [
+        TriggerModel(
+            name=row.name,
+            timing=row.timing,
+            event=row.event,
+            statement=row.statement.strip(),
+        )
+        for row in rows
+    ]
+
+
+@app.post("/export-triggers")
+def export_triggers(request: TableModel):
+    database_str = POSTGRES_CONNECTION_STRING.rsplit("/", 1)[0]
+    pg_engine = create_engine(f"{database_str}/{request.db_name}")
+
+    exported = []
+    errors = []
+
+    with mysql_engine.connect() as mysql_conn, pg_engine.connect() as pg_conn:
+        pg_inspector = inspect(pg_engine)
+
+        for each_table in request.tables:
+            column_names = [c["name"] for c in pg_inspector.get_columns(each_table)]
+
+            def build_json(alias: str) -> str:
+                pairs = ", ".join(f"'{c}', {alias}.{c}" for c in column_names)
+                return f"JSON_OBJECT({pairs})"
+
+            rows = pg_conn.execute(
+                text(
+                    """
+                SELECT trigger_name,
+                       action_timing,
+                       event_manipulation,
+                       action_statement
+                  FROM information_schema.triggers
+                 WHERE event_object_table = :tbl
+                   AND trigger_schema      = 'public';
+                """
+                ),
+                {"tbl": each_table},
+            ).fetchall()
+
+            for row in rows:
+                name = row.trigger_name
+                timing = row.action_timing
+                event = row.event_manipulation.upper()
+                statement = row.action_statement.strip()
+
+                try:
+                    trigger_name = f"{name}_{event.lower()}"
+                    mysql_conn.execute(
+                        text(f"DROP TRIGGER IF EXISTS `{trigger_name}`;")
+                    )
+
+                    check = re.match(r"EXECUTE FUNCTION ([\w_]+)\(\)", statement, re.I)
+                    if not check:
+                        raise ValueError(f"Unsupported action: {statement}")
+                    function_type = check.group(1)
+
+                    defintion_state = pg_conn.execute(
+                        text(
+                            """
+                        SELECT pg_get_functiondef(p.oid)
+                          FROM pg_proc p
+                          JOIN pg_namespace n ON p.pronamespace = n.oid
+                         WHERE p.proname  = :func
+                           AND n.nspname = 'public';
+                        """
+                        ),
+                        {"func": function_type},
+                    ).scalar_one()
+
+                    patterns = {
+                        "INSERT": r"IF\s+TG_OP\s*=\s*'INSERT'\s+THEN(.*?)ELSIF",
+                        "UPDATE": r"ELSIF\s+TG_OP\s*=\s*'UPDATE'\s+THEN(.*?)ELSIF",
+                        "DELETE": r"ELSIF\s+TG_OP\s*=\s*'DELETE'\s+THEN(.*?)END IF",
+                    }
+                    body_match = re.search(
+                        patterns[event], defintion_state, re.S | re.I
+                    )
+                    if not body_match:
+                        raise ValueError(f"Could not extract body for {event}")
+
+                    body_sql = body_match.group(1)
+                    body_sql = re.sub(
+                        r"\bRETURN\b[^\n;]*[;\n]?", "", body_sql, flags=re.I
+                    )
+                    body_sql = re.sub(r"--.*?$", "", body_sql, flags=re.M)
+                    body_sql = body_sql.replace("TG_OP", f"'{event}'")
+                    body_sql = re.sub(
+                        r"\bto_jsonb\s*\(\s*NEW\s*\)",
+                        build_json("NEW"),
+                        body_sql,
+                        flags=re.I,
+                    )
+                    body_sql = re.sub(
+                        r"\bto_jsonb\s*\(\s*OLD\s*\)",
+                        build_json("OLD"),
+                        body_sql,
+                        flags=re.I,
+                    )
+
+                    body_sql = body_sql.strip().rstrip(";")
+                    ddl = f"""
+                    CREATE TRIGGER `{trigger_name}`
+                    {timing} {event} ON `{each_table}`
+                    FOR EACH ROW
+                    BEGIN
+                      {body_sql};
+                    END;"""
+                    mysql_conn.execute(text(ddl))
+                    exported.append(trigger_name)
+
+                except Exception as e:
+                    errors.append({"trigger": name, "event": event, "error": str(e)})
+
+    if errors:
+        raise HTTPException(
+            status_code=500, detail={"exported": exported, "errors": errors}
+        )
+
+    return {"exported_triggers": exported}
+
