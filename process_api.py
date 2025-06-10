@@ -42,7 +42,6 @@ from sqlalchemy.types import (
     JSON as Generic_JSON,
     Time as Generic_Time,
 )
-from websockets import StatusLike
 
 app = FastAPI()
 
