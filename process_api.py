@@ -373,7 +373,7 @@ def clear_mysql():
     return {"reset": True, "dropped_tables": dropped}
 
 
-@app.get("/schema/{db_name}/{table_name}")
+@app.get("/schema/{database_name}/{table_name}")
 def fetch_table_schema(database_name: str, table_name: str):
     database_str = POSTGRES_CONNECTION_STRING.rsplit("/", 1)[0]
     database_connection = create_engine(f"{database_str}/{database_name}")
@@ -405,7 +405,7 @@ def fetch_table_schema(database_name: str, table_name: str):
     return {"columns": processed_columns, "indexes": processed_indexes}
 
 
-@app.get("/indexes/{db_name}/{table_name}")
+@app.get("/indexes/{database_name}/{table_name}")
 def list_indexes(database_name: str, table_name: str):
     try:
         database_str = POSTGRES_CONNECTION_STRING.rsplit("/", 1)[0]
@@ -449,7 +449,7 @@ def generate_mysql_ddl(database_name: str, table_name: str) -> str:
     return "\n".join(table_ddl_create)
 
 
-@app.get("/schema-ddl/{db_name}/{table_name}")
+@app.get("/schema-ddl/{database_name}/{table_name}")
 def fetch_table_ddl(database_name: str, table_name: str):
     try:
         table_ddl = generate_mysql_ddl(database_name, table_name)

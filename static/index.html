@@ -109,13 +109,12 @@
         });
     });
 
-    // "Select All" checkbox logic
+
     selectAll.addEventListener('change', () => {
       const checkboxes = tableCheckboxes.querySelectorAll('input[type="checkbox"]');
       checkboxes.forEach(cb => cb.checked = selectAll.checked);
     });
 
-    // Export selected tables to MySQL
     exportBtn.addEventListener('click', () => {
       const selectedTables = Array.from(
         tableCheckboxes.querySelectorAll('input[type="checkbox"]:checked')
@@ -158,7 +157,6 @@
       });
     });
 
-    // Remove selected tables from MySQL
     removeBtn.addEventListener('click', () => {
       const selectedTables = Array.from(
         tableCheckboxes.querySelectorAll('input[type="checkbox"]:checked')
@@ -192,7 +190,6 @@
       });
     });
 
-    // Reset: remove all exported tables from MySQL
     resetBtn.addEventListener('click', () => {
       fetch('http://localhost:8000/reset', { method: 'POST' })
         .then(res => {
@@ -208,7 +205,6 @@
         });
     });
 
-    // View original PostgreSQL schema (raw types) for selected tables
     schemaBtn.addEventListener('click', () => {
       const selectedTables = Array.from(
         tableCheckboxes.querySelectorAll('input[type="checkbox"]:checked')
@@ -248,7 +244,6 @@
       });
     });
 
-    // View indexes for selected tables
     indexBtn.addEventListener('click', () => {
       const selectedTables = Array.from(
         tableCheckboxes.querySelectorAll('input[type="checkbox"]:checked')
