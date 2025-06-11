@@ -322,3 +322,4 @@ def test_FALLBACK_TO_TEXT(data_adapter):
         pass
 
     assert data_adapter.convert_data(AnotherType()) == "TEXT"
+    

@@ -3,12 +3,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 from sqlalchemy import create_engine, inspect, text
 import pandas as pd
 import json
 import os
 import re
+from dotenv import load_dotenv
+from functools import lru_cache
 
 # Better Type Detection
 from sqlalchemy.dialects.postgresql import (
@@ -55,6 +57,7 @@ app.add_middleware(
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
+load_dotenv() 
 
 class TableModel(BaseModel):
     db_name: str
@@ -68,19 +71,43 @@ class TriggerModel(BaseModel):
     statement: str
 
 
+POSTGRES_USER     = os.getenv("POSTGRES_USER")
+POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD")
+POSTGRES_HOST     = os.getenv("POSTGRES_HOST", "localhost")
+POSTGRES_PORT     = os.getenv("POSTGRES_PORT", "5432")
+
+MYSQL_USER     = os.getenv("MYSQL_USER")
+MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD")
+MYSQL_HOST     = os.getenv("MYSQL_HOST", "localhost")
+MYSQL_PORT     = os.getenv("MYSQL_PORT", "3306")
+
+
 @app.get("/")
 def load_homepage():
     return FileResponse(os.path.join("static", "index.html"))
 
 
-MYSQL_CONNECTION_STRING = "mysql+pymysql://root:Nitish%40123@localhost:3306/demo"
-POSTGRES_CONNECTION_STRING = (
-    "postgresql+psycopg2://postgres:Nitish%40123@localhost:5432/postgres"
-)
+@lru_cache(maxsize=None)
+def db_engine(db_engine_type: str, database: Optional[str] = "postgres"):
+    if db_engine_type == "mysql":
+        if not database:
+            raise ValueError("MySQL database name must be given")
+        url = (
+            f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}"
+            f"@{MYSQL_HOST}:{MYSQL_PORT}/{database}"
+        )
+    elif db_engine_type == "postgres":
+        url = (
+            f"postgresql+psycopg2://{POSTGRES_USER}:{POSTGRES_PASSWORD}"
+            f"@{POSTGRES_HOST}:{POSTGRES_PORT}/{database}"
+        )
+    else:
+        raise ValueError(f"DB engine '{db_engine_type}' not supported")
+    return create_engine(url)
 
-mysql_engine = create_engine(MYSQL_CONNECTION_STRING)
-postgres_engine = create_engine(POSTGRES_CONNECTION_STRING)
 
+mysql_engine = None
+postgres_engine = db_engine("postgres")
 already_exported_tables = {}
 
 
@@ -229,16 +256,15 @@ def generate_mysql_create_table(
     table_name: str,
     adapter: PostgresToMySQLDataTypeAdapter,
 ):
-    database = POSTGRES_CONNECTION_STRING.rsplit("/", 1)[0]
-    postgre_eng = create_engine(f"{database}/{database_name}")
+    postgre_eng = db_engine("postgres", database_name)
     inspector = inspect(postgre_eng)
 
     columns = inspector.get_columns(table_name)
     try:
         pk_info = inspector.get_pk_constraint(table_name)
-        pk_columns = pk_info.get("constrained_columns", []) or []
     except Exception:
-        pk_columns = []
+        pk_info = {}
+    pk_columns = pk_info.get("constrained_columns", [])
 
     ddl_parts = [f"CREATE TABLE `{table_name}` ("]
     col_def = []
@@ -247,10 +273,9 @@ def generate_mysql_create_table(
         name = col["name"]
         col_type_obj = col["type"]
         mysql_type = adapter.convert_data(col_type_obj)
-        null_const = "NULL" if col["nullable"] else "NOT NULL"
+        null_const = "NULL" if col["nullable"] else "" 
         default_val = ""
-        col_def.append(f"  `{name}` {mysql_type} {null_const} {default_val}".strip())
-
+        col_def.append(f"`{name}` {mysql_type} {null_const} {default_val}".strip()) 
     if pk_columns:
         pk_list = ", ".join(f"`{c}`" for c in pk_columns)
         col_def.append(f"  PRIMARY KEY ({pk_list})")
@@ -279,17 +304,14 @@ def fetch_postgres_databases():
 
 @app.get("/tables/{database_name}")
 def fetch_tables(database_name: str):
-    database_str = POSTGRES_CONNECTION_STRING.rsplit("/", 1)[0]
-    conn_str = f"{database_str}/{database_name}"
-    database_engine = create_engine(conn_str)
-    inspector = inspect(database_engine)
+    engine = db_engine("postgres", database_name)
+    inspector = inspect(engine)
     return {"tables": inspector.get_table_names()}
 
 
 @app.post("/export")
 def export_button(request: TableModel):
-    database_str = POSTGRES_CONNECTION_STRING.rsplit("/", 1)[0]
-    request_database = create_engine(f"{database_str}/{request.db_name}")
+    request_database = db_engine("postgres", request.db_name)
     inspector = inspect(request_database)
 
     if request.db_name not in already_exported_tables:
@@ -298,7 +320,7 @@ def export_button(request: TableModel):
     skipped, exported = [], []
     adapter = PostgresToMySQLDataTypeAdapter()
 
-    with mysql_engine.connect() as mysql_conn:
+    with db_engine("mysql", request.db_name).connect() as mysql_conn:
         for each_tbl in request.tables:
             if each_tbl in already_exported_tables[request.db_name]:
                 skipped.append(each_tbl)
@@ -315,31 +337,26 @@ def export_button(request: TableModel):
                             lambda v: json.dumps(v) if isinstance(v, dict) else v
                         )
 
-            df.to_sql(each_tbl, mysql_engine, if_exists="append", index=False)
+            df.to_sql(each_tbl, mysql_conn, if_exists="append", index=False)
 
             already_exported_tables[request.db_name].add(each_tbl)
             exported.append(each_tbl)
 
             indexes = inspector.get_indexes(each_tbl)
-            for each_idx in indexes:
-                index_name = each_idx.get("name")
-                cols = []
-                for c in each_idx.get("column_names", []):
-                    col_type = df[c].dtype
-                    if str(col_type) == "object":
-                        cols.append(f"{c}(255)")
-                    else:
-                        cols.append(f"{c}")
-                unique = "UNIQUE" if each_idx.get("unique", False) else ""
-                try:
-                    mysql_conn.execute(
-                        text(
-                            f"CREATE {unique} INDEX `{index_name}` "
-                            f"ON `{each_tbl}` ({', '.join(cols)});"
-                        )
-                    )
-                except Exception as e:
-                    print(f"Index creation failed for {index_name} on {each_tbl}: {e}")
+
+            for index in indexes:
+                index_name = index["name"]
+                columns     = index["column_names"]
+                unique   = "UNIQUE " if index.get("unique", False) else ""
+
+                column_list = [f"`{col}`" for col in columns]
+
+                create_idx_sql = (
+                    f"CREATE {unique}INDEX `{index_name}` "
+                    f"ON `{each_tbl}` ({', '.join(column_list)});"
+                )
+
+                mysql_conn.execute(text(create_idx_sql))
 
     return {
         "status": "partial" if skipped else "success",
@@ -355,8 +372,8 @@ def remove_from_mysql(request: TableModel):
 
     for each_tbl in request.tables:
         try:
-            with mysql_engine.connect() as conn:
-                conn.execute(text(f"DROP TABLE IF EXISTS `{each_tbl}`;"))
+            with db_engine("mysql", request.db_name).connect() as mysql_conn:
+                mysql_conn.execute(text(f"DROP TABLE IF EXISTS `{each_tbl}`;"))
             removed_tables.append(each_tbl)
             already_exported_tables.get(request.db_name, set()).discard(each_tbl)
         except Exception as ex:
@@ -373,22 +390,18 @@ def remove_from_mysql(request: TableModel):
 def clear_mysql():
     dropped = []
     for dbname, table_set in list(already_exported_tables.items()):
-        with mysql_engine.connect() as conn:
-            for tbl in list(table_set):
-                try:
-                    conn.execute(text(f"DROP TABLE IF EXISTS `{tbl}`;"))
-                    dropped.append(tbl)
-                except Exception as e:
-                    print(f"Failed to drop {tbl}: {e}")
+        for tbl in list(table_set):
+            with db_engine("mysql", dbname).connect() as conn:
+                conn.execute(text(f"DROP TABLE IF EXISTS `{tbl}`;"))
+                dropped.append(tbl)
     already_exported_tables.clear()
     return {"reset": True, "dropped_tables": dropped}
 
 
 @app.get("/schema/{database_name}/{table_name}")
 def fetch_table_schema(database_name: str, table_name: str):
-    database_str = POSTGRES_CONNECTION_STRING.rsplit("/", 1)[0]
-    database_connection = create_engine(f"{database_str}/{database_name}")
-    inspector = inspect(database_connection)
+    engine = db_engine("postgres", database_name)
+    inspector = inspect(engine)
 
     exist_columns = inspector.get_columns(table_name)
     processed_columns = []
@@ -419,9 +432,8 @@ def fetch_table_schema(database_name: str, table_name: str):
 @app.get("/indexes/{database_name}/{table_name}")
 def list_indexes(database_name: str, table_name: str):
     try:
-        database_str = POSTGRES_CONNECTION_STRING.rsplit("/", 1)[0]
-        connection_str = create_engine(f"{database_str}/{database_name}")
-        inspector = inspect(connection_str)
+        engine = db_engine("postgres", database_name)
+        inspector = inspect(engine)
         exist_indexes = inspector.get_indexes(table_name)
         return {
             "indexes": [
@@ -437,10 +449,9 @@ def list_indexes(database_name: str, table_name: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-def generate_mysql_ddl(database_name: str, table_name: str) -> str:
-    database_str = POSTGRES_CONNECTION_STRING.rsplit("/", 1)[0]
-    database_engine = create_engine(f"{database_str}/{database_name}")
-    inspector = inspect(database_engine)
+def generate_mysql_ddl(database_name: str, table_name: str) -> str:  
+    engine = db_engine("postgres", database_name)
+    inspector = inspect(engine)
     table_columns = inspector.get_columns(table_name)
 
     table_ddl_create = [f"CREATE TABLE `{table_name}` ("]
@@ -471,9 +482,7 @@ def fetch_table_ddl(database_name: str, table_name: str):
 
 @app.get("/triggers/{database_name}/{table_name}", response_model=List[TriggerModel])
 def fetch_triggers(database_name: str, table_name: str):
-    database_conn_str = POSTGRES_CONNECTION_STRING.rsplit("/", 1)[0]
-    pg_url = f"{database_conn_str}/{database_name}"
-    engine = create_engine(pg_url)
+    engine = db_engine("postgres", database_name)
 
     sql = """
     SELECT
@@ -502,13 +511,12 @@ def fetch_triggers(database_name: str, table_name: str):
 
 @app.post("/export-triggers")
 def export_triggers(request: TableModel):
-    database_str = POSTGRES_CONNECTION_STRING.rsplit("/", 1)[0]
-    pg_engine = create_engine(f"{database_str}/{request.db_name}")
+    pg_engine = db_engine("postgres", request.db_name)
 
     exported = []
     errors = []
 
-    with mysql_engine.connect() as mysql_conn, pg_engine.connect() as pg_conn:
+    with db_engine("mysql", request.db_name).connect() as mysql_conn, pg_engine.connect() as pg_conn:
         pg_inspector = inspect(pg_engine)
 
         for each_table in request.tables:
