@@ -29,6 +29,26 @@ from sqlalchemy.dialects.postgresql import (
     TIME as PostGre_TIME,
     DATE as PostGre_DATE,
     BOOLEAN as PostGre_BOOLEAN,
+    INTERVAL as PostGre_INTERVAL,
+    ENUM as PostGre_ENUM,
+    MONEY as PostGre_MONEY,
+    OID as PostGre_OID,
+    BIT as PostGre_BIT,
+    ARRAY as PostGre_ARRAY,
+    INT4RANGE as PostGre_INT4RANGE,
+    INT4MULTIRANGE as PostGre_INT4MULTIRANGE,
+    INT8RANGE as PostGre_INT8RANGE,
+    INT8MULTIRANGE as PostGre_INT8MULTIRANGE,
+    TSRANGE as PostGre_TSRANGE,
+    TSTZRANGE as PostGre_TSTZRANGE,
+    TSTZMULTIRANGE as PostGre_TSTZMULTIRANGE,
+    DATERANGE as PostGre_DATERANGE,
+    TSVECTOR as PostGre_TSVECTOR,
+    TSQUERY as PostGre_TSQUERY,
+    INET as PostGre_INET,
+    CIDR as PostGre_CIDR,
+    MACADDR as PostGre_MACADDR,
+    MACADDR8 as PostGre_MACADDR8,
 )
 
 from sqlalchemy.types import (
@@ -308,6 +328,133 @@ def test_JSON_AND_JSONB_TO_JSON(data_adapter):
 
     RelatedJSONB.__name__ = "JSONB"
     assert data_adapter.convert_data(RelatedJSONB()) == "JSON"
+
+
+def test_ARRAY_TO_JSON(data_adapter):
+    # ARRAY -> JSON
+    assert data_adapter.convert_data(PostGre_ARRAY(PostGre_INTEGER())) == "JSON"
+
+    class RelatedArr:
+        pass
+
+    RelatedArr.__name__ = "ARRAY"
+    assert data_adapter.convert_data(RelatedArr()) == "JSON"
+
+
+def test_RANGE_TO_JSON(data_adapter):
+    # INT4RANGE/INT8RANGE/TSRANGE/TSTZRANGE/DATERANGE -> JSON
+    for each_type in (PostGre_INT4RANGE(), PostGre_INT8RANGE(), PostGre_TSRANGE(), PostGre_TSTZRANGE(), PostGre_DATERANGE()):
+        assert data_adapter.convert_data(each_type) == "JSON"
+
+    class RelatedRange: 
+        pass
+
+    RelatedRange.__name__ = "TSRANGE"
+    assert data_adapter.convert_data(RelatedRange()) == "JSON"
+
+
+def test_MULTIRANGE_TO_JSON(data_adapter):
+    # INT4MULTIRANGE/INT8MULTIRANGE/TSTZMULTIRANGE -> JSON
+    for each_type in (PostGre_INT4MULTIRANGE(), PostGre_INT8MULTIRANGE(), PostGre_TSTZMULTIRANGE()):
+        assert data_adapter.convert_data(each_type) == "JSON"
+
+    class RelatedMR: 
+        pass
+
+    RelatedMR.__name__ = "INT8MULTIRANGE"
+    assert data_adapter.convert_data(RelatedMR()) == "JSON"
+
+
+def test_NETWORK_TO_VARCHAR(data_adapter):
+    # INET / CIDR -> VARCHAR(45)
+    assert data_adapter.convert_data(PostGre_INET()) == "VARCHAR(45)"
+    assert data_adapter.convert_data(PostGre_CIDR()) == "VARCHAR(45)"
+
+    class RelatedNet:
+        pass
+
+    RelatedNet.__name__ = "INET"
+    assert data_adapter.convert_data(RelatedNet()) == "VARCHAR(45)"
+
+
+def test_MACADDR_TO_VARBINARY(data_adapter):
+    # MACADDR/MACADDR8 -> VARBINARY(6)
+    assert data_adapter.convert_data(PostGre_MACADDR()) == "VARBINARY(6)"
+    assert data_adapter.convert_data(PostGre_MACADDR8()) == "VARBINARY(6)"
+
+    class RelatedMac: 
+        pass
+
+    RelatedMac.__name__ = "MACADDR"
+    assert data_adapter.convert_data(RelatedMac()) == "VARBINARY(6)"
+
+
+def test_FULLTEXT_TO_TEXT(data_adapter):
+    # TSVECTOR/TSQUERY -> TEXT
+    assert data_adapter.convert_data(PostGre_TSVECTOR()) == "TEXT"
+    assert data_adapter.convert_data(PostGre_TSQUERY()) == "TEXT"
+
+    class RelatedFullText: 
+        pass
+
+    RelatedFullText.__name__ = "TSVECTOR"
+    assert data_adapter.convert_data(RelatedFullText()) == "TEXT"
+
+
+def test_BIT_TO_BIT(data_adapter):
+    # BIT(n) -> BIT(n)
+    assert data_adapter.convert_data(PostGre_BIT(8)) == "BIT(8)"
+    assert data_adapter.convert_data(PostGre_BIT()) == "BIT(1)"
+
+    class RelatedBit: 
+        pass
+
+    RelatedBit.__name__ = "BIT"
+    assert data_adapter.convert_data(RelatedBit()) == "BIT(1)"
+
+
+def test_ENUM_TO_VARCHAR(data_adapter):
+    # ENUM -> VARCHAR(255)
+    assert data_adapter.convert_data(PostGre_ENUM("a","b")) == "VARCHAR(255)"
+
+    class RelatedEnum:
+        pass
+
+    RelatedEnum.__name__ = "ENUM"
+    assert data_adapter.convert_data(RelatedEnum()) == "VARCHAR(255)"
+
+
+def test_INTERVAL_TO_TIME(data_adapter):
+    # INTERVAL -> TIME 
+    assert data_adapter.convert_data(PostGre_INTERVAL()) == "TIME"
+
+    class RelatedInt: 
+        pass
+
+    RelatedInt.__name__ = "INTERVAL"
+    assert data_adapter.convert_data(RelatedInt()) == "TIME"
+
+
+def test_MONEY_TO_DECIMAL(data_adapter):
+    # MONEY -> DECIMAL(19,4)
+    assert data_adapter.convert_data(PostGre_MONEY()) == "DECIMAL(19,4)"
+
+    class RelatedMoney: 
+        pass
+
+    RelatedMoney.__name__ = "MONEY"
+    assert data_adapter.convert_data(RelatedMoney()) == "DECIMAL(19,4)"
+
+
+def test_OID_TO_INT_UNSIGNED(data_adapter):
+    # OID -> INT UNSIGNED
+    assert data_adapter.convert_data(PostGre_OID()) == "INT UNSIGNED"
+
+    class RelatedOID: 
+        pass
+
+    RelatedOID.__name__ = "OID"
+    assert data_adapter.convert_data(RelatedOID()) == "INT UNSIGNED"
 
 
 def test_FALLBACK_TO_TEXT(data_adapter):

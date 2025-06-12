@@ -31,6 +31,26 @@ from sqlalchemy.dialects.postgresql import (
     TIME as PostGre_TIME,
     DATE as PostGre_DATE,
     BOOLEAN as PostGre_BOOLEAN,
+    INTERVAL as PostGre_INTERVAL,
+    ENUM as PostGre_ENUM,
+    MONEY as PostGre_MONEY,
+    OID as PostGre_OID,
+    BIT as PostGre_BIT,
+    ARRAY as PostGre_ARRAY,
+    INT4RANGE as PostGre_INT4RANGE,
+    INT4MULTIRANGE as PostGre_INT4MULTIRANGE,
+    INT8RANGE as PostGre_INT8RANGE,
+    INT8MULTIRANGE as PostGre_INT8MULTIRANGE,
+    TSRANGE as PostGre_TSRANGE,
+    TSTZRANGE as PostGre_TSTZRANGE,
+    TSTZMULTIRANGE as PostGre_TSTZMULTIRANGE,
+    DATERANGE as PostGre_DATERANGE,
+    TSVECTOR as PostGre_TSVECTOR,
+    TSQUERY as PostGre_TSQUERY,
+    INET as PostGre_INET,
+    CIDR as PostGre_CIDR,
+    MACADDR as PostGre_MACADDR,
+    MACADDR8 as PostGre_MACADDR8,
 )
 
 from sqlalchemy.types import (
@@ -177,8 +197,12 @@ class PostgresToMySQLDataTypeAdapter:
         # 8) TEXT
         if isinstance(column_object_type, PostGre_TEXT) or data_class_name == "TEXT":
             return "TEXT"
+        
+        # 9) ENUM -> VARCHAR(255)
+        if isinstance(column_object_type, PostGre_ENUM) or data_class_name == "ENUM":
+            return "VARCHAR(255)"
 
-        # 9) VARCHAR(length)
+        # 10) VARCHAR(length)
         if (
             isinstance(column_object_type, PostGre_VARCHAR)
             or isinstance(column_object_type, Gen_String)
@@ -187,7 +211,7 @@ class PostgresToMySQLDataTypeAdapter:
             length = getattr(column_object_type, "length", None) or 255
             return f"VARCHAR({length})"
 
-        # 10) DATE
+        # 11) DATE
         if (
             isinstance(column_object_type, PostGre_DATE)
             or isinstance(column_object_type, Gen_Date)
@@ -195,7 +219,7 @@ class PostgresToMySQLDataTypeAdapter:
         ):
             return "DATE"
 
-        # 11) TIME
+        # 12) TIME
         if (
             isinstance(column_object_type, PostGre_TIME)
             or isinstance(column_object_type, Gen_Time)
@@ -203,7 +227,7 @@ class PostgresToMySQLDataTypeAdapter:
         ):
             return "TIME"
 
-        # 12) TIMESTAMP (both with & without time zone) -> DATETIME
+        # 13) TIMESTAMP (both with & without time zone) -> DATETIME
         if (
             isinstance(column_object_type, PostGre_TIMESTAMP)
             or isinstance(column_object_type, Gen_DateTime)
@@ -211,7 +235,7 @@ class PostgresToMySQLDataTypeAdapter:
         ):
             return "DATETIME"
 
-        # 13) BOOLEAN
+        # 14) BOOLEAN
         if (
             isinstance(column_object_type, PostGre_BOOLEAN)
             or isinstance(column_object_type, Gen_Boolean)
@@ -219,7 +243,7 @@ class PostgresToMySQLDataTypeAdapter:
         ):
             return "BOOLEAN"
 
-        # 14) NUMERIC/DECIMAL -> DECIMAL
+        # 15) NUMERIC/DECIMAL -> DECIMAL
         if (
             isinstance(column_object_type, PostGre_NUMERIC)
             or isinstance(column_object_type, Gen_Numeric)
@@ -229,7 +253,7 @@ class PostgresToMySQLDataTypeAdapter:
             scale = getattr(column_object_type, "scale", None) or 0
             return f"DECIMAL({precision},{scale})"
 
-        # 15) BYTEA -> BLOB
+        # 16) BYTEA -> BLOB
         if (
             isinstance(column_object_type, PostGre_BYTEA)
             or isinstance(column_object_type, Gen_LargeBinary)
@@ -237,7 +261,7 @@ class PostgresToMySQLDataTypeAdapter:
         ):
             return "BLOB"
 
-        # 16) JSON/JSONB -> JSON
+        # 17) JSON/JSONB -> JSON
         if (
             isinstance(column_object_type, PostGre_JSON)
             or isinstance(column_object_type, PostGre_JSONB)
@@ -246,7 +270,65 @@ class PostgresToMySQLDataTypeAdapter:
         ):
             return "JSON"
 
-        # 17) Default fallback to TEXT
+        # 18) ARRAY -> JSON
+        if isinstance(column_object_type, PostGre_ARRAY) or data_class_name == "ARRAY":
+            return "JSON"
+
+        # 19) Range types -> JSON
+        if (
+            isinstance(column_object_type, (PostGre_INT4RANGE, PostGre_INT8RANGE,
+                                            PostGre_TSRANGE, PostGre_TSTZRANGE,
+                                            PostGre_DATERANGE))
+            or data_class_name in ("INT4RANGE", "INT8RANGE", "TSRANGE", "TSTZRANGE", "DATERANGE")
+        ):
+            return "JSON"
+
+        # 20) Multirange types -> JSON
+        if (
+            isinstance(column_object_type, (PostGre_INT4MULTIRANGE,
+                                            PostGre_INT8MULTIRANGE,
+                                            PostGre_TSTZMULTIRANGE))
+            or data_class_name in ("INT4MULTIRANGE", "INT8MULTIRANGE", "TSTZMULTIRANGE")
+        ):
+            return "JSON"
+
+        # 21) INET / CIDR -> VARCHAR(45)
+        if (isinstance(column_object_type, (PostGre_INET, PostGre_CIDR))
+            or data_class_name in ("INET", "CIDR")
+        ):
+            return "VARCHAR(45)"
+
+        # 22) MACADDR -> VARBINARY(6)
+        if (isinstance(column_object_type, (PostGre_MACADDR, PostGre_MACADDR8))
+            or data_class_name in ("MACADDR", "MACADDR8")
+        ):
+            return "VARBINARY(6)"
+
+        # 23) Full-text -> TEXT
+        if (isinstance(column_object_type, (PostGre_TSVECTOR, PostGre_TSQUERY))
+            or data_class_name in ("TSVECTOR", "TSQUERY")
+        ):
+            return "TEXT"
+
+        # 24) BIT -> BIT
+        if isinstance(column_object_type, PostGre_BIT) or data_class_name == "BIT":
+            length = getattr(column_object_type, "length", None) or 1
+            return f"BIT({length})"
+       
+
+        # 25) INTERVAL -> TIME
+        if isinstance(column_object_type, PostGre_INTERVAL) or data_class_name == "INTERVAL":
+            return "TIME"
+
+        # 26) MONEY -> DECIMAL(19,4)
+        if isinstance(column_object_type, PostGre_MONEY) or data_class_name == "MONEY":
+            return "DECIMAL(19,4)"
+
+        # 27) OID -> INT UNSIGNED
+        if isinstance(column_object_type, PostGre_OID) or data_class_name == "OID":
+            return "INT UNSIGNED"
+
+        # 28) Default fallback to TEXT
         return "TEXT"
 
 
@@ -525,6 +607,7 @@ def export_triggers(request: TableModel):
             def build_json(alias: str) -> str:
                 pairs = ", ".join(f"'{c}', {alias}.{c}" for c in column_names)
                 return f"JSON_OBJECT({pairs})"
+            
 
             rows = pg_conn.execute(
                 text(
