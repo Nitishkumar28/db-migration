@@ -1,15 +1,12 @@
-import os
-import pandas as pd
-import json
-import re
-from fastapi import HTTPException, APIRouter
-from fastapi.responses import FileResponse
+from fastapi import APIRouter
 from core.db.db_utils import (
     get_databases,
     get_table_names,
     get_indexes_info,
     get_table_schema,
     get_table_ddl,
+    get_triggers_for_table,
+    export_tables,
     delete_tables
     )
 
@@ -51,8 +48,36 @@ def fetch_table_schema(db_type, db_name, table_name):
 
 @router.get("/schema-ddl/{db_type}/{db_name}/{table_name}")
 def fetch_table_ddl(db_type, db_name, table_name):
-    try:
-        table_ddl = get_table_ddl(db_type, db_name, table_name)
-        return {"ddl": table_ddl}
-    except Exception as err:
-        raise HTTPException(status_code=500, detail=str(err))
+    table_ddl = get_table_ddl(db_type, db_name, table_name)
+    return {"result": table_ddl}
+
+@router.get("/triggers/{db_type}/{db_name}/{table_name}")
+def fetch_triggers(db_type, db_name, table_name):
+    trigger_data_for_table = get_triggers_for_table(db_type, db_name, table_name)
+    return {"results": trigger_data_for_table}
+
+@router.post("/export/")
+def export_tables_to_target(request):
+    """
+    Request Body:
+    {
+        "source": {
+            "db_type": db_type,
+            "db_name": db_name
+        },
+        "target": {
+            "db_type": db_type,
+            "db_name": db_name
+        },
+        "tables_names": [
+            table1,
+            table2,
+            ...
+        ]
+    }
+    """
+    ack = export_tables(**request)
+    if ack:
+        return {"results": True}
+    return {"results": False}
+

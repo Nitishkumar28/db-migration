@@ -1,204 +1,130 @@
+from sqlalchemy.dialects.postgresql import (
+    UUID as PostGre_UUID,
+    VARCHAR as PostGre_VARCHAR,
+    CHAR as PostGre_CHAR,
+    TEXT as PostGre_TEXT,
+    INTEGER as PostGre_INTEGER,
+    SMALLINT as PostGre_SMALLINT,
+    BIGINT as PostGre_BIGINT,
+    NUMERIC as PostGre_NUMERIC,
+    REAL as PostGre_REAL,
+    DOUBLE_PRECISION as PostGre_DOUBLE_PRECISION,
+    BYTEA as PostGre_BYTEA,
+    JSON as PostGre_JSON,
+    JSONB as PostGre_JSONB,
+    TIMESTAMP as PostGre_TIMESTAMP,
+    TIME as PostGre_TIME,
+    DATE as PostGre_DATE,
+    BOOLEAN as PostGre_BOOLEAN,
+)
+
+
+from sqlalchemy.types import (
+    Integer as Gen_Integer,
+    String as Gen_String,
+    Numeric as Gen_Numeric,
+    Date as Gen_Date,
+    DateTime as Gen_DateTime,
+    Boolean as Gen_Boolean,
+    Float as Gen_Float,
+    LargeBinary as Gen_LargeBinary,
+    JSON as Gen_JSON,
+    Time as Gen_Time,
+)
+
 
 class PostgresToMySQLDataTypeAdapter:
+    def __init__(self):
+        
+        self.postgre_to_mysql_map = {
+            PostGre_UUID: lambda col: "CHAR(36)",
+            PostGre_BIGINT: lambda col: "BIGINT",
+            PostGre_SMALLINT: lambda col: "SMALLINT",
+            PostGre_INTEGER: lambda col: "INT",
+            Gen_Integer: lambda col: "INT",
+            PostGre_DOUBLE_PRECISION: lambda col: "DOUBLE",
+            PostGre_REAL: lambda col: "FLOAT",
+            Gen_Float: self._handle_float,
+            PostGre_CHAR: self._handle_char,
+            PostGre_TEXT: lambda col: "TEXT",
+            PostGre_VARCHAR: self._handle_varchar,
+            Gen_String: self._handle_varchar,
+            PostGre_DATE: lambda col: "DATE",
+            Gen_Date: lambda col: "DATE",
+            PostGre_TIME: lambda col: "TIME",
+            Gen_Time: lambda col: "TIME",
+            PostGre_TIMESTAMP: lambda col: "DATETIME",
+            Gen_DateTime: lambda col: "DATETIME",
+            PostGre_BOOLEAN: lambda col: "BOOLEAN",
+            Gen_Boolean: lambda col: "BOOLEAN",
+            PostGre_NUMERIC: self._handle_numeric,
+            Gen_Numeric: self._handle_numeric,
+            PostGre_BYTEA: lambda col: "BLOB",
+            Gen_LargeBinary: lambda col: "BLOB",
+            PostGre_JSON: lambda col: "JSON",
+            PostGre_JSONB: lambda col: "JSON",
+            Gen_JSON: lambda col: "JSON",
+        }
+
+        self.postgre_to_mysql_map_fallback = {
+            "UUID": "CHAR(36)",
+            "BIGINT": "BIGINT",
+            "SMALLINT": "SMALLINT",
+            "INTEGER": "INT",
+            "INT": "INT",
+            "SERIAL": "INT AUTO_INCREMENT",
+            "BIGSERIAL": "BIGINT AUTO_INCREMENT",
+            "REAL": "FLOAT",
+            "DOUBLE": "DOUBLE",
+            "DOUBLE PRECISION": "DOUBLE",
+            "FLOAT": "FLOAT",
+            "DECIMAL": "DECIMAL",
+            "NUMERIC": "DECIMAL",
+            "BOOLEAN": "BOOLEAN",
+            "CHAR": "CHAR",
+            "CHARACTER": "CHAR",
+            "VARCHAR": "VARCHAR",
+            "CHARACTER VARYING": "VARCHAR",
+            "TEXT": "TEXT",
+            "DATE": "DATE",
+            "TIME": "TIME",
+            "TIMESTAMP": "DATETIME",
+            "TIMESTAMPTZ": "DATETIME",
+            "BYTEA": "BLOB",
+            "JSON": "JSON",
+            "JSONB": "JSON",
+            "INET": "VARCHAR(45)",
+            "CIDR": "VARCHAR(43)",
+            "MACADDR": "VARCHAR(17)",
+            "XML": "TEXT",
+            "ENUM": "VARCHAR(255)",
+            "ARRAY": "TEXT",
+            "TSVECTOR": "TEXT",
+        }
+
     def convert_data(self, column_object_type) -> str:
-        data_class_name = column_object_type.__class__.__name__.upper()
+        for data_type, handler in self.postgre_to_mysql_map.items():
+            if isinstance(column_object_type, data_type):
+                return handler(column_object_type)
 
-        # 1) UUID -> CHAR(36)
-        if isinstance(column_object_type, PostGre_UUID) or data_class_name == "UUID":
-            return "CHAR(36)"
+        data_type_upper_class = column_object_type.__class__.__name__.upper()
+        return self.postgre_to_mysql_map_fallback.get(data_type_upper_class, "TEXT")
 
-        # 2) BIGINT
-        if (
-            isinstance(column_object_type, PostGre_BIGINT)
-            or data_class_name == "BIGINT"
-        ):
-            return "BIGINT"
-
-        # 3) SMALLINT
-        if (
-            isinstance(column_object_type, PostGre_SMALLINT)
-            or data_class_name == "SMALLINT"
-        ):
-            return "SMALLINT"
-
-        # 4) INTEGER -> INT
-        if (
-            isinstance(column_object_type, PostGre_INTEGER)
-            or isinstance(column_object_type, Gen_Integer)
-            or data_class_name == "INTEGER"
-        ):
-            return "INT"
-
-        # 5) DOUBLE PRECISION -> DOUBLE
-        if (
-            isinstance(column_object_type, PostGre_DOUBLE_PRECISION)
-            or (
-                isinstance(column_object_type, Gen_Float)
-                and getattr(column_object_type, "precision", None) == 53
-            )
-            or data_class_name in ("DOUBLE_PRECISION", "DOUBLE")
-        ):
+    def _handle_float(self, col) -> str:
+        precision = getattr(col, "precision", None)
+        if precision == 53:
             return "DOUBLE"
+        return "FLOAT"
 
-        # 6) REAL -> FLOAT
-        if (
-            isinstance(column_object_type, PostGre_REAL)
-            or (
-                isinstance(column_object_type, Gen_Float)
-                and getattr(column_object_type, "precision", None) == 24
-            )
-            or data_class_name == "REAL"
-            or (
-                data_class_name == "FLOAT"
-                and getattr(column_object_type, "precision", None) is None
-            )
-        ):
-            return "FLOAT"
+    def _handle_char(self, col) -> str:
+        length = getattr(col, "length", None) or 1
+        return f"CHAR({length})"
 
-        # 7) CHAR(length)
-        if isinstance(column_object_type, PostGre_CHAR) or data_class_name.startswith(
-            "CHAR"
-        ):
-            length = getattr(column_object_type, "length", None) or 1
-            return f"CHAR({length})"
+    def _handle_varchar(self, col) -> str:
+        length = getattr(col, "length", None) or 255
+        return f"VARCHAR({length})"
 
-        # 8) TEXT
-        if isinstance(column_object_type, PostGre_TEXT) or data_class_name == "TEXT":
-            return "TEXT"
-
-        # 9) VARCHAR(length)
-        if (
-            isinstance(column_object_type, PostGre_VARCHAR)
-            or isinstance(column_object_type, Gen_String)
-            or data_class_name.startswith("VARCHAR")
-        ):
-            length = getattr(column_object_type, "length", None) or 255
-            return f"VARCHAR({length})"
-
-        # 10) DATE
-        if (
-            isinstance(column_object_type, PostGre_DATE)
-            or isinstance(column_object_type, Gen_Date)
-            or data_class_name == "DATE"
-        ):
-            return "DATE"
-
-        # 11) TIME
-        if (
-            isinstance(column_object_type, PostGre_TIME)
-            or isinstance(column_object_type, Gen_Time)
-            or data_class_name == "TIME"
-        ):
-            return "TIME"
-
-        # 12) TIMESTAMP (both with & without time zone) -> DATETIME
-        if (
-            isinstance(column_object_type, PostGre_TIMESTAMP)
-            or isinstance(column_object_type, Gen_DateTime)
-            or data_class_name == "TIMESTAMP"
-        ):
-            return "DATETIME"
-
-        # 13) BOOLEAN
-        if (
-            isinstance(column_object_type, PostGre_BOOLEAN)
-            or isinstance(column_object_type, Gen_Boolean)
-            or data_class_name == "BOOLEAN"
-        ):
-            return "BOOLEAN"
-
-        # 14) NUMERIC/DECIMAL -> DECIMAL
-        if (
-            isinstance(column_object_type, PostGre_NUMERIC)
-            or isinstance(column_object_type, Gen_Numeric)
-            or data_class_name in ("NUMERIC", "DECIMAL")
-        ):
-            precision = getattr(column_object_type, "precision", None) or 10
-            scale = getattr(column_object_type, "scale", None) or 0
-            return f"DECIMAL({precision},{scale})"
-
-        # 15) BYTEA -> BLOB
-        if (
-            isinstance(column_object_type, PostGre_BYTEA)
-            or isinstance(column_object_type, Gen_LargeBinary)
-            or data_class_name == "BYTEA"
-        ):
-            return "BLOB"
-
-        # 16) JSON/JSONB -> JSON
-        if (
-            isinstance(column_object_type, PostGre_JSON)
-            or isinstance(column_object_type, PostGre_JSONB)
-            or isinstance(column_object_type, Gen_JSON)
-            or data_class_name in ("JSON", "JSONB")
-        ):
-            return "JSON"
-
-        # 17) Default fallback to TEXT
-        return "TEXT"
-
-
-def generate_mysql_create_table(
-    connection,
-    database_name: str,
-    table_name: str,
-    adapter: PostgresToMySQLDataTypeAdapter,
-):
-    postgre_eng = db_engine("postgres", database_name)
-    inspector = inspect(postgre_eng)
-
-    columns = inspector.get_columns(table_name)
-    try:
-        pk_info = inspector.get_pk_constraint(table_name)
-    except Exception:
-        pk_info = {}
-    pk_columns = pk_info.get("constrained_columns", [])
-
-    ddl_parts = [f"CREATE TABLE `{table_name}` ("]
-    col_def = []
-
-    for col in columns:
-        name = col["name"]
-        col_type_obj = col["type"]
-        mysql_type = adapter.convert_data(col_type_obj)
-        null_const = "NULL" if col["nullable"] else "" 
-        default_val = ""
-        col_def.append(f"`{name}` {mysql_type} {null_const} {default_val}".strip()) 
-    if pk_columns:
-        pk_list = ", ".join(f"`{c}`" for c in pk_columns)
-        col_def.append(f"  PRIMARY KEY ({pk_list})")
-
-    ddl_parts.append(",\n".join(col_def))
-    ddl_parts.append(");")
-    ddl_statement = "\n".join(ddl_parts)
-
-    # Debug print
-    print(f"===== DDL FOR TABLE {table_name} =====")
-    print(ddl_statement)
-    print("=====================================")
-
-    connection.execute(text(f"DROP TABLE IF EXISTS `{table_name}`;"))
-    connection.execute(text(ddl_statement))
-
-
-def generate_mysql_ddl(database_name: str, table_name: str) -> str:  
-    engine = db_engine("postgres", database_name)
-    inspector = inspect(engine)
-    table_columns = inspector.get_columns(table_name)
-
-    table_ddl_create = [f"CREATE TABLE `{table_name}` ("]
-    col_defs = []
-    adapter = PostgresToMySQLDataTypeAdapter()
-
-    for column in table_columns:
-        col_name = column["name"]
-        col_type_obj = column["type"]
-        sql_type = adapter.convert_data(col_type_obj)
-        null_const = "NULL" if column["nullable"] else "NOT NULL"
-        default_val = ""
-        col_defs.append(f"  `{col_name}` {sql_type} {null_const} {default_val}".strip())
-
-    table_ddl_create.append(",\n".join(col_defs))
-    table_ddl_create.append(");")
-    return "\n".join(table_ddl_create)
-
+    def _handle_numeric(self, col) -> str:
+        precision = getattr(col, "precision", None) or 10
+        scale = getattr(col, "scale", None) or 0
+        return f"DECIMAL({precision},{scale})"
