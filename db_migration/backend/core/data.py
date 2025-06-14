@@ -11,3 +11,19 @@ class TriggerModel(BaseModel):
     timing: str
     event: str
     statement: str
+
+
+class Source(BaseModel):
+    db_type: str
+    db_name: str
+
+
+class Target(BaseModel):
+    db_type: str
+    db_name: str
+
+
+class ExportRequest(BaseModel):
+    source: Source
+    target: Target
+    table_names: List[str]

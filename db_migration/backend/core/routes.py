@@ -1,4 +1,5 @@
 from fastapi import APIRouter
+from core.data import ExportRequest
 from core.db.db_utils import (
     get_databases,
     get_table_names,
@@ -18,6 +19,7 @@ def load_homepage():
 
 @router.get("/databases/{db_type}")
 def fetch_databases(db_type):
+    print("Fetch Databases")
     databases = get_databases(db_type)
     return {"result": [r[0] for r in databases]}
 
@@ -61,7 +63,7 @@ def fetch_triggers(db_type, db_name, table_name):
     return {"results": trigger_data_for_table}
 
 @router.post("/export/")
-def export_tables_to_target(request):
+def export_tables_to_target(request: ExportRequest):
     """
     Request Body:
     {
@@ -80,7 +82,20 @@ def export_tables_to_target(request):
         ]
     }
     """
-    ack = export_tables(**request)
+    print(request, type(request))
+    arg = {
+       "source": {
+        "db_type": request.source.db_type,
+        "db_name": request.source.db_name
+    },
+    "target": {
+        "db_type": request.target.db_type,
+        "db_name": request.target.db_name
+    },
+    "table_names": request.table_names
+    }
+    ack = export_tables(**arg)
+    print(ack)
     if ack:
         return {"results": True}
     return {"results": False}
