@@ -28,13 +28,17 @@ def fetch_table_names_from_db(db_type, db_name):
 
 @router.delete("/tables/{db_type}/{db_name}/{table_name}")
 def remove_table(db_type, db_name, table_name):
-    delete_tables(db_type, db_name, table_name)
-    return {"message": f"Table '{table_name}' deleted from {db_type}:{db_name}"}
+    ack = delete_tables(db_type, db_name, table_name)
+    if ack:
+        return {"message": f"Table '{table_name}' deleted from {db_type}:{db_name}"}
+    return {"message": f"Error occurred while deleting {table_name}"}
 
 @router.delete("/tables/{db_type}/{db_name}")
 def remove_tables(db_type, db_name):
-    delete_tables(db_type, db_name)
-    return {"message": f"All tables deleted from {db_type}:{db_name}"}
+    ack = delete_tables(db_type, db_name)
+    if ack:
+        return {"message": f"All tables deleted from {db_type}:{db_name}"}
+    return {"message": f"Error occurred while deleting tables from {db_type}:{db_name}"}
 
 @router.get("/indexes/{db_type}/{db_name}/{table_name}")
 def fetch_indexes_for_table(db_type, db_name, table_name):

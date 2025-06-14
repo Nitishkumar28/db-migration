@@ -20,8 +20,12 @@ def run_query(query, db_type, db_name=None):
 
 def get_db_inspector(db_type, db_name):
     engine = get_db_engine(db_type, db_name)
-    inspector = inspect(engine)
-    return inspector
+    try:
+        inspector = inspect(engine)
+        return inspector
+    except Exception as e:
+        print(f"Error occurred while creating the inspector")
+    return None
 
 
 def get_databases(db_type):
