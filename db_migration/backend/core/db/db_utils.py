@@ -1,9 +1,11 @@
 import pandas as pd
 from sqlalchemy import inspect, text
 from sqlalchemy.exc import NoSuchTableError, SQLAlchemyError
+import re
 
 from core.db.db_connect import get_db_engine
 from core.process import PostgresToMySQLDataTypeAdapter
+from core.data import TriggerModel
 
 
 def run_query(query, db_type, db_name=None):
@@ -224,5 +226,88 @@ def export_tables(source, target, table_names):
     return exported, skipped
 
 
-def export_triggers(source, target):
-    pass
+def get_trigger_rows(pg_conn, table):
+    sql = """
+          SELECT trigger_name, action_timing, event_manipulation, action_statement
+          FROM information_schema.triggers
+          WHERE event_object_table = :tbl
+            AND trigger_schema = 'public'; \
+          """
+    return pg_conn.execute(text(sql), {"tbl": table}).fetchall()
+
+
+def drop_mysql_trigger(db_name, trigger_name):
+    sql = f"DROP TRIGGER IF EXISTS `{trigger_name}`;"
+    run_query(sql, 'mysql', db_name)
+
+
+def build_json(alias, columns):
+    pairs = ", ".join(f"'{col}', {alias}.{col}" for col in columns)
+    return f"JSON_OBJECT({pairs})"
+
+
+def trigger_body(pg_conn, name, event, columns):
+    sql = text(
+        """
+        SELECT pg_get_functiondef(p.oid) AS def
+        FROM pg_proc p
+                 JOIN pg_namespace n ON p.pronamespace = n.oid
+        WHERE p.proname = :func
+          AND n.nspname = 'public';
+        """
+    )
+    full_def = pg_conn.execute(sql, {'func': name}).scalar_one()
+    patterns = {
+        'INSERT': r"IF\s+TG_OP='INSERT' THEN(.*?)ELSIF",
+        'UPDATE': r"ELSIF\s+TG_OP='UPDATE' THEN(.*?)ELSIF",
+        'DELETE': r"ELSIF\s+TG_OP='DELETE' THEN(.*?)END IF",
+    }
+    body_match = re.search(patterns[event], full_def, re.S | re.I)
+    if not body_match:
+        raise ValueError(f"No body for event {event}")
+    body = body_match.group(1)
+    body = re.sub(r"RETURN[^;]*;", '', body, flags=re.I)
+    body = re.sub(r"--.*?$", '', body, flags=re.M)
+    
+    body = body.replace('TG_OP', f"'{event}'")
+    for alias in ['NEW', 'OLD']:
+        body = re.sub(rf"to_jsonb\(\s*{alias}\s*\)",
+                      f"JSON_OBJECT({', '.join(f'\'{each_col}\', {alias}.{each_col}' for each_col in columns)})",
+                      body, flags=re.I)
+    return body.strip().rstrip(';')
+
+
+def create_mysql_trigger(mysql_conn, table, trigger_name, timing, event, body_sql):
+    ddl = f"""
+    CREATE TRIGGER `{trigger_name}` {timing} {event} ON `{table}` FOR EACH ROW
+    BEGIN
+      {body_sql};
+    END;"""
+    mysql_conn.execute(text(ddl))
+
+
+def export_triggers(db_name, tables):
+    exported = []
+    errors = []
+    pg_engine = get_db_engine('postgresql', db_name)
+    my_engine = get_db_engine('mysql', db_name)
+    inspector = inspect(pg_engine)
+    
+    with pg_engine.connect() as pg_conn, my_engine.connect() as my_conn:
+        for table in tables:
+            try:
+                cols = [c['name'] for c in inspector.get_columns(table)]
+                rows = fetch_trigger_rows(pg_conn, table)
+                for name, timing, event, stmt in rows:
+                    trig_name = f"{name}_{event.lower()}"
+                    drop_mysql_trigger(my_conn, trig_name)
+                    m = re.match(r"EXECUTE FUNCTION (\w+)\(\)", stmt, re.I)
+                    if not m:
+                        raise ValueError(f"Unsupported statement: {stmt}")
+                    func = m.group(1)
+                    body = extract_trigger_body(pg_conn, func, event, cols)
+                    create_mysql_trigger(my_conn, table, trig_name, timing, event, body)
+                    exported.append(trig_name)
+            except Exception as e:
+                errors.append({'table': table, 'error': str(e)})
+    return exported, errors
