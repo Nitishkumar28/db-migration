@@ -1,4 +1,5 @@
 const header_sizes = {
+  extrasmall: "10px",
   small: "13px",
   medium: "20px",
   large: "30px",
@@ -16,7 +17,7 @@ const header_weight = {
 
 const Header = ({ text, size = "medium", weight = "normal" }) => (
   <span
-    className={`${header_weight[weight]} leading-6 tracking-wide`}
+    className={`${header_weight[weight]} leading-6 tracking-wide capitalize`}
     style={{ fontSize: header_sizes[size] }}
   >
     {text}
@@ -28,7 +29,7 @@ const NavbarOption = ({ text }) => {
     return "text length exceeded";
   }
   return (
-    <span className="min-w-10 max-w-20 h-full bg-white flex justify-center items-center capitalize px-2 py-0.5 rounded-sm font-light text-md tracking-wide leading-6 cursor-pointer">
+    <span className="min-w-10 max-w-20 h-full flex justify-center items-center border capitalize px-2 py-1 rounded-md font-normal text-md tracking-wide leading-6 cursor-pointer">
       {text}
     </span>
   );
