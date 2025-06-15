@@ -5,12 +5,21 @@ const useUIStore = create(
     persist(
         (set) => ({
             // Variables
-            isDarkMode: false,
+            theme: "calm",
+            activeNavbarOption: "",
+            activePipelineOption: "",
             
             // Methods
-            toggleDarkMode: () =>
-                set((state) => ({ isDarkMode: !state.isDarkMode })),
-            }),
+            setTheme: (newTheme) => {
+                set(() => ({ theme: newTheme }))
+            },
+            setNavbarOption: (currentOption) => {
+                set(() => ({ activeNavbarOption: currentOption }))
+            },
+            setPipelineOption: (currentOption) => {
+                set(() => ({ activePipelineOption: currentOption }))
+            }
+        }),
         {name: "theme-store"}
     )
 );

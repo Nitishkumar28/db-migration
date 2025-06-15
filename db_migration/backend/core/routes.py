@@ -83,7 +83,7 @@ def export_tables_to_target(request: ExportRequest):
     }
     """
     print(request, type(request))
-    arg = {
+    args = {
        "source": {
         "db_type": request.source.db_type,
         "db_name": request.source.db_name
@@ -94,7 +94,7 @@ def export_tables_to_target(request: ExportRequest):
     },
     "table_names": request.table_names
     }
-    ack = export_tables(**arg)
+    ack = export_tables(**args)
     print(ack)
     if ack:
         return {"results": True}

@@ -1,5 +1,5 @@
 import { NavbarOption } from "../base/Base";
-import MainHeaderSection from "./main/MainHeaderSection";
+import MainHeaderSection from "./MainHeaderSection";
 
 const Navbar = () => {
   return (

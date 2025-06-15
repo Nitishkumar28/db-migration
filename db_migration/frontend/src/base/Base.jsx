@@ -1,12 +1,16 @@
-const header_sizes = {
+import useUIStore from "../store/uistore";
+import { themePalette } from "./colorPalette";
+
+export const header_sizes = {
   extrasmall: "10px",
   small: "13px",
-  medium: "20px",
+  medium: "18px",
+  extramedium: "22px",
   large: "30px",
   extralarge: "35px",
 };
 
-const header_weight = {
+export const header_weight = {
   extralight: "font-extralight",
   light: "font-light",
   normal: "font-normal",
@@ -25,11 +29,27 @@ const Header = ({ text, size = "medium", weight = "normal" }) => (
 );
 
 const NavbarOption = ({ text }) => {
-  if (text.length > 11) {
+  const activeTheme = useUIStore((state) => state.theme);
+  const activeOption = useUIStore((state) => state.activeNavbarOption);
+  const setActiveOption = useUIStore((state) => state.setNavbarOption);
+
+  if (text.length > 14) {
     return "text length exceeded";
   }
+
   return (
-    <span className="min-w-10 max-w-20 h-full flex justify-center items-center border capitalize px-2 py-1 rounded-md font-normal text-md tracking-wide leading-6 cursor-pointer">
+    <span
+      onClick={() => setActiveOption(text)}
+      style={{
+        fontSize: header_sizes.small,
+        borderColor: themePalette[activeTheme].border,
+        backgroundColor:
+          activeOption === text
+            ? themePalette[activeTheme].backgroundPrimary
+            : "",
+      }}
+      className="min-w-10 max-w-36 h-full flex justify-center items-center border capitalize px-2 py-1 rounded-md font-normal tracking-wide leading-6 cursor-pointer"
+    >
       {text}
     </span>
   );

@@ -1,4 +1,4 @@
-import { Header } from "../../base/Base";
+import { Header } from "../base/Base";
 
 const MainHeaderSection = () => {
     return (
