@@ -6,10 +6,10 @@ import SideNavBarBlock from "./sidebar/SideNavBarBlock";
 const MainBody = () => {
   const activeTheme = useUIStore(state => state.theme);
   return (
-    <div className="w-full h-screen flex flex-col items-center justify-start gap-2 px-[10%] pb-[1%]">
+    <div className="w-full h-screen flex flex-col items-center justify-start gap-2 border-b">
       <div 
-      style={{borderColor: themePalette[activeTheme].border}}
-      className="flex w-full h-full justify-start items-center gap-2 border border-[#E5E5E5] rounded-xl shadow overflow-hidden">
+      style={{borderColor: themePalette[activeTheme].borderPrimary}}
+      className="flex w-full h-full justify-start items-center overflow-hidden">
         <SideNavBarBlock />
         <ActionBlock />
       </div>

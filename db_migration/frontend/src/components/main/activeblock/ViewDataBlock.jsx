@@ -1,12 +1,12 @@
-const ValidationBlock = () => {
+const ViewDataBlock = () => {
   return (
     <div className="w-full h-full px-[5%] bg-green-300">
       <div className="w-full bg-green-50 h-full">
-        Validation Block
+        View Data Block
       </div>
     </div>
   );
 };
 
 
-export default ValidationBlock;
+export default ViewDataBlock;

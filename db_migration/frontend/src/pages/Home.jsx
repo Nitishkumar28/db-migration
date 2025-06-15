@@ -8,7 +8,7 @@ const Home = () => {
   return (
     <div
     style={{backgroundColor: themePalette[activeTheme].background, color: themePalette[activeTheme].text}}
-    className="w-full h-screen flex flex-col items-center justify-start gap-4">
+    className="w-full h-screen flex flex-col items-center justify-start">
       <Navbar />
       <MainBody />
     </div>

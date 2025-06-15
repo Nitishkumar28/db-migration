@@ -8,6 +8,7 @@ const useUIStore = create(
             theme: "calm",
             activeNavbarOption: "",
             activePipelineOption: "",
+            isDropdownOpen: false,
             
             // Methods
             setTheme: (newTheme) => {
@@ -18,6 +19,9 @@ const useUIStore = create(
             },
             setPipelineOption: (currentOption) => {
                 set(() => ({ activePipelineOption: currentOption }))
+            },
+            setIsDropdownOpen: (currentOption) => {
+                set(() => ({ isDropdownOpen: currentOption }))
             }
         }),
         {name: "theme-store"}

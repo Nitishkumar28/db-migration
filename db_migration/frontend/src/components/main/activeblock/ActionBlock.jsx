@@ -1,11 +1,12 @@
 import { Outlet } from "react-router-dom";
-import { Header } from "../../../base/Base";
+import Footer from "./Footer";
 
 
 const ActionBlock = () => {
   return (
-    <div className="w-[80%] h-full border-0 text-center p-5 flex flex-col justify-start items-center gap-4">
+    <div className="relative w-full h-full border-0 text-center flex flex-col justify-start items-center gap-0">
       <Outlet />
+      <Footer />
     </div>
   );
 };

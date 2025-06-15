@@ -10,13 +10,12 @@ const SideNavBarBlock = () => {
   return (
     <div
       style={{ borderColor: border_color, backgroundColor: background }}
-      className="w-[15%] h-full border-r flex flex-col justify-start items-center gap-4 py-4">
+      className="w-[20%] h-full border-r flex flex-col justify-start items-center gap-4 py-4">
       <Header text="options available" size="medium" weight="light" />
       <header className={`w-full flex flex-col justify-start items-center divide-y divide-gray-300`}>
         <HeaderOption text="Connections" path="/home/connections" />
-        <HeaderOption text="transfer" path="/home/transfer" />
-        <HeaderOption text="validation" path="/home/validation" />
-        <HeaderOption text="raw data" path="/home/raw-data" />
+        <HeaderOption text="export" path="/home/export" />
+        <HeaderOption text="view data" path="/home/view-data" />
       </header>
     </div>
   );

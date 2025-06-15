@@ -7,10 +7,12 @@ export const themePalette = {
         backgroundPrimary: "#D5E8EC",
         backgroundSecondary: "#EEF6F8",
         border: "#D5E8EC",
+        borderPrimary: "#97BDD0",
         buttons: "#1D3557",
         success: "#2ECC71",
         error: "#E63946",
         info: "#48CAE4",
+        pending: "lightgray"
     },
     theme2: {
         text: "#457B9D",

@@ -1,9 +1,12 @@
+import { useState } from "react";
 import useUIStore from "../store/uistore";
 import { themePalette } from "./colorPalette";
+
 
 export const header_sizes = {
   extrasmall: "10px",
   small: "13px",
+  normal: "15px",
   medium: "18px",
   extramedium: "22px",
   large: "30px",
@@ -19,14 +22,34 @@ export const header_weight = {
   bold: "font-bold",
 };
 
-const Header = ({ text, size = "medium", weight = "normal" }) => (
+const Header = ({ text, size = "medium", weight = "normal", ...props }) => (
   <span
-    className={`${header_weight[weight]} leading-6 tracking-wide capitalize`}
+    {...props}
+    className={`${header_weight[weight]} leading-6 tracking-wide capitalize w-fit`}
     style={{ fontSize: header_sizes[size] }}
   >
     {text}
   </span>
 );
+
+const TextHolder = ({text, size, weight, type, ...props}) => {
+  const activeTheme = useUIStore((state) => state.theme);
+  let textColor = "";
+
+  if (type === "error") {
+    textColor = themePalette[activeTheme].error;
+  }
+
+  return (
+    <span
+      {...props}
+      className={`${header_weight[weight]} w-fit`}
+      style={{ fontSize: header_sizes[size], color: textColor }}
+    >
+      {text}
+    </span>
+  )
+}
 
 const NavbarOption = ({ text }) => {
   const activeTheme = useUIStore((state) => state.theme);
@@ -55,4 +78,5 @@ const NavbarOption = ({ text }) => {
   );
 };
 
-export { Header, NavbarOption };
+
+export { Header, TextHolder, NavbarOption };
