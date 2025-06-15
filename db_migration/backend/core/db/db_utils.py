@@ -1,6 +1,7 @@
 import pandas as pd
 from sqlalchemy import inspect, text
 from sqlalchemy.exc import NoSuchTableError, SQLAlchemyError
+from sqlalchemy.engine import CursorResult
 import re
 import json
 
@@ -256,14 +257,112 @@ def export_tables(source, target, table_names):
     return exported, skipped
 
 
-def get_trigger_rows(db_type, db_name, table):
+def get_source_triggers(db_type, db_name, table_name):
     sql = f"""
-          SELECT trigger_name, action_timing, event_manipulation, action_statement
-          FROM information_schema.triggers
-          WHERE event_object_table = {table}
-            AND trigger_schema = 'public'; 
-          """
-    # return pg_conn.execute(text(sql), {"tbl": table}).fetchall()
-    results = run_query(sql, db_type, db_name)
-    return results
+    SELECT trigger_name, action_timing, event_manipulation, action_statement
+      FROM information_schema.triggers
+     WHERE event_object_table = '{table_name}'
+       AND trigger_schema      = 'public';
+    """
+    return run_query(sql, db_type, db_name)
 
+
+def fetch_function_definition(function_name, db_type, db_name):
+    sql = f"""
+    SELECT pg_get_functiondef(p.oid) AS definition
+      FROM pg_proc p
+      JOIN pg_namespace n ON p.pronamespace = n.oid
+     WHERE p.proname = '{function_name}'
+       AND n.nspname = 'public';
+    """
+    result = run_query(sql, db_type, db_name)
+    if isinstance(result, CursorResult):
+        rows = result.fetchall() or []
+    elif isinstance(result, list):
+        rows = result
+    else:
+        rows = []
+    if not rows:
+        raise ValueError(f"Function definition not found for {function_name}")
+    return rows[0][0]
+
+
+def trigger_body_definition(definition, event):
+    patterns = {
+        "INSERT": r"IF\s+TG_OP\s*=\s*'INSERT'\s+THEN(.*?)ELSIF",
+        "UPDATE": r"ELSIF\s+TG_OP\s*=\s*'UPDATE'\s+THEN(.*?)ELSIF",
+        "DELETE": r"ELSIF\s+TG_OP\s*=\s*'DELETE'\s+THEN(.*?)END IF",
+    }
+    pattern = patterns.get(event.upper())
+    if not pattern:
+        raise ValueError(f"Unsupported event type: {event}")
+    match = re.search(pattern, definition, re.S | re.I)
+    if not match:
+        raise ValueError(f"Could not extract body for {event}")
+
+    body = match.group(1)
+    body = re.sub(r"\bRETURN\b[^\n;]*[;\n]?", "", body, flags=re.I)
+    body = re.sub(r"--.*?$", "", body, flags=re.M).strip()
+    return body.rstrip(';')
+
+
+def trigger_body_to_sql(body_sql, column_names, event):
+    def build_json(alias: str) -> str:
+        pairs = ", ".join(f"'{col}', {alias}.{col}" for col in column_names)
+        return f"JSON_OBJECT({pairs})"
+
+    sql = body_sql.replace("TG_OP", f"'{event}'")
+    sql = re.sub(r"\bto_jsonb\s*\(\s*NEW\s*\)", build_json("NEW"), sql, flags=re.I)
+    sql = re.sub(r"\bto_jsonb\s*\(\s*OLD\s*\)", build_json("OLD"), sql, flags=re.I)
+    return sql
+
+
+def generate_mysql_trigger_ddl(trigger_name, timing, event, table_name, body_sql):
+    return f"""
+    CREATE TRIGGER `{trigger_name}`
+    {timing.upper()} {event.upper()} ON `{table_name}`
+    FOR EACH ROW
+    BEGIN
+        {body_sql};
+    END;"""
+
+
+def export_triggers(source: dict, target: dict) -> dict:
+    pg_type, pg_name = source["db_type"], source["db_name"]
+    mysql_type, mysql_name = target["db_type"], target["db_name"]
+    exported, errors = [], []
+
+    tables = get_table_names(pg_type, pg_name) or []
+
+    for table in tables:
+        try:
+            col_info = get_column_info(pg_type, pg_name, table)
+            cols = [c["name"] for c in col_info]
+
+            result = get_source_triggers(pg_type, pg_name, table)
+            if isinstance(result, CursorResult):
+                rows = result.fetchall() or []
+            else:
+                rows = result if isinstance(result, list) else []
+
+            for name, timing, event, statement in rows:
+                event = event.upper()
+                statement = statement.strip()
+                match = re.match(r"EXECUTE FUNCTION ([\w_]+)\(\)", statement, re.I)
+                if not match:
+                    raise ValueError(f"Unsupported action: {statement}")
+                func_name = match.group(1)
+
+                definition = fetch_function_definition(func_name, pg_type, pg_name)
+                body = trigger_body_definition(definition, event)
+                body = trigger_body_to_sql(body, cols, event)
+                trigger_name = f"{name}_{event.lower()}"
+
+                run_query(f"DROP TRIGGER IF EXISTS `{trigger_name}`;", mysql_type, mysql_name)
+                ddl = generate_mysql_trigger_ddl(trigger_name, timing, event, table, body)
+                run_query(ddl, mysql_type, mysql_name)
+
+                exported.append(trigger_name)
+        except Exception as e:
+            errors.append({"table": table, "error": str(e)})
+    return {"exported": exported, "errors": errors}

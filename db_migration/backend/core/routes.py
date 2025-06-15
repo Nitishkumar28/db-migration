@@ -1,4 +1,5 @@
 from fastapi import APIRouter
+from fastapi import HTTPException
 from core.data import ExportRequest
 from core.db.db_utils import (
     get_databases,
@@ -8,7 +9,8 @@ from core.db.db_utils import (
     get_table_ddl,
     get_triggers_for_table,
     export_tables,
-    delete_tables
+    delete_tables,
+    export_triggers
     )
 
 router = APIRouter()
@@ -100,3 +102,17 @@ def export_tables_to_target(request: ExportRequest):
         return {"results": True}
     return {"results": False}
 
+
+@router.post("/export-triggers/")
+def export_triggers_to_target(request: ExportRequest):
+    result = export_triggers(
+        {"db_type": request.source.db_type, 
+         "db_name": request.source.db_name
+        },
+        {"db_type": request.target.db_type,
+         "db_name": request.target.db_name
+        },
+    )
+    if result["errors"]:
+        raise HTTPException(status_code=500, detail=result)
+    return {"exported_triggers": result["exported"]}
