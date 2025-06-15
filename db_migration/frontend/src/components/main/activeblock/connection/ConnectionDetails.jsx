@@ -8,15 +8,15 @@ const ConnectionDetails = ({ title }) => {
   return (
     <fieldset
       style={{ borderColor: themePalette[activeTheme].borderPrimary }}
-      className="relative border rounded-lg shadow w-[80%] h-full flex flex-col justify-start items-center -gap-10 pb-3 pt-2"
-    >
+      className="relative border rounded-lg shadow-md w-[80%] h-full flex flex-col justify-start items-center gap-4 py-4">
+      
       <lagend
         style={{ color: themePalette[activeTheme].text }}
-        className="text-[0.8rem] px-1 absolute -top-2 left-4 bg-white"
-      >
+        className="text-[0.7rem] px-1 absolute -top-2 left-4 bg-white font-medium">
         {title}
       </lagend>
-      <div className="w-full h-full flex justify-around items-center gap-4 px-[2%]">
+      
+      <div className="w-full h-fit flex justify-around items-center gap-4 px-[2%]">
         <div className="w-[55%] h-full py-[2%] flex flex-col justify-start items-between gap-2">
           <InputBar title="Server Name" />
           <InputBar title="Username" />
@@ -55,10 +55,10 @@ const ConnectionDetails = ({ title }) => {
           />
         </div>
       </div>
+      
       <button
-        style={{ backgroundColor: themePalette[activeTheme].backgroundPrimary }}
-        className="bg-red-200 px-1 py-1.5 rounded shadow"
-      >
+        style={{ borderColor: themePalette[activeTheme].borderPrimary }}
+        className="border px-1 py-1.5 rounded shadow cursor-pointer hover:bg-sky-50">
         Test connection
       </button>
     </fieldset>

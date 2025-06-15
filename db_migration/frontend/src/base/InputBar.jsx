@@ -6,7 +6,7 @@ const InputBar = ({title, type="text"}) => {
   const activeTheme = useUIStore(state => state.theme);
   return (
     <div className="flex flex-col justify-start items-start -gap-1">
-        <TextHolder text={title} size="small" weight="extralight" />
+        <TextHolder text={title} size="small" weight="light" />
         <input style={{borderColor: themePalette[activeTheme].borderPrimary}} type={type} className="w-full outline-none border rounded px-2 py-1"  />
     </div>
   );

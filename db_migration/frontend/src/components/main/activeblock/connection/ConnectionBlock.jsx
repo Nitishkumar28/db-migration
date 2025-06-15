@@ -16,9 +16,9 @@ const ConnectionBlock = () => {
     <div 
     style={{fontSize: header_sizes.normal}}
     className="w-full h-full px-[5%] py-[2.5%]">
-      <div className="w-full h-full flex flex-col justify-start items-center gap-4">
+      <div className="w-full h-full flex flex-col justify-start items-center gap-6">
         <ConnectionHeader {...connectionHeaderProps} />
-        <div className="w-full h-full flex flex-col justify-start items-center gap-4">
+        <div className="w-full flex flex-col justify-start items-center gap-10">
           <ConnectionDetails title={`Source: ${selectedSource || "select a source from above dropdown"}`} />
           <ConnectionDetails title={`Target: ${selectedTarget || "select a target from above dropdown"}`} />
         </div>
