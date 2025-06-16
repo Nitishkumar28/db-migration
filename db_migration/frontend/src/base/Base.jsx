@@ -32,7 +32,7 @@ const Header = ({ text, size = "medium", weight = "normal", ...props }) => (
   </span>
 );
 
-const TextHolder = ({text, size, weight, type, ...props}) => {
+const TextHolder = ({text, size, weight, type, styles="", ...props}) => {
   const activeTheme = useUIStore((state) => state.theme);
   let textColor = "";
 
@@ -43,7 +43,7 @@ const TextHolder = ({text, size, weight, type, ...props}) => {
   return (
     <p
       {...props}
-      className={`${header_weight[weight]} w-fit text-wrap`}
+      className={`${header_weight[weight]} w-fit text-wrap ${styles}`}
       style={{ fontSize: header_sizes[size], color: textColor }}
     >
       {text}
@@ -78,14 +78,17 @@ const NavbarOption = ({ text }) => {
   );
 };
 
-const BaseButton = ({text, ...props}) => {
+const BaseButton = ({text, type, styles="", ...props}) => {
   const activeTheme = useUIStore((state) => state.theme);
   return (
       <button
       {...props}
-        style={{ borderColor: themePalette[activeTheme].borderPrimary, fontSize: header_sizes.small }}
-        className="border px-1 py-1 rounded shadow cursor-pointer hover:bg-sky-50">
-        Test connection
+        style={{ 
+          borderColor: themePalette[activeTheme].borderPrimary, 
+          fontSize: header_sizes.small 
+        }}
+        className={`min-w-20 border px-1 py-1 rounded shadow cursor-pointer capitalize hover:opacity-80 ${styles}`}>
+        {text}
       </button>
   )
 }

@@ -16,11 +16,11 @@ export const initialConnections = [
     database_name: ""
   },
   {
-    db_type: "mysql server",
+    db_type: "oracle",
     server_address: "",
     username: "",
     password: "",
-    port: "1443",
+    port: "1521",
     database_name: ""
   }
 ]

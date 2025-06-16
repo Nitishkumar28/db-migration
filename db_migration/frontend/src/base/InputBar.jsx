@@ -13,7 +13,7 @@ const InputBar = ({ title, db_type, field, type = "text" }) => {
 
   return (
     <div className="flex flex-col justify-start items-start">
-      <TextHolder text={title} size="small" weight="light" />
+      <TextHolder text={title} size="small" weight="light" styles="select-none" />
       <input
         style={{ borderColor: themePalette[activeTheme].borderPrimary, fontSize: header_sizes.small }}
         type={type}

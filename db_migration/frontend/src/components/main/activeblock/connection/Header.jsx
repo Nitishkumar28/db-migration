@@ -6,7 +6,7 @@ const ConnectionHeader = ({
   selectedTarget,
   setSelectedTarget,
 }) => {
-  const dbOptions = ["MySQL", "PostgreSQL", "MySQL Server"];
+  const dbOptions = ["MySQL", "PostgreSQL", "Oracle"];
   return (
     <header className="w-full flex justify-center items-center gap-8 pb-3">
       <DropdownBlock

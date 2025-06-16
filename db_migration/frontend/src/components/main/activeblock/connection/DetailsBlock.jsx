@@ -1,12 +1,12 @@
-import { useEffect, useState } from "react";
 import { BaseButton } from "../../../../base/Base";
 import { themePalette } from "../../../../base/colorPalette";
 import InputBar from "../../../../base/InputBar";
-import Lengend from "../../../../base/main/activeblock/Legend";
 import WarningMessages from "../../../../base/main/activeblock/WarningMessages";
-import useDBStore from "../../../../store/dbStore";
 import useUIStore from "../../../../store/uistore";
 import Legend from "../../../../base/main/activeblock/Legend";
+import { checkConnectionURL } from "../../../../hooks/urls";
+import useDBStore from "../../../../store/dbStore";
+import { usePost } from "../../../../hooks/usePost";
 
 const FirstColumn = ({db_type}) => {
   return (
@@ -29,18 +29,39 @@ const SecondColumn = ({db_type}) => {
 
 const ConnectionDetailsBlock = ({ title, db_type }) => {
   const activeTheme = useUIStore((state) => state.theme);
+  const connectionDetails = useDBStore(state => state.connectionDetails);
+  const { post, data: result, loading: posting, error: postError } = usePost(checkConnectionURL);
+
+  const handlePost = async () => {
+    const postData = connectionDetails.find(conn => conn.db_type === db_type)
+    console.log(connectionDetails)
+    if (!postData) return console.warn("No matching connection found for", db_type);
+    try {
+      const status = "success" // await post(postData);
+      console.log('Post successful:', status);
+    } catch (err) {
+      console.error('Post failed:', err.message);
+    }
+  };
+
 
   return (
     <div
       style={{ borderColor: themePalette[activeTheme].borderPrimary }}
-      className="relative border rounded-lg shadow-md w-[90%] h-full flex flex-col justify-start items-center gap-1 py-3">
+      className={`relative border rounded-lg shadow-md w-[90%] h-[60%] flex flex-col justify-center items-center gap-1 py-3 ${!db_type && "opacity-70 pointer-events-none"}`}>
       <Legend title={title} />
-      <div className="w-full h-fit flex justify-around items-center gap-4 px-[2%]">
+      <div className={`w-full h-fit flex justify-around items-center gap-4 px-[2%]`}>
         <FirstColumn db_type={db_type} />
         <SecondColumn db_type={db_type} />
         <WarningMessages />
       </div>
-      <BaseButton text="test connection" />
+      <div className="flex justify-center items-center gap-4">
+        <BaseButton 
+        onClick={() => handlePost()} 
+        text={posting ? "saving...": "save details"}
+        styles="bg-green-50" />
+        <BaseButton text="test connection" styles="bg-sky-50" />
+      </div>
     </div>
   );
 };
