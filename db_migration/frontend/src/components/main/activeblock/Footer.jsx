@@ -8,7 +8,7 @@ const Footer = () => {
     return (
         <footer 
         style={{fontSize: header_sizes.small, borderColor: themePalette[activeTheme].border}}
-        className="w-full border-t px-[2%] tracking-wide leading-6">
+        className="w-full border-t-0 px-[2%] tracking-wide leading-6">
             <div className="w-full flex justify-end items-center gap-4">
                 <StatusOption text="source" status="connected" />
                 <StatusOption text="target" status="pending" />

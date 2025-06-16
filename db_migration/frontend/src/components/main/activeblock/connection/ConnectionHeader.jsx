@@ -8,7 +8,7 @@ const ConnectionHeader = ({
 }) => {
   const dbOptions = ["MySQL", "PostgreSQL", "MySQL Server"];
   return (
-    <header className="w-full flex justify-center items-center gap-8">
+    <header className="w-full flex justify-center items-center gap-8 pb-3">
       <DropdownBlock
         text="source database"
         options={dbOptions.filter((option) => option !== selectedTarget)}

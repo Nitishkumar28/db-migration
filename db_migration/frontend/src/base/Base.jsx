@@ -41,13 +41,13 @@ const TextHolder = ({text, size, weight, type, ...props}) => {
   }
 
   return (
-    <span
+    <p
       {...props}
-      className={`${header_weight[weight]} w-fit`}
+      className={`${header_weight[weight]} w-fit text-wrap`}
       style={{ fontSize: header_sizes[size], color: textColor }}
     >
       {text}
-    </span>
+    </p>
   )
 }
 
@@ -71,12 +71,23 @@ const NavbarOption = ({ text }) => {
             ? themePalette[activeTheme].backgroundPrimary
             : "",
       }}
-      className="min-w-10 max-w-36 h-full flex justify-center items-center border capitalize px-2 py-1 rounded-md font-normal tracking-wide leading-6 cursor-pointer"
+      className="min-w-10 max-w-36 h-full flex justify-center items-center border px-2 py-1 rounded-md font-normal tracking-wide leading-6 cursor-pointer capitalize"
     >
       {text}
     </span>
   );
 };
 
+const BaseButton = ({text, ...props}) => {
+  const activeTheme = useUIStore((state) => state.theme);
+  return (
+      <button
+      {...props}
+        style={{ borderColor: themePalette[activeTheme].borderPrimary, fontSize: header_sizes.small }}
+        className="border px-1 py-1 rounded shadow cursor-pointer hover:bg-sky-50">
+        Test connection
+      </button>
+  )
+}
 
-export { Header, TextHolder, NavbarOption };
+export { Header, TextHolder, NavbarOption, BaseButton };

@@ -4,7 +4,7 @@ import Footer from "./Footer";
 
 const ActionBlock = () => {
   return (
-    <div className="relative w-full h-full border-0 text-center flex flex-col justify-start items-center gap-0">
+    <div className="relative w-full h-full flex flex-col justify-start items-center">
       <Outlet />
       <Footer />
     </div>

@@ -6,17 +6,19 @@ import { Header, TextHolder } from "./Base";
 const DropdownOption = ({ ...props }) => {
   const activeTheme = useUIStore((state) => state.theme);
   const selectedOptionBG = themePalette[activeTheme].backgroundPrimary;
+  
   const handleOptionSelect = () => {
     props.setSelectedOption(props.option);
     setIsOpen(false);
   };
+
   return (
     <span
       style={{
         backgroundColor:
           props.option === props.selectedOption && selectedOptionBG
       }}
-      className="w-full text-left px-2 py-1"
+      className={`w-full text-left px-2 py-1 hover:bg-sky-50`}
       onClick={() => handleOptionSelect()}
     >
       <TextHolder text={props.option || "Select a database"} size="small" weight="light" />
