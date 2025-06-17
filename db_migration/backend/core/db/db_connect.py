@@ -73,7 +73,7 @@ def get_postgresql_db_engine(db_name=None):
     return _postgresql_engine
 
 def get_db_engine(db_type, db_name=None):
-    print("Get DB Enginw")
+    print("Get DB Engine")
     _engine = None
     if db_type == "postgresql":
         _engine = get_postgresql_db_engine(db_name)

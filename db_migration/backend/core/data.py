@@ -27,3 +27,17 @@ class ExportRequest(BaseModel):
     source: Source
     target: Target
     table_names: List[str]
+
+
+
+class DBInfo(BaseModel):
+    host_name: str
+    username: str
+    password: str
+    port: str
+    db_name: str
+
+
+class ConnectionRequest(BaseModel):
+    source: DBInfo
+    target: DBInfo

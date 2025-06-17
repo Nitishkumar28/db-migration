@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from fastapi import HTTPException
-from core.data import ExportRequest
+from core.data import DBInfo, ExportRequest, ConnectionRequest
 from core.db.db_utils import (
     get_databases,
     get_table_names,
@@ -12,12 +12,31 @@ from core.db.db_utils import (
     delete_tables,
     export_triggers
     )
+from core.db.db_connect import get_db_engine
 
 router = APIRouter()
 
 @router.get("/")
 def load_homepage():
     return {"result": "data"}
+
+@router.post("/check-connection/")
+def check_connection(request: DBInfo):
+    args = {
+        "host_name": request.host_name,
+        "username": request.username,
+        "password": request.password,
+        "port": request.port,
+        "db_name": request.db_name,
+    }
+    check_connection_res = get_db_engine(**args)
+
+    if check_connection_res is not None:
+        return {"results": True}
+    return {"results":False}
+
+
+
 
 @router.get("/databases/{db_type}")
 def fetch_databases(db_type):
@@ -27,8 +46,14 @@ def fetch_databases(db_type):
 
 @router.get("/tables/{db_type}/{db_name}")
 def fetch_table_names_from_db(db_type, db_name):
-    table_names = get_table_names(db_type, db_name)
-    return {"result": table_names}
+    try:
+        table_names = get_table_names(db_type, db_name)
+        return {"result": table_names}
+    except RuntimeError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500,detail=f"Error fetching tables: {e}")
+
 
 @router.delete("/tables/{db_type}/{db_name}/{table_name}")
 def remove_table(db_type, db_name, table_name):

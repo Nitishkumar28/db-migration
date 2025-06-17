@@ -42,7 +42,7 @@ def get_databases(db_type):
         query = "SELECT datname FROM pg_database WHERE datistemplate = false;"
         results = run_query(query, "postgresql")
     elif db_type == "mysql":
-        query = "SELECT datname FROM pg_database WHERE datistemplate = false;" # find variable names for mysql databases
+        query = "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME NOT IN ('information_schema', 'performance_schema', 'mysql', 'sys');" 
         results = run_query(query, "mysql")
     return results if results is not None else []
 
@@ -92,7 +92,7 @@ def get_column_info(db_type, db_name, table_name):
             for column in exist_columns:
                 column_info = {
                     "name": column["name"],
-                    "type": str(column["type"]),
+                    "type": column["type"], # Potential error each data type value is being casted to str and hence being mapped to TEXT 
                     "nullable": column["nullable"],
                     "default": column.get("default")
                 }
@@ -135,9 +135,15 @@ def get_table_schema(db_type, db_name, table_name):
         "Index_data": processed_indexes
     }
 
+def get_primary_keys(db_type, db_name, table_name):
+    inspector = get_db_inspector(db_type, db_name)
+    if inspector:
+        return inspector.get_pk_constraint(table_name) or {}
+    return {}
 
 def get_table_ddl(db_type, db_name, table_name):
     columns = get_column_info(db_type, db_name, table_name)
+    primary_keys_detail = get_primary_keys(db_type, db_name, table_name)
     adapter = PostgresToMySQLDataTypeAdapter()
 
     table_ddl_create = [f"CREATE TABLE IF NOT EXISTS `{table_name}` ("]
@@ -145,12 +151,18 @@ def get_table_ddl(db_type, db_name, table_name):
 
     for column in columns:
         col_name = column["name"]
-        col_type_obj = column["type"]
+        col_type_obj = column["type"] 
         sql_type = adapter.convert_data(col_type_obj)
+        print("DDL - SQL TYPE")
+        print(sql_type)
         null_const = "NULL" if column["nullable"] else "NOT NULL"
         default_val = ""
         col_defs.append(
             f"  `{col_name}` {sql_type} {null_const} {default_val}".strip())
+
+    if primary_keys_detail and primary_keys_detail.get("constrained_columns"):
+        cols = ", ".join(f"`{c}`" for c in primary_keys_detail["constrained_columns"])
+        col_defs.append(f" PRIMARY KEY ({cols})")
 
     table_ddl_create.append(",\n".join(col_defs))
     table_ddl_create.append(");")
@@ -180,7 +192,7 @@ def get_triggers_for_table(db_type, db_name, table_name):
     ]
 
 
-def load_data_to_table(db_type, db_name, table_name, df, if_exists="replace"):
+def load_data_to_table(db_type, db_name, table_name, df, dtype_map, if_exists="replace"):
     try:
         engine = get_db_engine(db_type, db_name)
         print("Printing DF")
@@ -189,7 +201,7 @@ def load_data_to_table(db_type, db_name, table_name, df, if_exists="replace"):
                 print("Inside if")
                 df[colname] = df[colname].apply(json.dumps)
         print(df)
-        df.to_sql(table_name, engine, if_exists=if_exists, index=False)
+        df.to_sql(table_name, engine, if_exists=if_exists, index=False, dtype=dtype_map)
         return True
     except Exception as e:
         print(f"Error occurred while loading data: {str(e)}")
@@ -201,6 +213,7 @@ def export_tables(source, target, table_names):
     print(source,target, table_names)
 
     for table_name in table_names:
+        run_query(f"DROP TABLE IF EXISTS `{table_name}`;", target["db_type"], target["db_name"])
         # 1. Get data from "source" table
         get_records_query = f"SELECT * FROM {table_name};"
         data = run_query(get_records_query, source["db_type"], source["db_name"])
@@ -210,14 +223,25 @@ def export_tables(source, target, table_names):
 
         # 2. Build "create table" query from source
         create_table_query = get_table_ddl(source["db_type"], source["db_name"], table_name)
+        print("TABLE DDL")
+        print(create_table_query)
         # 3. Execute "create table" query on target, if query failed to run, skip it
         ack = run_query(create_table_query, target["db_type"], target["db_name"]) # mySQL Table create
+        print("ACK ")
+        print(ack)
         if not ack: # check this
             skipped.add(table_name)
             continue
+
         
         # 4. get column names for the current table from source
         column_info = get_column_info(target["db_type"], target["db_name"], table_name)
+        print("MYSQL -  COLUMN INFO")
+        print(column_info)
+        dtype_map = {
+            column["name"]: column["type"]
+            for column in column_info
+        }
         column_names = [
             column["name"] 
             for column in column_info
@@ -225,7 +249,7 @@ def export_tables(source, target, table_names):
         
         # 5. Create df for the data with its column names, then load data to target table
         df = pd.DataFrame(data, columns=column_names)
-        load_data_to_table(target["db_type"], target["db_name"], table_name , df, if_exists="replace")
+        load_data_to_table(target["db_type"], target["db_name"], table_name , df, dtype_map, if_exists="append")
 
         # 6. get indexes and run "create index" query
         indexes = get_indexes_info(source["db_type"], source["db_name"], table_name)
@@ -238,8 +262,8 @@ def export_tables(source, target, table_names):
             for col_name, col_type in columns_with_dt:
                 if col_name in index["column_names"]:
                     print(col_name, col_type)
-                    if col_type.upper() in {"TEXT","BLOB"}:
-                        modified_cols.append(f'{col_name}(255)')
+                    if str(col_type).upper() in {"TEXT","BLOB"}:
+                        modified_cols.append(f'{col_name}(100)')
                     else:
                         modified_cols.append(f'{col_name}')
             create_index_query = (
