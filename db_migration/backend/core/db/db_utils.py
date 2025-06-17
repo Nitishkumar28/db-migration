@@ -126,13 +126,33 @@ def get_indexes_info(db_type, db_name, table_name):
     except SQLAlchemyError as e:
         raise RuntimeError(f"Error accessing columns: {str(e)}")
 
+def get_foreign_keys(db_type, db_name, table_name):
+    inspector = get_db_inspector(db_type, db_name)
+    if not inspector:
+        return []
+    try:
+        foreign_keys = inspector.get_foreign_keys(table_name)
+    except (NoSuchTableError, SQLAlchemyError) as e:
+        raise RuntimeError(f"Could not retrieve FKs for {table_name}: {e}")
+    processed = []
+    for fkey in foreign_keys:
+        processed.append({
+            "name": fkey.get("name"),
+            "constrained_columns": fkey.get("constrained_columns", []),
+            "referred_table": fkey.get("referred_table"),
+            "referred_columns": fkey.get("referred_columns", []),
+            "options": fkey.get("options", {})
+        })
+    return processed
+
 
 def get_table_schema(db_type, db_name, table_name):
     processed_columns = get_column_info(db_type, db_name, table_name)
     processed_indexes = get_indexes_info(db_type, db_name, table_name)
     return {
         "column_data": processed_columns,
-        "Index_data": processed_indexes
+        "Index_data": processed_indexes,
+        "ForeignKey_data": get_foreign_keys(db_type, db_name, table_name),
     }
 
 def get_primary_keys(db_type, db_name, table_name):
@@ -276,6 +296,34 @@ def export_tables(source, target, table_names):
                 skipped.add(table_name)
                 print(f"Error occurred while creating indexes for {table_name}!")
                 continue
+
+        #run_query("SET FOREIGN_KEY_CHECKS=0;", target["db_type"], target["db_name"])
+        foreign_keys = get_foreign_keys(source["db_type"], source["db_name"], table_name)
+        print("FOREIGN KEY")
+        print(foreign_keys)
+        for fkey in foreign_keys:
+            fk_name = fkey['name'] or f"fk_{table_name}_{fkey['referred_table']}"
+            cons_column = ", ".join(f"`{c}`" for c in fkey['constrained_columns'])
+            referred_cols = ", ".join(f"`{c}`" for c in fkey['referred_columns'])
+            referred_table = fkey['referred_table']
+
+            alter = (
+                f"ALTER TABLE `{table_name}` "
+                f"ADD CONSTRAINT `{fk_name}` "
+                f"FOREIGN KEY ({cons_column}) "
+                f"REFERENCES `{referred_table}` ({referred_cols})"
+            )
+            options_add = fkey.get('options', {})
+            if options_add.get('ondelete'):
+                alter += f" ON DELETE {options_add['ondelete'].upper()}"
+            if options_add.get('onupdate'):
+                alter += f" ON UPDATE {options_add['onupdate'].upper()}"
+            alter += ";"
+            print("QUERY FOREIGN KEY")
+            print(alter)
+            run_query(alter, target["db_type"], target["db_name"])
+        #run_query("SET FOREIGN_KEY_CHECKS=1;", target["db_type"], target["db_name"])
+
         exported.add(table_name)
     
     return exported, skipped
