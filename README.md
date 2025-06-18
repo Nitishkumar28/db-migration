@@ -13,7 +13,7 @@ Errors:
 1) Incorrect database name must raise error - Done
 2) Datatype adapter always falls back to TEXT only -- Incorrect conversion -  Done
 3) Primary key and foreign key -  Done
-4) data type equivalents list - check accuracy
+4) data type equivalents list - check accuracy - Done
 5) Error handling 
 
 6) UI - Save details - Endpoints (specific)
@@ -22,3 +22,19 @@ Errors:
 Ideas:
 
 1) foreign key disabling and enabling
+
+
+Data types not available within the library:
+
+1) MONEY
+2) SMALLSERIAL
+3) SERIAL
+4) POINT
+5) LINE
+6) LSEG
+7) BOX
+8) PATH
+9) POLYGON
+10) CIRCLE
+11) TXID_SNAPSHOT
+

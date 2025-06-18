@@ -23,6 +23,7 @@ def run_query(query, db_type, db_name=None):
     return []
 
 
+
 def get_db_inspector(db_type, db_name):
     engine = get_db_engine(db_type, db_name)
     try:
@@ -31,6 +32,7 @@ def get_db_inspector(db_type, db_name):
     except Exception as e:
         print(f"Error occurred while creating the inspector")
     return None
+
 
 
 def get_databases(db_type):
@@ -47,6 +49,7 @@ def get_databases(db_type):
     return results if results is not None else []
 
 
+
 def get_table_names(db_type, db_name):
     inspector = get_db_inspector(db_type, db_name)
     print(inspector)
@@ -60,6 +63,7 @@ def get_table_names(db_type, db_name):
     return table_names
 
 
+
 def delete_tables(db_type, db_name, table_name=None):
     if table_name is None:
         table_names = get_table_names(db_type, db_name)
@@ -68,6 +72,7 @@ def delete_tables(db_type, db_name, table_name=None):
 
     removed_tables = []
 
+    run_query("SET FOREIGN_KEY_CHECKS=0;", db_type, db_name)
     for table_name in table_names:
         message = ""
         query = f"DROP TABLE IF EXISTS `{table_name}`;"
@@ -77,8 +82,10 @@ def delete_tables(db_type, db_name, table_name=None):
             message = "table doesn't exist"
 
         removed_tables.append((table_name, message))
-
+    
+    run_query("SET FOREIGN_KEY_CHECKS=1;", db_type, db_name)
     return {"removed": removed_tables}
+
 
 
 def get_column_info(db_type, db_name, table_name):
@@ -92,7 +99,7 @@ def get_column_info(db_type, db_name, table_name):
             for column in exist_columns:
                 column_info = {
                     "name": column["name"],
-                    "type": column["type"], # Potential error each data type value is being casted to str and hence being mapped to TEXT 
+                    "type": column["type"],
                     "nullable": column["nullable"],
                     "default": column.get("default")
                 }
@@ -103,6 +110,7 @@ def get_column_info(db_type, db_name, table_name):
         raise ValueError(f"Table '{table_name}' does not exist.")
     except SQLAlchemyError as e:
         raise RuntimeError(f"Error accessing columns: {str(e)}")
+
 
 
 def get_indexes_info(db_type, db_name, table_name):
@@ -126,6 +134,7 @@ def get_indexes_info(db_type, db_name, table_name):
     except SQLAlchemyError as e:
         raise RuntimeError(f"Error accessing columns: {str(e)}")
 
+
 def get_foreign_keys(db_type, db_name, table_name):
     inspector = get_db_inspector(db_type, db_name)
     if not inspector:
@@ -146,6 +155,7 @@ def get_foreign_keys(db_type, db_name, table_name):
     return processed
 
 
+
 def get_table_schema(db_type, db_name, table_name):
     processed_columns = get_column_info(db_type, db_name, table_name)
     processed_indexes = get_indexes_info(db_type, db_name, table_name)
@@ -155,11 +165,13 @@ def get_table_schema(db_type, db_name, table_name):
         "ForeignKey_data": get_foreign_keys(db_type, db_name, table_name),
     }
 
+
 def get_primary_keys(db_type, db_name, table_name):
     inspector = get_db_inspector(db_type, db_name)
     if inspector:
         return inspector.get_pk_constraint(table_name) or {}
     return {}
+
 
 def get_table_ddl(db_type, db_name, table_name):
     columns = get_column_info(db_type, db_name, table_name)
@@ -228,6 +240,62 @@ def load_data_to_table(db_type, db_name, table_name, df, dtype_map, if_exists="r
         return False
 
 
+def create_index_during_export(target, column_info, indexes, table_name, skipped):
+    for index in indexes:
+        is_unique = "UNIQUE " if index["unique"] else ""
+        modified_cols = []
+        print("Index print")
+        columns_with_dt = [(col['name'],col['type']) for col in column_info]
+        for col_name, col_type in columns_with_dt:
+            if col_name in index["column_names"]:
+                print(col_name, col_type)
+                if str(col_type).upper() in {"TEXT","BLOB"}:
+                    modified_cols.append(f'{col_name}(100)')
+                else:
+                    modified_cols.append(f'{col_name}')
+        create_index_query = (
+                f"CREATE {is_unique}INDEX `{index["name"]}` "
+                f"ON `{table_name}` ({', '.join(modified_cols)});"
+            )
+        print(create_index_query)
+        ack = run_query(create_index_query, target["db_type"], target["db_name"])
+        if not ack:
+            skipped.add(table_name)
+            print(f"Error occurred while creating indexes for {table_name}!")
+            continue
+
+
+def create_foreign_keys_export(source, target, table_name):
+    run_query("SET FOREIGN_KEY_CHECKS=0;", target["db_type"], target["db_name"])
+
+    foreign_keys = get_foreign_keys(source["db_type"], source["db_name"], table_name)
+    print("FOREIGN KEY")
+    print(foreign_keys)
+    for fkey in foreign_keys:
+        fk_name = fkey['name'] or f"fk_{table_name}_{fkey['referred_table']}"
+        cons_column = ", ".join(f"`{c}`" for c in fkey['constrained_columns'])
+        referred_cols = ", ".join(f"`{c}`" for c in fkey['referred_columns'])
+        referred_table = fkey['referred_table']
+
+        alter = (
+            f"ALTER TABLE `{table_name}` "
+            f"ADD CONSTRAINT `{fk_name}` "
+            f"FOREIGN KEY ({cons_column}) "
+            f"REFERENCES `{referred_table}` ({referred_cols})"
+        )
+        options_add = fkey.get('options', {})
+        if options_add.get('ondelete'):
+            alter += f" ON DELETE {options_add['ondelete'].upper()}"
+        if options_add.get('onupdate'):
+            alter += f" ON UPDATE {options_add['onupdate'].upper()}"
+        alter += ";"
+        print("QUERY FOREIGN KEY")
+        print(alter)
+        run_query(alter, target["db_type"], target["db_name"])
+
+    run_query("SET FOREIGN_KEY_CHECKS=1;", target["db_type"], target["db_name"])
+
+
 def export_tables(source, target, table_names):
     skipped, exported = set(), set()
     print(source,target, table_names)
@@ -240,20 +308,20 @@ def export_tables(source, target, table_names):
         if not data:
             skipped.add(table_name)
             continue
-
+        
         # 2. Build "create table" query from source
         create_table_query = get_table_ddl(source["db_type"], source["db_name"], table_name)
         print("TABLE DDL")
         print(create_table_query)
+
         # 3. Execute "create table" query on target, if query failed to run, skip it
         ack = run_query(create_table_query, target["db_type"], target["db_name"]) # mySQL Table create
         print("ACK ")
         print(ack)
-        if not ack: # check this
+        if not ack:
             skipped.add(table_name)
             continue
-
-        
+      
         # 4. get column names for the current table from source
         column_info = get_column_info(target["db_type"], target["db_name"], table_name)
         print("MYSQL -  COLUMN INFO")
@@ -265,7 +333,7 @@ def export_tables(source, target, table_names):
         column_names = [
             column["name"] 
             for column in column_info
-            ]
+        ]
         
         # 5. Create df for the data with its column names, then load data to target table
         df = pd.DataFrame(data, columns=column_names)
@@ -273,56 +341,10 @@ def export_tables(source, target, table_names):
 
         # 6. get indexes and run "create index" query
         indexes = get_indexes_info(source["db_type"], source["db_name"], table_name)
+        create_index_during_export(target, column_info, indexes, table_name, skipped)
 
-        for index in indexes:
-            is_unique = "UNIQUE " if index["unique"] else ""
-            modified_cols = []
-            print("Index print")
-            columns_with_dt = [(col['name'],col['type']) for col in column_info]
-            for col_name, col_type in columns_with_dt:
-                if col_name in index["column_names"]:
-                    print(col_name, col_type)
-                    if str(col_type).upper() in {"TEXT","BLOB"}:
-                        modified_cols.append(f'{col_name}(100)')
-                    else:
-                        modified_cols.append(f'{col_name}')
-            create_index_query = (
-                    f"CREATE {is_unique}INDEX `{index["name"]}` "
-                    f"ON `{table_name}` ({', '.join(modified_cols)});"
-                )
-            print(create_index_query)
-            ack = run_query(create_index_query, target["db_type"], target["db_name"])
-            if not ack:
-                skipped.add(table_name)
-                print(f"Error occurred while creating indexes for {table_name}!")
-                continue
-
-        #run_query("SET FOREIGN_KEY_CHECKS=0;", target["db_type"], target["db_name"])
-        foreign_keys = get_foreign_keys(source["db_type"], source["db_name"], table_name)
-        print("FOREIGN KEY")
-        print(foreign_keys)
-        for fkey in foreign_keys:
-            fk_name = fkey['name'] or f"fk_{table_name}_{fkey['referred_table']}"
-            cons_column = ", ".join(f"`{c}`" for c in fkey['constrained_columns'])
-            referred_cols = ", ".join(f"`{c}`" for c in fkey['referred_columns'])
-            referred_table = fkey['referred_table']
-
-            alter = (
-                f"ALTER TABLE `{table_name}` "
-                f"ADD CONSTRAINT `{fk_name}` "
-                f"FOREIGN KEY ({cons_column}) "
-                f"REFERENCES `{referred_table}` ({referred_cols})"
-            )
-            options_add = fkey.get('options', {})
-            if options_add.get('ondelete'):
-                alter += f" ON DELETE {options_add['ondelete'].upper()}"
-            if options_add.get('onupdate'):
-                alter += f" ON UPDATE {options_add['onupdate'].upper()}"
-            alter += ";"
-            print("QUERY FOREIGN KEY")
-            print(alter)
-            run_query(alter, target["db_type"], target["db_name"])
-        #run_query("SET FOREIGN_KEY_CHECKS=1;", target["db_type"], target["db_name"])
+            # 7. Foreign Keys
+        create_foreign_keys_export(source, target, table_name)
 
         exported.add(table_name)
     
