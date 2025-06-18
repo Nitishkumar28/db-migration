@@ -29,6 +29,10 @@ class ExportRequest(BaseModel):
     table_names: List[str]
 
 
+class TriggerRequest(BaseModel):
+    source: Source
+    target: Target
+
 
 class DBInfo(BaseModel):
     host_name: str
@@ -36,8 +40,3 @@ class DBInfo(BaseModel):
     password: str
     port: str
     db_name: str
-
-
-class ConnectionRequest(BaseModel):
-    source: DBInfo
-    target: DBInfo

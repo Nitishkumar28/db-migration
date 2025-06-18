@@ -401,23 +401,31 @@ def trigger_body_definition(definition, event):
 
 
 def trigger_body_to_sql(body_sql, column_names, event):
+    body_sql = re.sub(r"RAISE\s+(?:NOTICE|LOG|INFO)\b.*?;\s*", "", body_sql, flags=re.I | re.S).strip()
+    body_sql = re.sub(r"\n\s*\n+", "\n", body_sql)
+
     def build_json(alias: str) -> str:
         pairs = ", ".join(f"'{col}', {alias}.{col}" for col in column_names)
         return f"JSON_OBJECT({pairs})"
 
-    sql = body_sql.replace("TG_OP", f"'{event}'")
+    sql = body_sql.replace("TG_OP", f"'{event.upper()}'")
     sql = re.sub(r"\bto_jsonb\s*\(\s*NEW\s*\)", build_json("NEW"), sql, flags=re.I)
     sql = re.sub(r"\bto_jsonb\s*\(\s*OLD\s*\)", build_json("OLD"), sql, flags=re.I)
     return sql
 
 
 def generate_mysql_trigger_ddl(trigger_name, timing, event, table_name, body_sql):
+    cleaned = re.sub(r"RAISE\s+(?:NOTICE|LOG|INFO)\b.*?;\s*", "", body_sql, flags=re.I | re.S).strip()
+    
+    if not cleaned:
+        cleaned = "-- no operation"
+
     return f"""
     CREATE TRIGGER `{trigger_name}`
     {timing.upper()} {event.upper()} ON `{table_name}`
     FOR EACH ROW
     BEGIN
-        {body_sql};
+        {cleaned};
     END;"""
 
 
@@ -454,7 +462,14 @@ def export_triggers(source: dict, target: dict) -> dict:
 
                 run_query(f"DROP TRIGGER IF EXISTS `{trigger_name}`;", mysql_type, mysql_name)
                 ddl = generate_mysql_trigger_ddl(trigger_name, timing, event, table, body)
-                run_query(ddl, mysql_type, mysql_name)
+                cleaned_ddl = re.sub(
+                    r"RAISE\s+(?:NOTICE|LOG|INFO)\b.*?;\s*",
+                    "",
+                    ddl,
+                    flags=re.I | re.S
+                ).strip()
+                cleaned_ddl = re.sub(r"\n\s*\n+", "\n", cleaned_ddl)
+                run_query(cleaned_ddl, mysql_type, mysql_name)
 
                 exported.append(trigger_name)
         except Exception as e:
