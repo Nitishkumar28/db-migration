@@ -10,6 +10,15 @@ Routes with functionality:
 
 Errors:
 
-1) Incorrect database name must raise error
-2) Datatype adapter always falls back to TEXT only -- Incorrect conversion
-3) Add create and get databases function
+1) Incorrect database name must raise error - Done
+2) Datatype adapter always falls back to TEXT only -- Incorrect conversion -  Done
+3) Primary key and foreign key -  Done
+4) data type equivalents list - check accuracy
+5) Error handling 
+
+6) UI - Save details - Endpoints (specific)
+
+
+Ideas:
+
+1) foreign key disabling and enabling
