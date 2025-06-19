@@ -8,6 +8,15 @@ Routes with functionality:
 4) Table schema - http://127.0.0.1:8000/api/schema/postgresql/demo/conversion
 
 
+TODO:
+
+1) check_connection() testing -  Done
+2) remove table names from exportRequest and ensure all tables are taken in from the source database - Done
+3) Log statement - logging module (backend)
+4) Mongo DB + APIs - for storing history, credentials, other details 
+5) Websockets for logs
+6) Docker file
+
 Errors:
 
 1) Incorrect database name must raise error - Done
@@ -24,17 +33,4 @@ Ideas:
 1) foreign key disabling and enabling
 
 
-Data types not available within the library:
-
-1) MONEY
-2) SMALLSERIAL
-3) SERIAL
-4) POINT
-5) LINE
-6) LSEG
-7) BOX
-8) PATH
-9) POLYGON
-10) CIRCLE
-11) TXID_SNAPSHOT
 

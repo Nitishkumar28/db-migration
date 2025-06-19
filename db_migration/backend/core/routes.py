@@ -1,7 +1,7 @@
 from tabnanny import check
 from fastapi import APIRouter
 from fastapi import HTTPException
-from core.data import DBInfo, ExportRequest, TriggerRequest
+from core.data import DBInfo, ExportRequest
 from core.db.db_utils import (
     get_databases,
     get_table_names,
@@ -11,7 +11,8 @@ from core.db.db_utils import (
     get_triggers_for_table,
     export_tables,
     delete_tables,
-    export_triggers
+    export_triggers,
+    run_query
     )
 from core.db.db_connect import get_db_engine
 
@@ -27,13 +28,20 @@ def load_homepage():
 @router.post("/check-connection/")
 def check_connection(request: DBInfo):
     try:
+        check_connection_stat = True
         args = {
             "host_name": request.host_name,
             "username": request.username,
             "password": request.password,
             "port": request.port,
             "db_name": request.db_name,
+            "db_type": request.db_type,
+            "check_connection_status": check_connection_stat
         }
+        db_name = request.db_name
+        if request.db_type != "postgresql" and db_name != "":
+            print("REQUEST DB TYPE:", request.db_type, db_name)
+            run_query(f"CREATE DATABASE IF NOT EXISTS {db_name}", request.db_type, check_connection_status=check_connection_stat)
         check_connection_res = get_db_engine(**args)
         return {"results": check_connection_res is not None}
     except Exception as e:
@@ -109,8 +117,9 @@ def fetch_triggers(db_type, db_name, table_name):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching triggers: {e}")
 
+
 @router.post("/export/")
-def export_tables_to_target(request: ExportRequest):
+def export_feature(request: ExportRequest):
     """
     Request Body:
     {
@@ -140,36 +149,39 @@ def export_tables_to_target(request: ExportRequest):
             "db_type": request.target.db_type,
             "db_name": request.target.db_name
         },
-        "table_names": request.table_names
         }
         exported, skipped = export_tables(**args)
+
         if skipped:
             raise HTTPException(
                 status_code=500,
                 detail={"exported": list(exported), "skipped": list(skipped)}
             )
-        return {"exported": list(exported)}
+        
+        result = export_triggers(
+            args["source"],
+            args["target"]
+        )
+
+        if result["errors"]:
+            raise HTTPException(
+                status_code=500,
+                detail={
+                    "message": "Table export succeeded, but trigger export failed.",
+                    "exported_tables": list(exported),
+                    "exported_triggers": result.get("exported", []),
+                    "trigger_errors": result["errors"]
+                }
+            )
+        
+        return {
+            "message": "Tables and triggers exported successfully.",
+            "exported_tables": list(exported),
+            "exported_triggers": result.get("exported", [])
+        }
+    
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error exporting tables: {e}")
 
-
-@router.post("/export-triggers/")
-def export_triggers_to_target(request: TriggerRequest):
-    try:
-        result = export_triggers(
-            {"db_type": request.source.db_type, 
-            "db_name": request.source.db_name
-            },
-            {"db_type": request.target.db_type,
-            "db_name": request.target.db_name
-            },
-        )
-        if result["errors"]:
-                raise HTTPException(status_code=500,detail=result)
-        return {"exported_triggers": result["exported"]}
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error exporting triggers: {e}")

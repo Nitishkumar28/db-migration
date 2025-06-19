@@ -10,9 +10,10 @@ from core.process import PostgresToMySQLDataTypeAdapter
 from core.data import TriggerModel
 
 
-def run_query(query, db_type, db_name=None):
+def run_query(query, db_type, db_name=None, check_connection_status=False):
     print("Run Query")
-    engine = get_db_engine(db_type, db_name)
+    engine = get_db_engine(db_type, db_name, check_connection_status)
+    print(engine)
     if engine is not None:
         try:
             with engine.begin() as conn:
@@ -26,6 +27,7 @@ def run_query(query, db_type, db_name=None):
 
 def get_db_inspector(db_type, db_name):
     engine = get_db_engine(db_type, db_name)
+    print("INSPECTOR ENGINE:", engine, db_type, db_name)
     try:
         inspector = inspect(engine)
         return inspector
@@ -296,11 +298,13 @@ def create_foreign_keys_export(source, target, table_name):
     run_query("SET FOREIGN_KEY_CHECKS=1;", target["db_type"], target["db_name"])
 
 
-def export_tables(source, target, table_names):
+def export_tables(source, target):
     skipped, exported = set(), set()
-    print(source,target, table_names)
+    print(source,target)
+    
+    source_table_names = get_table_names(source["db_type"],source["db_name"])
 
-    for table_name in table_names:
+    for table_name in source_table_names:
         run_query(f"DROP TABLE IF EXISTS `{table_name}`;", target["db_type"], target["db_name"])
         # 1. Get data from "source" table
         get_records_query = f"SELECT * FROM {table_name};"
@@ -429,7 +433,7 @@ def generate_mysql_trigger_ddl(trigger_name, timing, event, table_name, body_sql
     END;"""
 
 
-def export_triggers(source: dict, target: dict) -> dict:
+def export_triggers(source, target):
     pg_type, pg_name = source["db_type"], source["db_name"]
     mysql_type, mysql_name = target["db_type"], target["db_name"]
     exported, errors = [], []
