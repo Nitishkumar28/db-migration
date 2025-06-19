@@ -7,10 +7,10 @@ import SideNavBarBlock from "./sidebar/SideNavBarBlock";
 const MainBody = () => {
   const activeTheme = useUIStore(state => state.theme);
   return (
-    <div className="relative w-full h-screen flex flex-col items-center justify-start border-b px-[10%] py-2">
+    <div className="relative w-full h-screen flex flex-col items-center justify-between gap-10 px-[10%] overflow-scroll">
       <div 
-      style={{borderColor: themePalette[activeTheme].borderPrimary}}
-      className="flex w-full min-h-[80%] justify-start items-center overflow-hidden border rounded-xl">
+      // style={{borderColor: themePalette[activeTheme].borderPrimary}}
+      className="flex w-full min-h-[90%] justify-start items-center overflow-hidden border border-gray-400 rounded-xl">
         <SideNavBarBlock />
         <ActionBlock />
       </div>

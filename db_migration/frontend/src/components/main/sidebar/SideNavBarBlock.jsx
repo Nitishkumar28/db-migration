@@ -15,7 +15,8 @@ const SideNavBarBlock = () => {
       <header className={`w-full flex flex-col justify-start items-center divide-y divide-gray-300`}>
         <HeaderOption text="Connections" path="/home/connections" />
         <HeaderOption text="export" path="/home/export" />
-        <HeaderOption text="view data" path="/home/view-data" />
+        <HeaderOption text="history" path="/home/history" />
+        {/* <HeaderOption text="view data" path="/home/view-data" /> */}
       </header>
     </div>
   );

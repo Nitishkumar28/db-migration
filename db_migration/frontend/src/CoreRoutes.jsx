@@ -2,8 +2,6 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Home from "./pages/Home";
 import ActionBlock from "./components/main/activeblock/ActionBlock";
 import ExportBlock from "./components/main/activeblock/export/ExportBlock";
-import ViewDataBlock from "./components/main/activeblock/ViewDataBlock";
-import ValidationBlock from "./components/main/activeblock/ValidationBlock";
 import ConnectionBlock from "./components/main/activeblock/connection/ConnectionBlock";
 
 const CoreRoutes = () => {
@@ -15,8 +13,6 @@ const CoreRoutes = () => {
                     <Route index path="" element={<ActionBlock />}></Route>
                     <Route index path="connections" element={<ConnectionBlock />}></Route>
                     <Route index path="export" element={<ExportBlock />}></Route>
-                    <Route index path="view-data" element={<ViewDataBlock />}></Route> 
-                    <Route index path="validation" element={<ValidationBlock />}></Route> 
                 </Route>
             </Routes>
         </BrowserRouter>
