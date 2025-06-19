@@ -1,9 +1,25 @@
 import { create } from 'zustand';
 import { initialConnections } from './index';
+import { persist } from 'zustand/middleware';
 
-const useDBStore = create((set, get) => ({
+const initialConnectionDetails = {
+    db_type: "",
+    server_address: "",
+    username: "",
+    password: "",
+    port: "",
+    database_name: "",
+    status: "idle"
+  }
+
+  const useDBStore = create(
+    persist(
+      (set) => ({
     selectedSource: "",
     selectedTarget: "",
+    selectSourceDetails: initialConnectionDetails,
+    selectTargetDetails: initialConnectionDetails,
+
     connectionDetails: initialConnections,
 
     setSelectedSource: (source) => {
@@ -18,15 +34,40 @@ const useDBStore = create((set, get) => ({
         }))
     },
 
-  createConnection: (newConnection) => {
-    set((state) => ({
-      connectionDetails: [...state.connectionDetails, newConnection]
-    }));
-  },
+    setSelectedSourceDetails: (newSourceDetails) => {
+        set(() => ({
+            selectSourceDetails: newSourceDetails
+        }))
+    },
 
-  readConnection: (db_type) => {
-    return get().connectionDetails.find((conn) => conn.db_type === db_type);
-  },
+      setSelectedTargetDetails: (newTargetDetails) => {
+        set(() => ({
+            selectTargetDetails: newTargetDetails
+        }))
+    },
+
+    updateSourceDetails: (field, value) => {
+      set((state) => ({
+        selectSourceDetails: {...state.selectSourceDetails, [field]: value }
+      }));
+    },
+    
+    updateTargetDetails: (field, value) => {
+      set((state) => ({
+        selectTargetDetails: {...state.selectTargetDetails, [field]: value }
+      }));
+    },
+    
+
+    readConnection: (db_type) => {
+      return connectionDetails.find((conn) => conn.db_type === db_type);
+    },
+    
+    createConnection: (newConnection) => {
+      set((state) => ({
+        connectionDetails: [...state.connectionDetails, newConnection]
+      }));
+    },
 
   updateConnectionDetails: (db_type, field, value) => {
     set((state) => ({
@@ -45,6 +86,6 @@ const useDBStore = create((set, get) => ({
       )
     }));
   }
-}));
+  })));
 
 export default useDBStore;

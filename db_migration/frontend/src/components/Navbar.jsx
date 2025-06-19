@@ -1,7 +1,10 @@
 import { NavbarOption } from "../base/Base";
+import useDBStore from "../store/dbStore";
 import MainHeaderSection from "./MainHeaderSection";
 
 const Navbar = () => {
+  const selectedSource = useDBStore(state => state.selectedSource);
+  const selectedTarget = useDBStore(state => state.selectedTarget);
   return (
     <div className="flex justify-between items-center gap-1 w-full border-b-0 border-b-gray-200 px-2.5 py-3">
       <div className="w-[30%]">

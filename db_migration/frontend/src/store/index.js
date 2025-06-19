@@ -5,7 +5,9 @@ export const initialConnections = [
     username: "",
     password: "",
     port: "3306",
-    database_name: ""
+    database_name: "",
+    status: "idle",
+    edited: false
   },
     {
     db_type: "postgresql",
@@ -13,7 +15,9 @@ export const initialConnections = [
     username: "",
     password: "",
     port: "5432",
-    database_name: ""
+    database_name: "",
+    status: "idle",
+    edited: false
   },
   {
     db_type: "oracle",
@@ -21,6 +25,8 @@ export const initialConnections = [
     username: "",
     password: "",
     port: "1521",
-    database_name: ""
+    database_name: "",
+    status: "idle",
+    edited: false
   }
 ]
