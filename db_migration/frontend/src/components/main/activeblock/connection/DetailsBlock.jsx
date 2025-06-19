@@ -27,7 +27,7 @@ const SecondColumn = ({db_type}) => {
   )
 }
 
-const ConnectionDetailsBlock = ({ title, db_type }) => {
+const DetailsBlock = ({ title, db_type }) => {
   const activeTheme = useUIStore((state) => state.theme);
   const connectionDetails = useDBStore(state => state.connectionDetails);
   const { post, data: result, loading: posting, error: postError } = usePost(checkConnectionURL);
@@ -66,4 +66,4 @@ const ConnectionDetailsBlock = ({ title, db_type }) => {
   );
 };
 
-export default ConnectionDetailsBlock;
+export default DetailsBlock;

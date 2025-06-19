@@ -6,9 +6,13 @@ import { themePalette } from "./colorPalette";
 const InputBar = ({ title, db_type, field, type = "text" }) => {
   const activeTheme = useUIStore((state) => state.theme);
   const updateConnectionDetails = useDBStore((state) => state.updateConnectionDetails);
+  const connectionDetails = useDBStore(state => state.connectionDetails);
   
+  const connection = connectionDetails.find((conn) => conn.db_type === db_type);
+  const value = connection?.[field] || "";
+
   const handleChange = (e) => {
-    updateConnectionDetails(db_type, field, e.target.value)
+    updateConnectionDetails(db_type, field, e.target.value);
   }
 
   return (
@@ -17,6 +21,7 @@ const InputBar = ({ title, db_type, field, type = "text" }) => {
       <input
         style={{ borderColor: themePalette[activeTheme].borderPrimary, fontSize: header_sizes.small }}
         type={type}
+        value={value}
         onChange={e => handleChange(e)}
         className="w-full outline-none border rounded px-2 py-1"
       />

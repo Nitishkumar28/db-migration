@@ -6,6 +6,7 @@ const useUIStore = create(
         (set) => ({
             // Variables
             theme: "calm",
+            mode: "light",
             activeNavbarOption: "",
             activePipelineOption: "",
             isDropdownOpen: false,
@@ -13,6 +14,9 @@ const useUIStore = create(
             // Methods
             setTheme: (newTheme) => {
                 set(() => ({ theme: newTheme }))
+            },
+            setMode: (newMode) => {
+                set(() => ({ mode: newMode }))
             },
             setNavbarOption: (currentOption) => {
                 set(() => ({ activeNavbarOption: currentOption }))

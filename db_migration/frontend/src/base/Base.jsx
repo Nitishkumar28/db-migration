@@ -22,6 +22,8 @@ export const header_weight = {
   bold: "font-bold",
 };
 
+
+
 const Header = ({ text, size = "medium", weight = "normal", ...props }) => (
   <span
     {...props}
@@ -78,17 +80,20 @@ const NavbarOption = ({ text }) => {
   );
 };
 
-const BaseButton = ({text, type, styles="", ...props}) => {
+const BaseButton = ({text, type, children, className="", ...props}) => {
   const activeTheme = useUIStore((state) => state.theme);
   return (
       <button
       {...props}
         style={{ 
           borderColor: themePalette[activeTheme].borderPrimary, 
-          fontSize: header_sizes.small 
+          fontSize: header_sizes.normal 
         }}
-        className={`min-w-20 border px-1 py-1 rounded shadow cursor-pointer capitalize hover:opacity-80 ${styles}`}>
-        {text}
+        className={`min-w-20 border px-1 py-1 rounded shadow cursor-pointer capitalize hover:opacity-80 ${className}`}>
+          <div className="flex justify-center items-center gap-2">
+            <span>{text}</span>
+            {children}
+          </div>
       </button>
   )
 }
