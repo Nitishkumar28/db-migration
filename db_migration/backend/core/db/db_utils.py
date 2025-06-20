@@ -2,12 +2,12 @@ import pandas as pd
 from sqlalchemy import inspect, text
 from sqlalchemy.exc import NoSuchTableError, SQLAlchemyError
 from sqlalchemy.engine import CursorResult
+from core.logging import logger
 import re
 import json
 
 from core.db.db_connect import get_db_engine
 from core.process import PostgresToMySQLDataTypeAdapter
-from core.data import TriggerModel
 
 
 def run_query(query, db_type, db_name=None, check_connection_status=False):
@@ -48,8 +48,6 @@ def get_databases(db_type):
 
 def get_table_names(db_type, db_name):
     inspector = get_db_inspector(db_type, db_name)
-    print(inspector)
-    print(db_type, db_name)
     table_names = []
     try:
         if inspector is not None:
@@ -223,7 +221,6 @@ def load_data_to_table(db_type, db_name, table_name, df, dtype_map, if_exists="r
         engine = get_db_engine(db_type, db_name)
         for colname in df.columns:
             if df[colname].apply(lambda x: isinstance(x,dict)).any():
-                print("Inside if")
                 df[colname] = df[colname].apply(json.dumps)
         df.to_sql(table_name, engine, if_exists=if_exists, index=False, dtype=dtype_map)
         return True
@@ -239,7 +236,6 @@ def create_index_during_export(target, column_info, indexes, table_name, skipped
         columns_with_dt = [(col['name'],col['type']) for col in column_info]
         for col_name, col_type in columns_with_dt:
             if col_name in index["column_names"]:
-                print(col_name, col_type)
                 if str(col_type).upper() in {"TEXT","BLOB"}:
                     modified_cols.append(f'{col_name}(100)')
                 else:
@@ -248,11 +244,16 @@ def create_index_during_export(target, column_info, indexes, table_name, skipped
                 f"CREATE {is_unique}INDEX `{index["name"]}` "
                 f"ON `{table_name}` ({', '.join(modified_cols)});"
             )
+        logger.debug(f"Index DDL: {create_index_query}")
         ack = run_query(create_index_query, target["db_type"], target["db_name"])
         if not ack:
             skipped.add(table_name)
             print(f"Error occurred while creating indexes for {table_name}!")
+            skipped.add(table_name)
+            logger.error(f"Failed to create index `{index['name']}` on `{table_name}`")
             continue
+        else:
+            logger.info(f"Created index `{index['name']}` on `{table_name}`")
 
 
 def create_foreign_keys_export(source, target, table_name):
@@ -283,53 +284,86 @@ def create_foreign_keys_export(source, target, table_name):
 
 
 def export_tables(source, target):
+    logger.info(f"Begin exporting tables from `{source['db_name']}` to `{target['db_name']}`")
+    source_tables = get_table_names(source["db_type"], source["db_name"])
     skipped, exported = set(), set()
-    
-    source_table_names = get_table_names(source["db_type"],source["db_name"])
 
-    for table_name in source_table_names:
-        run_query(f"DROP TABLE IF EXISTS `{table_name}`;", target["db_type"], target["db_name"])
-        # 1. Get data from "source" table
-        get_records_query = f"SELECT * FROM {table_name};"
-        data = run_query(get_records_query, source["db_type"], source["db_name"])
+    # --- Section 1: Dropping and Creating Tables ---
+    logger.info(">>> Section: Dropping & Creating Tables")
+    created = []
+    for table in source_tables:
+        logger.info(f"- Dropping `{table}` if exists")
+        run_query(f"DROP TABLE IF EXISTS `{table}`;", target["db_type"], target["db_name"])
+
+        data = run_query(f"SELECT * FROM {table};", source["db_type"], source["db_name"])
         if not data:
-            skipped.add(table_name)
+            skipped.add(table)
+            logger.warning(f"- No data in `{table}`, skipping CREATE")
             continue
-        
-        # 2. Build "create table" query from source
-        create_table_query = get_table_ddl(source["db_type"], source["db_name"], table_name)
 
-        # 3. Execute "create table" query on target, if query failed to run, skip it
-        ack = run_query(create_table_query, target["db_type"], target["db_name"]) # mySQL Table create
-        if not ack:
-            skipped.add(table_name)
-            continue
-      
-        # 4. get column names for the current table from source
-        column_info = get_column_info(target["db_type"], target["db_name"], table_name)
-        dtype_map = {
-            column["name"]: column["type"]
-            for column in column_info
-        }
-        column_names = [
-            column["name"] 
-            for column in column_info
-        ]
-        
-        # 5. Create df for the data with its column names, then load data to target table
-        df = pd.DataFrame(data, columns=column_names)
-        load_data_to_table(target["db_type"], target["db_name"], table_name , df, dtype_map, if_exists="append")
+        ddl = get_table_ddl(source["db_type"], source["db_name"], table)
+        logger.debug(f"  DDL for `{table}`: {ddl}")
+        if run_query(ddl, target["db_type"], target["db_name"]):
+            created.append(table)
+            logger.info(f"- Created table `{table}`")
+        else:
+            skipped.add(table)
+            logger.error(f"- FAILED to create `{table}`, skipping")
 
-        # 6. get indexes and run "create index" query
-        indexes = get_indexes_info(source["db_type"], source["db_name"], table_name)
-        create_index_during_export(target, column_info, indexes, table_name, skipped)
+    logger.info(f"=== ✅ Tables phase done: {len(created)} created, {len(skipped)} skipped ===\n")
 
-            # 7. Foreign Keys
-        create_foreign_keys_export(source, target, table_name)
+    # --- Section 2: Loading Data ---
+    logger.info(">>> Section: Loading Data")
+    loaded = []
+    for table in created:
+        cols = [c["name"] for c in get_column_info(target["db_type"], target["db_name"], table)]
+        df = pd.DataFrame(run_query(f"SELECT * FROM {table};", source["db_type"], source["db_name"]), columns=cols)
+        success = load_data_to_table(target["db_type"], target["db_name"], table, df, 
+                                     {c["name"]: c["type"] for c in get_column_info(target["db_type"], target["db_name"], table)},
+                                     if_exists="append")
+        if success:
+            loaded.append(table)
+            logger.info(f"- Loaded data into `{table}`")
+        else:
+            skipped.add(table)
+            logger.error(f"- FAILED to load data into `{table}`")
 
-        exported.add(table_name)
-    
-    return exported, skipped
+    logger.info(f"=== ✅ Data phase done: {len(loaded)} tables loaded ===\n")
+
+    # --- Section 3: Creating Indexes ---
+    logger.info(">>> Section: Creating Indexes")
+    indexed = []
+    for table in loaded:
+        idxs = get_indexes_info(source["db_type"], source["db_name"], table)
+        for idx in idxs:
+            logger.info(f"- Creating index `{idx['name']}` on `{table}`")
+            create_index_during_export(target, get_column_info(target["db_type"], target["db_name"], table), [idx], table, skipped)
+            if table not in skipped:
+                indexed.append((table, idx["name"]))
+                logger.info(f"  -> Created `{idx['name']}`")
+            else:
+                logger.error(f" -> FAILED `{idx['name']}`")
+
+    logger.info(f"=== ✅ Index phase done: {len(indexed)} indexes created ===\n")
+
+    # --- Section 4: Adding Foreign Keys ---
+    logger.info(">>> Section: Adding Foreign Keys")
+    fked = []
+    for table in loaded:
+        fks = get_foreign_keys(source["db_type"], source["db_name"], table)
+        for fk in fks:
+            name = fk.get("name") or f"fk_{table}_{fk['referred_table']}"
+            logger.info(f"- Adding FK `{name}` on `{table}`")
+            create_foreign_keys_export(source, target, table)
+            fked.append((table, name))
+            logger.info(f"  -> Added `{name}`")
+
+    logger.info(f"=== ✅ FK phase done: {len(fked)} FKs added ===\n")
+
+    # Final summary
+    logger.info(f" ✅ Export complete: {len(exported)} tables exported, {len(skipped)} skipped")
+    return set(created), skipped
+
 
 
 def get_source_triggers(db_type, db_name, table_name):

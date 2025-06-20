@@ -13,7 +13,6 @@ def check_connection(db_engine, db_type):
     try:
         with db_engine.begin() as conn:
             conn.execute(text("SELECT 1"))
-            print(f"Successfully connected to {db_type}!")
             return True
     except SQLAlchemyError as sae:
         print(f"SQLAlchemy Error, details: {str(sae)}")
@@ -31,8 +30,6 @@ def get_mysql_db_engine(db_name=None, check_connection_status=False, **kwargs):
         db_pass = kwargs.get("password", "") or get_secret("MYSQL_DB_PASS")
         db_user_encoded = quote_plus(db_user) 
         db_pass_encoded = quote_plus(db_pass)
-
-        print(db_host,db_port,db_user,db_pass,db_user_encoded,db_pass_encoded,end="\n")
         conn_url = f"mysql+pymysql://{db_user_encoded}:{db_pass_encoded}@{db_host}:{db_port}"
 
         if db_name is not None:
@@ -51,20 +48,13 @@ def get_postgresql_db_engine(db_name=None, check_connection_status=False, **kwar
     
     global _postgresql_engine
 
-    print("postgre db variables:", _postgresql_engine, check_connection_status)
-
     if _postgresql_engine is None or check_connection_status:
         db_host = kwargs.get("host_name", "") or get_secret("POSTGRES_DB_HOST")
         db_port = kwargs.get("port", "") or get_secret("POSTGRES_DB_PORT")
         db_user = kwargs.get("username", "") or get_secret("POSTGRES_DB_USER")
         db_pass = kwargs.get("password", "") or get_secret("POSTGRES_DB_PASS")
-        print("Inside Engine")
-        print(db_host)
-        print("Leaving db host")
         db_user_encoded = quote_plus(db_user)
         db_pass_encoded = quote_plus(db_pass)
-        print(db_host,db_port,db_user,db_pass,db_user_encoded,db_pass_encoded)
-
         conn_url = f'postgresql+psycopg2://{db_user_encoded}:{db_pass_encoded}@{db_host}:{db_port}/{db_name}'
 
         _postgresql_engine = create_engine(conn_url, pool_size=10)

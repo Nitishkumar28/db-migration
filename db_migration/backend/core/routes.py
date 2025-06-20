@@ -14,6 +14,8 @@ from core.db.db_utils import (
     export_triggers,
     run_query
     )
+from core.logging import logger, RUN_ID, get_next_log_counter
+from datetime import datetime
 from core.db.db_connect import get_db_engine
 
 router = APIRouter()
@@ -65,7 +67,6 @@ def check_connection(request: DBInfo):
         }
         db_name = request.db_name
         if request.db_type != "postgresql" and db_name != "":
-            print("REQUEST DB TYPE:", request.db_type, db_name)
             run_query(f"CREATE DATABASE IF NOT EXISTS {db_name}", request.db_type, check_connection_status=check_connection_stat)
         check_connection_res = get_db_engine(**args)
         return {"results": check_connection_res is not None}
@@ -75,7 +76,6 @@ def check_connection(request: DBInfo):
 
 @router.get("/databases/{db_type}")
 def fetch_databases(db_type):
-    print("Fetch Databases")
     try:
         databases = get_databases(db_type)
         return {"result": [r[0] for r in databases]}
@@ -95,16 +95,24 @@ def fetch_table_names_from_db(db_type, db_name):
 
 @router.delete("/tables/{db_type}/{db_name}/{table_name}")
 def remove_table(db_type, db_name, table_name):
+    logger.info("=== Section: Deleting Tables ===")
     try:
         ack = delete_tables(db_type, db_name, table_name)
+        for tbl, msg in ack["removed"]:
+            logger.info(f"Deleted table `{tbl}`{': ' + msg if msg else ''}")
+        logger.info(f"=== Deleted {len(ack['removed'])} tables ===\n")
         return {"message": ack}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error deleting table '{table_name}': {e}")
 
 @router.delete("/tables/{db_type}/{db_name}")
 def remove_tables(db_type, db_name):
+    logger.info("=== Section: Deleting All Tables ===")
     try:
         ack = delete_tables(db_type, db_name)
+        for tbl, msg in ack["removed"]:
+            logger.info(f"Deleted table `{tbl}`{': ' + msg if msg else ''}")
+        logger.info(f"=== Deleted {len(ack['removed'])} tables ===\n")
         return {"message": ack}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error deleting tables from {db_type}:{db_name}: {e}")
@@ -163,7 +171,7 @@ def export_feature(request: ExportRequest):
         ]
     }
     """
-    print(request, type(request))
+    logger.info("=== Section: Export Tables & Data ===")
     try:
         args = {
         "source": {
@@ -176,6 +184,7 @@ def export_feature(request: ExportRequest):
         },
         }
         exported, skipped = export_tables(**args)
+        logger.info(f"=== Tables exported: {len(exported)}; skipped: {len(skipped)} ===\n")
 
         if skipped:
             raise HTTPException(
@@ -183,10 +192,12 @@ def export_feature(request: ExportRequest):
                 detail={"exported": list(exported), "skipped": list(skipped)}
             )
         
+        logger.info("=== Section: Export Triggers ===")
         result = export_triggers(
             args["source"],
             args["target"]
         )
+        logger.info(f"=== ✅ Triggers exported: {len(result.get('exported', []))}; errors: {len(result.get('errors', []))} ===\n")
 
         if result["errors"]:
             raise HTTPException(
@@ -199,6 +210,8 @@ def export_feature(request: ExportRequest):
                 }
             )
         
+        logger.info(f"API `/export/` succeeded: exported_tables={exported}, exported_triggers={result.get('exported', [])}")
+        
         return {
             "message": "Tables and triggers exported successfully.",
             "exported_tables": list(exported),
@@ -208,5 +221,6 @@ def export_feature(request: ExportRequest):
     except HTTPException:
         raise
     except Exception as e:
+        logger.exception("Unhandled error during `/export/`")
         raise HTTPException(status_code=500, detail=f"Error exporting tables: {e}")
 

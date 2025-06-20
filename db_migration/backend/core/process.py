@@ -130,7 +130,6 @@ class PostgresToMySQLDataTypeAdapter:
 
     def convert_data(self, column_object_type) -> str:
         for data_type, handler in self.postgre_to_mysql_map.items():
-            print(column_object_type, type(column_object_type), data_type, type(data_type))
             if isinstance(column_object_type, data_type):
                 return handler(column_object_type)
 
