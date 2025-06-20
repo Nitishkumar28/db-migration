@@ -10,7 +10,6 @@ _mysql_engine = None
 _postgresql_engine = None
 
 def check_connection(db_engine, db_type):
-    print("CHECK CONNECTION")
     try:
         with db_engine.begin() as conn:
             conn.execute(text("SELECT 1"))
@@ -24,7 +23,7 @@ def check_connection(db_engine, db_type):
 
 def get_mysql_db_engine(db_name=None, check_connection_status=False, **kwargs):    
     global _mysql_engine
-    print(kwargs)
+
     if _mysql_engine is None or check_connection_status:
         db_host = kwargs.get("host_name", "") or get_secret("MYSQL_DB_HOST")
         db_port = kwargs.get("port", "") or get_secret("MYSQL_DB_PORT")
@@ -49,8 +48,6 @@ def get_mysql_db_engine(db_name=None, check_connection_status=False, **kwargs):
 def get_postgresql_db_engine(db_name=None, check_connection_status=False, **kwargs):    
     if db_name is None:
         db_name = "postgres"
-    print("PostSQL Engine")
-    print(db_name)
     
     global _postgresql_engine
 
@@ -78,9 +75,6 @@ def get_postgresql_db_engine(db_name=None, check_connection_status=False, **kwar
     return _postgresql_engine
 
 def get_db_engine(db_type, db_name=None, check_connection_status=False, **kwargs):
-    print("Get DB Engine")
-    print("KWARGS")
-    print(kwargs)
     _engine = None
     if db_type == "postgresql":
         _engine = get_postgresql_db_engine(db_name, check_connection_status, **kwargs)

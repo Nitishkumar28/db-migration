@@ -23,7 +23,7 @@ Errors:
 2) Datatype adapter always falls back to TEXT only -- Incorrect conversion -  Done
 3) Primary key and foreign key -  Done
 4) data type equivalents list - check accuracy - Done
-5) Error handling 
+5) Error handling - Done 
 
 6) UI - Save details - Endpoints (specific)
 

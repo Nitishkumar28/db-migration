@@ -11,13 +11,11 @@ from core.data import TriggerModel
 
 
 def run_query(query, db_type, db_name=None, check_connection_status=False):
-    print("Run Query")
     engine = get_db_engine(db_type, db_name, check_connection_status)
-    print(engine)
     if engine is not None:
         try:
             with engine.begin() as conn:
-                results = conn.execute(text(query)) # check the value stored in results
+                results = conn.execute(text(query))
                 return results
         except Exception as e:
             print(f"Exception occurred while running query: {query}, {str(e)}")
@@ -27,7 +25,6 @@ def run_query(query, db_type, db_name=None, check_connection_status=False):
 
 def get_db_inspector(db_type, db_name):
     engine = get_db_engine(db_type, db_name)
-    print("INSPECTOR ENGINE:", engine, db_type, db_name)
     try:
         inspector = inspect(engine)
         return inspector
@@ -38,9 +35,6 @@ def get_db_inspector(db_type, db_name):
 
 
 def get_databases(db_type):
-    """
-    ????? db_name ?????
-    """
     results = []
     if db_type == "postgresql":
         query = "SELECT datname FROM pg_database WHERE datistemplate = false;"
@@ -187,8 +181,6 @@ def get_table_ddl(db_type, db_name, table_name):
         col_name = column["name"]
         col_type_obj = column["type"] 
         sql_type = adapter.convert_data(col_type_obj)
-        print("DDL - SQL TYPE")
-        print(sql_type)
         null_const = "NULL" if column["nullable"] else "NOT NULL"
         default_val = ""
         col_defs.append(
@@ -229,12 +221,10 @@ def get_triggers_for_table(db_type, db_name, table_name):
 def load_data_to_table(db_type, db_name, table_name, df, dtype_map, if_exists="replace"):
     try:
         engine = get_db_engine(db_type, db_name)
-        print("Printing DF")
         for colname in df.columns:
             if df[colname].apply(lambda x: isinstance(x,dict)).any():
                 print("Inside if")
                 df[colname] = df[colname].apply(json.dumps)
-        print(df)
         df.to_sql(table_name, engine, if_exists=if_exists, index=False, dtype=dtype_map)
         return True
     except Exception as e:
@@ -246,7 +236,6 @@ def create_index_during_export(target, column_info, indexes, table_name, skipped
     for index in indexes:
         is_unique = "UNIQUE " if index["unique"] else ""
         modified_cols = []
-        print("Index print")
         columns_with_dt = [(col['name'],col['type']) for col in column_info]
         for col_name, col_type in columns_with_dt:
             if col_name in index["column_names"]:
@@ -259,7 +248,6 @@ def create_index_during_export(target, column_info, indexes, table_name, skipped
                 f"CREATE {is_unique}INDEX `{index["name"]}` "
                 f"ON `{table_name}` ({', '.join(modified_cols)});"
             )
-        print(create_index_query)
         ack = run_query(create_index_query, target["db_type"], target["db_name"])
         if not ack:
             skipped.add(table_name)
@@ -269,10 +257,8 @@ def create_index_during_export(target, column_info, indexes, table_name, skipped
 
 def create_foreign_keys_export(source, target, table_name):
     run_query("SET FOREIGN_KEY_CHECKS=0;", target["db_type"], target["db_name"])
-
     foreign_keys = get_foreign_keys(source["db_type"], source["db_name"], table_name)
-    print("FOREIGN KEY")
-    print(foreign_keys)
+    
     for fkey in foreign_keys:
         fk_name = fkey['name'] or f"fk_{table_name}_{fkey['referred_table']}"
         cons_column = ", ".join(f"`{c}`" for c in fkey['constrained_columns'])
@@ -291,8 +277,6 @@ def create_foreign_keys_export(source, target, table_name):
         if options_add.get('onupdate'):
             alter += f" ON UPDATE {options_add['onupdate'].upper()}"
         alter += ";"
-        print("QUERY FOREIGN KEY")
-        print(alter)
         run_query(alter, target["db_type"], target["db_name"])
 
     run_query("SET FOREIGN_KEY_CHECKS=1;", target["db_type"], target["db_name"])
@@ -300,7 +284,6 @@ def create_foreign_keys_export(source, target, table_name):
 
 def export_tables(source, target):
     skipped, exported = set(), set()
-    print(source,target)
     
     source_table_names = get_table_names(source["db_type"],source["db_name"])
 
@@ -315,21 +298,15 @@ def export_tables(source, target):
         
         # 2. Build "create table" query from source
         create_table_query = get_table_ddl(source["db_type"], source["db_name"], table_name)
-        print("TABLE DDL")
-        print(create_table_query)
 
         # 3. Execute "create table" query on target, if query failed to run, skip it
         ack = run_query(create_table_query, target["db_type"], target["db_name"]) # mySQL Table create
-        print("ACK ")
-        print(ack)
         if not ack:
             skipped.add(table_name)
             continue
       
         # 4. get column names for the current table from source
         column_info = get_column_info(target["db_type"], target["db_name"], table_name)
-        print("MYSQL -  COLUMN INFO")
-        print(column_info)
         dtype_map = {
             column["name"]: column["type"]
             for column in column_info
