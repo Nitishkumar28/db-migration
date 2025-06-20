@@ -23,11 +23,7 @@ const ConnectionBlock = () => {
         <ConnectionHeader {...connectionHeaderProps} />
         <div className="w-full h-full flex flex-col justify-start items-center gap-6">
           <DetailsBlock title={`Source: ${selectedSource || "select a source from above dropdown"}`} db_type="source" />
-          <DetailsBlock title={`Source: ${selectedTarget || "select a target from above dropdown"}`} db_type="target" />
-
-          {/* <DetailsBlock title={`Source: ${selectedSource || "select a source from above dropdown"}`} db_type={selectedSource?.toLowerCase()} /> */}
-          {/* <DetailsBlock title={`Target: ${selectedTarget || "select a target from above dropdown"}`} db_type={selectedTarget?.toLowerCase()} /> */}
-
+          <DetailsBlock title={`Target: ${selectedTarget || "select a target from above dropdown"}`} db_type="target" />
         </div>
       </div>
     </div>

@@ -14,7 +14,11 @@ const ConnectionHeader = ({
   useEffect(() => {
     if (selectedSource !== "") {
       const current = connectionDetails.find(conn => conn.db_type === selectedSource?.toLowerCase())
-      setSelectedSourceDetails(current);
+      setSelectedTargetDetails(current)
+      // console.log(current, selectSourceDetails);
+      // if (selectSourceDetails?.db_type !== selectedSource?.toLowerCase()) {
+      //   setSelectedSourceDetails(current)
+      // }
     } 
     
     if (selectedTarget !== "") {

@@ -53,7 +53,7 @@ const TextHolder = ({text, size, weight, type, styles="", ...props}) => {
   )
 }
 
-const NavbarOption = ({ text }) => {
+const NavbarOption = ({ text, styles, children }) => {
   const activeTheme = useUIStore((state) => state.theme);
   const activeOption = useUIStore((state) => state.activeNavbarOption);
   const setActiveOption = useUIStore((state) => state.setNavbarOption);
@@ -73,9 +73,9 @@ const NavbarOption = ({ text }) => {
             ? themePalette[activeTheme].backgroundPrimary
             : "",
       }}
-      className="min-w-10 max-w-36 h-full flex justify-center items-center border px-2 py-1 rounded-md font-normal tracking-wide leading-6 cursor-pointer capitalize"
+      className={`${styles} min-w-10 max-w-36 h-full flex justify-center items-center border px-2 py-1 rounded-md font-normal tracking-wide leading-6 cursor-pointer capitalize`}
     >
-      {text}
+      {text} {children}
     </span>
   );
 };
@@ -86,7 +86,7 @@ const BaseButton = ({text, type, children, className="", ...props}) => {
       <button
       {...props}
         style={{ 
-          borderColor: themePalette[activeTheme].borderPrimary, 
+          borderColor: themePalette[activeTheme].borderSecondary, 
           fontSize: header_sizes.normal 
         }}
         className={`min-w-20 border px-1 py-1 rounded shadow cursor-pointer capitalize hover:opacity-80 ${className}`}>
@@ -98,4 +98,32 @@ const BaseButton = ({text, type, children, className="", ...props}) => {
   )
 }
 
-export { Header, TextHolder, NavbarOption, BaseButton };
+// #0492C2, #48AAAD
+const LongArrowCustom = ({ width = 100, color = "#0492C2" }) => {
+  return (
+    <div className="flex items-center" style={{ width: `${width}px` }}>
+      <div
+        className="h-1"
+        style={{
+          width: `${width - 10}px`,
+          backgroundColor: color,
+        }}
+      ></div>
+
+      <div
+        style={{
+          width: "0",
+          height: "0",
+          borderTop: "10px solid transparent",
+          borderBottom: "10px solid transparent",
+          borderLeft: `14px solid ${color}`,
+        }}
+      ></div>
+    </div>
+  );
+};
+
+
+
+
+export { Header, TextHolder, NavbarOption, BaseButton, LongArrowCustom };

@@ -6,8 +6,7 @@ export const initialConnections = [
     password: "",
     port: "3306",
     database_name: "",
-    status: "idle",
-    edited: false
+    status: "failed"
   },
     {
     db_type: "postgresql",
@@ -16,8 +15,7 @@ export const initialConnections = [
     password: "",
     port: "5432",
     database_name: "",
-    status: "idle",
-    edited: false
+    status: "idle"
   },
   {
     db_type: "oracle",
@@ -26,7 +24,6 @@ export const initialConnections = [
     password: "",
     port: "1521",
     database_name: "",
-    status: "idle",
-    edited: false
+    status: "idle"
   }
 ]

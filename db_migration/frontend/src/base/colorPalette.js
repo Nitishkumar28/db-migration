@@ -1,15 +1,15 @@
 export const themePalette = {
     calm: {
-        text: "#457B9D",
+        text: "#03729A",
         textMain: "#1A1A1A",
         textSecondary: "#6B7280",
         background: "",
-        backgroundPrimary: "#D5E8EC",
-        backgroundSecondary: "#EEF6F8",
+        backgroundPrimary: "#A0DBF1", 
+        backgroundSecondary: "#E1F6FC",
         border: "#D5E8EC",
         borderPrimary: "#97BDD0",
         buttons: "#1D3557",
-        success: "#2ECC71",
+        success: "#00A86B",
         error: "#E63946",
         info: "#48CAE4",
         pending: "lightgray"
@@ -19,6 +19,8 @@ export const themePalette = {
         textMain: "#1A1A1A",
         textSecondary: "#6B7280",
         background: "#F1FAEE",
+        backgroundPrimary: "#D5E8EC", 
+        backgroundSecondary: "#EEF6F8",
         border: "#E5E5E5",
         buttons: "#1D3557",
         success: "#2ECC71",

@@ -6,7 +6,21 @@ import useUIStore from "../../../store/uistore";
 
 const Footer = () => {
   const activeTheme = useUIStore(state => state.theme);
-  const { selectSourceDetails, selectTargetDetails } = useDBStore();
+  const { selectedSource, selectedTarget } = useDBStore();
+
+    const selectSourceDetails = useDBStore((state) => {
+      const current = state.connectionDetails.find(
+        (conn) => conn.db_type === selectedSource?.toLowerCase()
+      );
+      return current;
+    });
+
+    const selectTargetDetails = useDBStore((state) => {
+      const current = state.connectionDetails.find(
+        (conn) => conn.db_type === selectedTarget?.toLowerCase()
+      );
+      return current;
+    });
 
   return (
     <footer

@@ -1,6 +1,7 @@
-import { NavbarOption } from "../base/Base";
+import { BaseButton, NavbarOption } from "../base/Base";
 import useDBStore from "../store/dbStore";
 import MainHeaderSection from "./MainHeaderSection";
+import { Icon } from '@iconify/react';
 
 const Navbar = () => {
   const selectedSource = useDBStore(state => state.selectedSource);
@@ -8,13 +9,19 @@ const Navbar = () => {
   return (
     <div className="flex justify-between items-center gap-1 w-full border-b-0 border-b-gray-200 px-2.5 py-3">
       <div className="w-[30%]">
-        <span className="tracking-wider leading-7 font-semibold">Cloudserv.ai</span>
+        <span className="tracking-wider leading-7 text-lg font-semibold">Cloudserv.ai</span>
       </div>
       <MainHeaderSection />
-      <div className="w-[30%] flex justify-end items-center gap-4">
-        <NavbarOption text="services" />
-        <NavbarOption text="history" />
-        <NavbarOption text="login" />
+      <div className="w-[30%] flex justify-end items-center gap-1">
+        <BaseButton text="Services" className="font-normal py-1 px-2 border border-[#03729A] text-[#03729A] rounded-md">
+          <Icon icon="mdi:cogs" width="20" height="20" />
+        </BaseButton>
+        <BaseButton text="" className="font-normal bg-none border-none shadow-none text-[#03729A]">
+          <Icon icon="mdi:bell" width="20" height="20" />
+        </BaseButton>
+        <BaseButton text="login" className="font-normal py-1 px-2 border border-[#03729A] text-[#03729A]  rounded-md">
+          <Icon icon="mdi:login" width="20" height="20" />
+        </BaseButton>
       </div>
     </div>
   );

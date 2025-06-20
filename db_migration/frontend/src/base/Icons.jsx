@@ -1,5 +1,5 @@
 import rightArrow from '../assets/arrow_right.png';
-import exportIcon from '../assets/export.png'
+import exportIcon from '../assets/upload.png'
 import lightIcon from '../assets/light.png'
 import darkIcon from '../assets/dark.png'
 
@@ -21,7 +21,7 @@ export const RightArrowIcon = ({ size = 20, className = "" }) => (
     <img src={rightArrow} alt="rightarrow" width={size} height={size} className={className} />
 );
 
-export const ExportIcon = ({ size = 20, className = "" }) => (
+export const ExportIcon = ({ size = 25, className = "" }) => (
     <img src={exportIcon} alt="exportIcon" width={size} height={size} className={className} />
 );
 

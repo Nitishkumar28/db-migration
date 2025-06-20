@@ -11,7 +11,7 @@ const StatusLight = ({text, status}) => {
 
     const light = status === "success" ? greenLight : status === "idle" ? grayLight : redLight;
     return (
-        <span className={`capitalize ${header_weight.light}`}>{text} {light}</span>
+        <span className={`capitalize ${header_weight.normal}`}>{text} {light}</span>
     )
 }
 

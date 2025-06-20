@@ -18,7 +18,7 @@ const HeaderOption = ({ text, path }) => {
     to={path}
     onClick={() => setActiveOption(text)}
     style={{fontSize:header_sizes.small, backgroundColor: activeOption === text ? themePalette[activeTheme].backgroundPrimary : ""}}
-    className="w-full h-full flex justify-center items-center capitalize px-2 py-1.5 tracking-wide leading-6 cursor-pointer">
+    className="w-full h-full flex justify-center items-center capitalize px-2 py-1.5 tracking-wide leading-6 cursor-pointer hover:opacity-70">
       {text}
     </Link>
   );

@@ -30,7 +30,7 @@ const DropdownOption = ({ option, selectedOption, setSelectedOption, setIsOpen }
 
 const DropdownOptions = ({ options, selectedOption, setSelectedOption, setIsOpen }) => {
   const activeTheme = useUIStore((state) => state.theme);
-  const fullOptions = [null, ...options];
+  const fullOptions = ["", ...options];
 
   return (
     <div

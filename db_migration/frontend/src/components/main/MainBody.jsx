@@ -10,7 +10,7 @@ const MainBody = () => {
     <div className="relative w-full h-screen flex flex-col items-center justify-between gap-10 px-[10%] overflow-scroll">
       <div 
       // style={{borderColor: themePalette[activeTheme].borderPrimary}}
-      className="flex w-full min-h-[90%] justify-start items-center overflow-hidden border border-gray-400 rounded-xl">
+      className="flex w-full min-h-[90%] justify-start items-center overflow-hidden border border-[#4FC3E5] rounded-xl">
         <SideNavBarBlock />
         <ActionBlock />
       </div>

@@ -6,7 +6,7 @@ const Legend = ({title}) => {
     return (
         <span
             style={{ color: themePalette[activeTheme].text }}
-            className="text-[0.7rem] px-1 absolute -top-2 left-4 bg-white font-medium">
+            className="text-[0.8rem] px-1 absolute -top-2 left-4 bg-white font-semibold">
             {title}
         </span>
     )
