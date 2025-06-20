@@ -13,11 +13,11 @@ const FirstColumn = ({ db_type }) => {
     <div className="w-[55%] h-full py-[2%] flex flex-col justify-start items-between gap-2">
       <InputBar
         title="Server Address"
-        field="server_address"
+        field="host_name"
         db_type={db_type}
       />
       <InputBar title="Username" field="username" db_type={db_type} />
-      <InputBar title="Database Name" field="database_name" db_type={db_type} />
+      <InputBar title="Database Name" field="db_name" db_type={db_type} />
     </div>
   );
 };
@@ -54,13 +54,7 @@ const DetailsBlock = ({ db_type, title }) => {
       return state.selectedTarget?.toLowerCase();
     }
   });
-  // const activeConnectionDetails = useDBStore(state => {
-  //   if(db_type === "source") {
-  //     return state.selectSourceDetails
-  //   } else if (db_type === "target") {
-  //     return state.selectTargetDetails
-  //   }
-  // })
+
   const activeConnectionDetails = useDBStore((state) => {
     const current = state.connectionDetails.find(
       (conn) => conn.db_type === activeConnection?.toLowerCase()
@@ -68,31 +62,15 @@ const DetailsBlock = ({ db_type, title }) => {
     return current;
   });
 
-  //   const setConnectionDetails = useDBStore((state) => {
-  //   if(db_type === "source") {
-  //     return state.setSelectedSourceDetails
-  //   } else if (db_type === "target") {
-  //     return state.setSelectedTargetDetails
-  //   }
-  // });
-
-  //   const updateConnectionDetails = useDBStore((state) => {
-  //   if(db_type === "source") {
-  //     return state.updateSourceDetails
-  //   } else if (db_type === "target") {
-  //     return state.updateTargetDetails
-  //   }
-  // });
-
   const handleReset = () => {
     const updatedConnections = connectionDetails.map((conn) => {
       if (conn.db_type === activeConnection.toLowerCase()) {
         return {
           ...conn,
-          server_address: "",
+          host_name: "",
           username: "",
           password: "",
-          database_name: "",
+          db_name: "",
           status: "idle",
         };
       }
@@ -104,16 +82,16 @@ const DetailsBlock = ({ db_type, title }) => {
 
   const handlePost = async () => {
     console.log(activeConnectionDetails, activeConnection);
+
     if (!activeConnectionDetails)
       return console.warn("No matching connection found for", db_type);
+
     try {
-      const status = "success"; // await post(postData);
-      updateConnectionDetails(activeConnection, "status", status);
-      console.log("Post successful:", status);
+      await post({...activeConnectionDetails, "db_type": activeConnection.toLowerCase()});
+      updateConnectionDetails(activeConnection, "status", "success");
     } catch (err) {
-      const status = "failed";
       console.error("Post failed:", err.message);
-      updateConnectionDetails(activeConnection, "status", status);
+      updateConnectionDetails(activeConnection, "status", "failed");
     }
   };
 

@@ -4,11 +4,11 @@ import { persist } from "zustand/middleware";
 
 const initialConnectionDetails = {
   db_type: "",
-  server_address: "",
+  host_name: "",
   username: "",
   password: "",
   port: "",
-  database_name: "",
+  db_name: "",
   status: "idle",
 };
 

@@ -1,29 +1,29 @@
 export const initialConnections = [
   {
     db_type: "mysql",
-    server_address: "",
+    host_name: "",
     username: "",
     password: "",
     port: "3306",
-    database_name: "",
+    db_name: "",
     status: "failed"
   },
     {
     db_type: "postgresql",
-    server_address: "",
+    host_name: "",
     username: "",
     password: "",
     port: "5432",
-    database_name: "",
+    db_name: "",
     status: "idle"
   },
   {
     db_type: "oracle",
-    server_address: "",
+    host_name: "",
     username: "",
     password: "",
     port: "1521",
-    database_name: "",
+    db_name: "",
     status: "idle"
   }
 ]

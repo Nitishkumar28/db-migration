@@ -1,5 +1,5 @@
 from tabnanny import check
-from fastapi import APIRouter
+from fastapi import APIRouter, WebSocket
 from fastapi import HTTPException
 from core.data import DBInfo, ExportRequest
 from core.db.db_utils import (
@@ -24,6 +24,31 @@ def load_homepage():
         return {"result": "data"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
+    
+@router.websocket("/ws/logs")
+async def test_websockets(websocket: WebSocket):
+    await websocket.accept()
+    
+    process = await asyncio.create_subprocess_exec(
+        "python3", "sample.py",
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.STDOUT
+    )
+
+    try:
+        while True:
+            line = await process.stdout.readline()
+            if line:
+                await websocket.send_text(line.decode().strip())
+                await asyncio.sleep(0.8)
+            else:
+                break
+    except Exception as e:
+        await websocket.send_text(f"[Error] {str(e)}")
+    finally:
+        await websocket.close()
+
+    
 
 @router.post("/check-connection/")
 def check_connection(request: DBInfo):

@@ -28,8 +28,8 @@ const Footer = () => {
       className="w-full border-t-0 px-[2%] tracking-wide leading-6"
     >
       <div className="w-full flex justify-end items-center gap-4 py-1">
-        <StatusLight text="Source" status={selectSourceDetails.status} />
-        <StatusLight text="Target" status={selectTargetDetails.status} />
+        <StatusLight text="Source" status={selectSourceDetails?.status} />
+        <StatusLight text="Target" status={selectTargetDetails?.status} />
       </div>
     </footer>
   );
