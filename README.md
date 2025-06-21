@@ -31,9 +31,34 @@ Errors:
 Ideas:
 
 1) foreign key disabling and enabling
+2) Separate the stats for source and target and eventually merge them during display
+
+Summary table
+
+1) Export - export_feature()
+-  Request body:     {
+        "source": {
+            "db_type": "postgresql",
+            "db_name": "demo"
+        },
+        "target": {
+            "db_type": "mysql",
+            "db_name": "demo"
+        }
+    }
+
+- Returns :
+
+return {
+            "message": "Tables and triggers exported successfully.",
+            "exported_tables": list(exported),
+            "exported_triggers": result.get("exported", [])
+            "timing": Each table timing
+        }
 
 
 
+<<<<<<< Updated upstream
 Todos:
 - Merge export return body and stats endpoint result for table execution time
 - Single History page
@@ -41,3 +66,14 @@ Todos:
 - API connections (expected)
 - Mongo vs relational
 - APIs to store and manage history 
+=======
+
+2) Statistics
+
+
+a) db_name, db_type
+
+{
+    
+}
+>>>>>>> Stashed changes

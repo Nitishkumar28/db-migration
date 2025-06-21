@@ -60,6 +60,7 @@ const DetailsBlock = ({ db_type, title }) => {
   const handlePost = async () => {
     if (!activeConnectionDetails) return;
     try {
+<<<<<<< Updated upstream
       setTimeout(() => {}, [3000])
       await post({ ...activeConnectionDetails, db_type: activeConnection });
       updateConnectionDetails(
@@ -68,6 +69,13 @@ const DetailsBlock = ({ db_type, title }) => {
         result ? "success" : "failed"
       );
     } catch {
+=======
+      await post({...activeConnectionDetails, "db_type": activeConnection.toLowerCase()});
+      console.log(result,"FRONTEND REQUEST")
+      updateConnectionDetails(activeConnection, "status", "success");
+    } catch (err) {
+      console.error("Post failed:", err.message);
+>>>>>>> Stashed changes
       updateConnectionDetails(activeConnection, "status", "failed");
     }
   };

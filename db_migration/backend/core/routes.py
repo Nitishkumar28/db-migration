@@ -1,7 +1,7 @@
-from tabnanny import check
-from fastapi import APIRouter, WebSocket
+from fastapi import APIRouter
 from fastapi import HTTPException
 from core.data import DBInfo, ExportRequest
+from core.stats import collect_export_stats, get_most_recent_stats
 from core.db.db_utils import (
     get_databases,
     get_table_names,
@@ -17,6 +17,7 @@ from core.db.db_utils import (
 from core.logging import logger, RUN_ID, get_next_log_counter
 from datetime import datetime
 from core.db.db_connect import get_db_engine
+import time
 
 router = APIRouter()
 
@@ -26,35 +27,13 @@ def load_homepage():
         return {"result": "data"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
-    
-@router.websocket("/ws/logs")
-async def test_websockets(websocket: WebSocket):
-    await websocket.accept()
-    
-    process = await asyncio.create_subprocess_exec(
-        "python3", "sample.py",
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.STDOUT
-    )
-
-    try:
-        while True:
-            line = await process.stdout.readline()
-            if line:
-                await websocket.send_text(line.decode().strip())
-                await asyncio.sleep(0.8)
-            else:
-                break
-    except Exception as e:
-        await websocket.send_text(f"[Error] {str(e)}")
-    finally:
-        await websocket.close()
 
     
 
 @router.post("/check-connection/")
 def check_connection(request: DBInfo):
     try:
+        print(request)
         check_connection_stat = True
         args = {
             "host_name": request.host_name,
@@ -69,6 +48,7 @@ def check_connection(request: DBInfo):
         if request.db_type != "postgresql" and db_name != "":
             run_query(f"CREATE DATABASE IF NOT EXISTS {db_name}", request.db_type, check_connection_status=check_connection_stat)
         check_connection_res = get_db_engine(**args)
+        print("SUCESS")
         return {"results": check_connection_res is not None}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Connection check failed: {e}")
@@ -183,7 +163,10 @@ def export_feature(request: ExportRequest):
             "db_name": request.target.db_name
         },
         }
-        exported, skipped = export_tables(**args)
+
+        start_time = time.time()
+
+        exported, skipped, durations = export_tables(**args)
         logger.info(f"=== Tables exported: {len(exported)}; skipped: {len(skipped)} ===\n")
 
         if skipped:
@@ -193,10 +176,24 @@ def export_feature(request: ExportRequest):
             )
         
         logger.info("=== Section: Export Triggers ===")
+
         result = export_triggers(
             args["source"],
             args["target"]
         )
+
+        end_time = time.time()
+
+        collect_export_stats(
+            source={ "db_type": request.source.db_type, "db_name": request.source.db_name },
+            target={ "db_type": request.target.db_type, "db_name": request.target.db_name },
+            exported=exported,
+            errors=result.get("errors", []),
+            start_time=start_time,
+            end_time=end_time,
+            durations=durations
+         )
+
         logger.info(f"=== ✅ Triggers exported: {len(result.get('exported', []))}; errors: {len(result.get('errors', []))} ===\n")
 
         if result["errors"]:
@@ -209,6 +206,7 @@ def export_feature(request: ExportRequest):
                     "trigger_errors": result["errors"]
                 }
             )
+        
         
         logger.info(f"API `/export/` succeeded: exported_tables={exported}, exported_triggers={result.get('exported', [])}")
         
@@ -224,3 +222,7 @@ def export_feature(request: ExportRequest):
         logger.exception("Unhandled error during `/export/`")
         raise HTTPException(status_code=500, detail=f"Error exporting tables: {e}")
 
+
+@router.get("/stats/")
+def stats_display():
+    return { "result": get_most_recent_stats() }

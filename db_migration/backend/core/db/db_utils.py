@@ -5,6 +5,7 @@ from sqlalchemy.engine import CursorResult
 from core.logging import logger
 import re
 import json
+import time
 
 from core.db.db_connect import get_db_engine
 from core.process import PostgresToMySQLDataTypeAdapter
@@ -178,7 +179,8 @@ def get_table_ddl(db_type, db_name, table_name):
     for column in columns:
         col_name = column["name"]
         col_type_obj = column["type"] 
-        sql_type = adapter.convert_data(col_type_obj)
+        #sql_type = adapter.convert_data(col_type_obj)
+        sql_type = 'TEXT'
         null_const = "NULL" if column["nullable"] else "NOT NULL"
         default_val = ""
         col_defs.append(
@@ -191,6 +193,7 @@ def get_table_ddl(db_type, db_name, table_name):
     table_ddl_create.append(",\n".join(col_defs))
     table_ddl_create.append(");")
     return "\n".join(table_ddl_create)
+
 
 
 def get_triggers_for_table(db_type, db_name, table_name):
@@ -283,86 +286,78 @@ def create_foreign_keys_export(source, target, table_name):
     run_query("SET FOREIGN_KEY_CHECKS=1;", target["db_type"], target["db_name"])
 
 
+
 def export_tables(source, target):
     logger.info(f"Begin exporting tables from `{source['db_name']}` to `{target['db_name']}`")
     source_tables = get_table_names(source["db_type"], source["db_name"])
     skipped, exported = set(), set()
+    table_durations = {}
 
-    # --- Section 1: Dropping and Creating Tables ---
-    logger.info(">>> Section: Dropping & Creating Tables")
-    created = []
     for table in source_tables:
+        t0 = time.time()
+
+        # Section 1: Dropping and Creating Table
         logger.info(f"- Dropping `{table}` if exists")
         run_query(f"DROP TABLE IF EXISTS `{table}`;", target["db_type"], target["db_name"])
 
         data = run_query(f"SELECT * FROM {table};", source["db_type"], source["db_name"])
         if not data:
             skipped.add(table)
-            logger.warning(f"- No data in `{table}`, skipping CREATE")
+            t1 = time.time()
+            table_durations[table] = t1 - t0
             continue
 
         ddl = get_table_ddl(source["db_type"], source["db_name"], table)
         logger.debug(f"  DDL for `{table}`: {ddl}")
-        if run_query(ddl, target["db_type"], target["db_name"]):
-            created.append(table)
-            logger.info(f"- Created table `{table}`")
-        else:
+        if not run_query(ddl, target["db_type"], target["db_name"]):
             skipped.add(table)
-            logger.error(f"- FAILED to create `{table}`, skipping")
+            t1 = time.time()
+            table_durations[table] = t1 - t0
+            continue
+        logger.info(f"- Created table `{table}`")
 
-    logger.info(f"=== ✅ Tables phase done: {len(created)} created, {len(skipped)} skipped ===\n")
+        # Section 2: Loading Data
+        cols = [each_col["name"] for each_col in get_column_info(target["db_type"], target["db_name"], table)]
+        df = pd.DataFrame(run_query(f"SELECT * FROM {table};", source["db_type"], source["db_name"]),columns=cols)
 
-    # --- Section 2: Loading Data ---
-    logger.info(">>> Section: Loading Data")
-    loaded = []
-    for table in created:
-        cols = [c["name"] for c in get_column_info(target["db_type"], target["db_name"], table)]
-        df = pd.DataFrame(run_query(f"SELECT * FROM {table};", source["db_type"], source["db_name"]), columns=cols)
-        success = load_data_to_table(target["db_type"], target["db_name"], table, df, 
-                                     {c["name"]: c["type"] for c in get_column_info(target["db_type"], target["db_name"], table)},
-                                     if_exists="append")
-        if success:
-            loaded.append(table)
-            logger.info(f"- Loaded data into `{table}`")
-        else:
+        success = load_data_to_table(
+            target["db_type"],
+            target["db_name"],
+            table,
+            df,
+            {c["name"]: c["type"] for c in get_column_info(target["db_type"], target["db_name"], table)},
+            if_exists="append"
+        )
+
+        if not success:
             skipped.add(table)
-            logger.error(f"- FAILED to load data into `{table}`")
+            t1 = time.time()
+            table_durations[table] = t1 - t0
+            continue
+        logger.info(f"- Loaded data into `{table}`")
 
-    logger.info(f"=== ✅ Data phase done: {len(loaded)} tables loaded ===\n")
-
-    # --- Section 3: Creating Indexes ---
-    logger.info(">>> Section: Creating Indexes")
-    indexed = []
-    for table in loaded:
-        idxs = get_indexes_info(source["db_type"], source["db_name"], table)
-        for idx in idxs:
+        # Section 3: Creating Indexes
+        for idx in get_indexes_info(source["db_type"], source["db_name"], table):
             logger.info(f"- Creating index `{idx['name']}` on `{table}`")
-            create_index_during_export(target, get_column_info(target["db_type"], target["db_name"], table), [idx], table, skipped)
-            if table not in skipped:
-                indexed.append((table, idx["name"]))
-                logger.info(f"  -> Created `{idx['name']}`")
-            else:
-                logger.error(f" -> FAILED `{idx['name']}`")
+            create_index_during_export(
+                target,
+                get_column_info(target["db_type"], target["db_name"], table),
+                [idx],
+                table,
+                skipped
+            )
+        logger.info(f"  -> Indexes created for `{table}`")
 
-    logger.info(f"=== ✅ Index phase done: {len(indexed)} indexes created ===\n")
+        # Section 4: Foreign Keys
+        create_foreign_keys_export(source, target, table)
+        logger.info(f"  -> Foreign keys added for `{table}`")
 
-    # --- Section 4: Adding Foreign Keys ---
-    logger.info(">>> Section: Adding Foreign Keys")
-    fked = []
-    for table in loaded:
-        fks = get_foreign_keys(source["db_type"], source["db_name"], table)
-        for fk in fks:
-            name = fk.get("name") or f"fk_{table}_{fk['referred_table']}"
-            logger.info(f"- Adding FK `{name}` on `{table}`")
-            create_foreign_keys_export(source, target, table)
-            fked.append((table, name))
-            logger.info(f"  -> Added `{name}`")
+        t1 = time.time()
+        table_durations[table] = t1 - t0
+        exported.add(table)
 
-    logger.info(f"=== ✅ FK phase done: {len(fked)} FKs added ===\n")
-
-    # Final summary
     logger.info(f" ✅ Export complete: {len(exported)} tables exported, {len(skipped)} skipped")
-    return set(created), skipped
+    return exported, skipped, table_durations
 
 
 
