@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { migrations } from "../../../data/Migration";
+import { history_cards, migrations } from "../../../data/Migration";
 import { useParams, useNavigate } from "react-router-dom";
 import HistoryCards from "./HistoryCards";
 import useUIStore from "../../../../store/uistore";
@@ -30,7 +30,7 @@ const HistoryBlock = () => {
   return (
     <div className="w-full h-[450px] overflow-y-scroll">
       <HistoryCards
-        migrations={migrations}
+        history_cards={history_cards}
         selectedMigration={selectedMigration}
         onSelect={handleCardClick}
       />

@@ -190,6 +190,150 @@ export const mockLogs = [
 ];
 
 
+export const mockHistory = Array.from({ length: 5 }, (_, i) => ({
+  job_id: `job_00${i + 1}`,
+  source_db_type: "mysql",
+  target_db_type: "postgresql",
+  source_db_name: `app_db_${i}`,
+  target_db_name: `app_pg_${i}`,
+  status: i % 2 === 0 ? "completed" : "failed",
+  created_at: `2024-06-17T10:0${i}:00Z`,
+  completed_at: `2024-06-17T10:1${i}:00Z`,
+  total_migration_time: `${10 + i}m`,
+  started_by: "preetham",
+  description: `Migration job ${i + 1}`,
+  tags: ["batch", `job_${i + 1}`],
+  items: [
+    {
+      item_id: 1,
+      type: "table",
+      name: `table_${i}`,
+      source_total_rows: 500 + i * 10,
+      target_total_rows: 500 + i * 10,
+      index_validation: "2/2",
+      primary_key_validation: "1/1",
+      foreign_key_validation: "1/1",
+      status: "completed",
+      duration: `${5 + i}m`,
+      timestamp: `2024-06-17T10:0${i}:30Z`
+    },
+    {
+      item_id: 2,
+      type: "trigger",
+      name: `trigger_${i}`,
+      total_triggers: "1/1",
+      status: "completed",
+      duration: "1m",
+      timestamp: `2024-06-17T10:0${i}:50Z`
+    }
+  ]
+}));
+
+
+export const history_cards = [
+    {
+        "jobid": "job_001",
+        "source_db_type": "mysql",
+        "target_db_type": "postgresql",
+        "source_db_name": "user_service",
+        "target_db_name": "user_service_pg",
+        "created_at": "2024-06-17T10:24:00Z",
+        "started_by": "admin",
+        "status": "completed",
+    },
+    {
+        "jobid": "job_002",
+        "source_db_type": "oracle",
+        "target_db_type": "mysql",
+        "source_db_name": "billing",
+        "target_db_name": "billing_mysql",
+        "created_at": "2024-06-17T11:30:00Z",
+        "started_by": "preetham",
+        "status": "failed",
+    },
+    {
+        "jobid": "job_003",
+        "source_db_type": "mysql",
+        "target_db_type": "postgresql",
+        "source_db_name": "inventory_db",
+        "target_db_name": "inventory_pg",
+        "created_at": "2024-06-18T09:15:00Z",
+        "started_by": "preetham",
+        "status": "completed",
+    },
+    {
+        "jobid": "job_004",
+        "source_db_type": "mysql",
+        "target_db_type": "oracle",
+        "source_db_name": "analytics",
+        "target_db_name": "analytics_ora",
+        "created_at": "2024-06-19T14:45:00Z",
+        "started_by": "admin",
+        "status": "running",
+    },
+    {
+        "jobid": "job_005",
+        "source_db_type": "postgresql",
+        "target_db_type": "oracle",
+        "source_db_name": "ecommerce",
+        "target_db_name": "ecommerce_mig",
+        "created_at": "2024-06-20T08:00:00Z",
+        "started_by": "team_user",
+        "status": "completed",
+    },
+    {
+        "jobid": "job_006",
+        "source_db_type": "mysql",
+        "target_db_type": "postgresql",
+        "source_db_name": "auth_service",
+        "target_db_name": "auth_pg",
+        "created_at": "2024-06-20T10:10:00Z",
+        "started_by": "preetham",
+        "status": "running",
+    },
+    {
+        "jobid": "job_007",
+        "source_db_type": "oracle",
+        "target_db_type": "mysql",
+        "source_db_name": "legacy_hr",
+        "target_db_name": "hr_mysql",
+        "created_at": "2024-06-21T13:20:00Z",
+        "started_by": "admin",
+        "status": "completed",
+    },
+    {
+        "jobid": "job_008",
+        "source_db_type": "sqlserver",
+        "target_db_type": "postgresql",
+        "source_db_name": "payments",
+        "target_db_name": "payments_pg",
+        "created_at": "2024-06-21T14:55:00Z",
+        "started_by": "devops",
+        "status": "failed",
+    },
+    {
+        "jobid": "job_009",
+        "source_db_type": "postgresql",
+        "target_db_type": "oracle",
+        "source_db_name": "analytics_db",
+        "target_db_name": "analytics_ora",
+        "created_at": "2024-06-22T07:40:00Z",
+        "started_by": "admin",
+        "status": "running",
+    },
+    {
+        "jobid": "job_010",
+        "source_db_type": "mysql",
+        "target_db_type": "postgresql",
+        "source_db_name": "marketing",
+        "target_db_name": "marketing_mig",
+        "created_at": "2024-06-22T09:05:00Z",
+        "started_by": "preetham",
+        "status": "completed",
+    },
+]
+
+
 export const columns = [
   { key: "id", label: "ID" },
   { key: "name", label: "Name" },

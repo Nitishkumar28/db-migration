@@ -1,9 +1,9 @@
 import { getDBIcon } from "../../../../base/Icons";
 
 const statusColors = {
-  Idle: "bg-yellow-200 text-yellow-800",
-  Completed: "bg-green-200 text-green-800",
-  Running: "bg-blue-200 text-blue-800",
+  failed: "bg-red-200 text-red-800",
+  completed: "bg-green-200 text-green-800",
+  running: "bg-blue-200 text-blue-800",
 };
 
 export const MigrationStatusTag = ({ status }) => {
@@ -14,39 +14,39 @@ export const MigrationStatusTag = ({ status }) => {
   );
 };
 
-const HistoryCards = ({ migrations = [], selectedMigration, onSelect }) => {
+const HistoryCards = ({ history_cards = [], selectedMigration, onSelect }) => {
   return (
-    <div className="flex flex-wrap items-center justify-between gap-5">
-      {migrations.map((migration, index) => (
-        <div
-          key={index}
-          className="relative h-40 w-[250px] flex flex-col justify-between items-center p-2 bg-white border border-cyan-300 rounded-lg shadow cursor-pointer hover:shadow-md transition"
-          onClick={() => onSelect(migration.id)}
-        >
-          <div className="w-full flex justify-between items-center mb-2">
-            <h3 className="leading-7 tracking-wider font-medium">
-              Job ID: {migration.id}
-            </h3>
-            <MigrationStatusTag status={migration.status} />
-          </div>
+      <div className="grid grid-cols-4 gap-5">
+        {history_cards.map((card, index) => (
+          <div
+            key={index}
+            className="relative h-40 w-[250px] flex flex-col justify-between items-center p-2 bg-white border border-cyan-300 rounded-lg shadow cursor-pointer hover:shadow-md transition"
+            onClick={() => onSelect(card.jobid)}
+          >
+            <div className="w-full flex justify-between items-center mb-2">
+              <h3 className="leading-7 tracking-wider font-medium">
+                Job ID: {card.jobid}
+              </h3>
+              <MigrationStatusTag status={card.status} />
+            </div>
 
-          <div className="w-full flex justify-evenly items-center gap-2">
-            <div className="flex flex-col justify-start items-center">
-              {getDBIcon(migration.source.toLowerCase(), 40)}
-              <span className="text-xs">{migration.source}</span>
+            <div className="w-full flex justify-evenly items-center gap-2">
+              <div className="flex flex-col justify-start items-center">
+                {getDBIcon(card.source_db_type.toLowerCase(), 45)}
+                <span className="text-xs">{card.source_db_type}</span>
+              </div>
+              ➝
+              <div className="flex flex-col justify-start items-center">
+                {getDBIcon(card.target_db_type.toLowerCase(), 45)}
+                <span className="text-xs">{card.target_db_type}</span>
+              </div>
             </div>
-            ➝
-            <div className="flex flex-col justify-start items-center">
-              {getDBIcon(migration.target.toLowerCase(), 40)}
-              <span className="text-xs">{migration.target}</span>
-            </div>
+            <span className="w-full text-xs leading-7 tracking-wide">
+              Created: {card.created_at}
+            </span>
           </div>
-          <span className="w-full text-xs leading-7 tracking-wide">
-            Created: {migration.date}
-          </span>
-        </div>
-      ))}
-    </div>
+        ))}
+      </div>
   );
 };
 

@@ -61,11 +61,12 @@ return {
 <<<<<<< Updated upstream
 Todos:
 - Merge export return body and stats endpoint result for table execution time
-- Single History page
-- APIs detailing
+- Single History page - DONE
+- APIs detailing - InProgress
 - API connections (expected)
 - Mongo vs relational
 - APIs to store and manage history 
+<<<<<<< Updated upstream
 =======
 
 2) Statistics
@@ -76,4 +77,101 @@ a) db_name, db_type
 {
     
 }
+>>>>>>> Stashed changes
+=======
+
+```js
+
+// CONNECTIONS
+connections = [
+    {
+        "db_type": "",
+        "host_name": "",
+        "username": "",
+        "password": "",
+        "port": "",
+        "db_name": "",
+        "status": "idle | success | failed",
+        "last_checked": "",
+        "last_status_message": "",
+        "tags": []
+    },
+    ...
+]
+
+// filter specific one from list of all connections
+single_connection = {
+        "db_type": "",
+        "host_name": "",
+        "username": "",
+        "password": "",
+        "port": "",
+        "db_name": "",
+        "status": "idle | success | failed",
+        "last_checked": "",
+        "last_status_message": "",
+        "tags": []
+    }
+
+// EXPORT
+
+
+// HISTORY CARDS
+history_cards = [
+    {
+        "jobid": "",
+        "source_db_type": "",
+        "target_db_type": "",
+        "source_db_name": "",
+        "target_db_name": "",
+        "created_at": "",
+        "started_by": "",
+        "status": "completed | failed | running",
+    }
+]
+
+// FULL HISTORY BODY
+const full_history = [
+  {
+    job_id: "job_001",
+    source_db_type: "mysql",
+    target_db_type: "postgresql",
+    source_db_name: "demo",
+    target_db_name: "demo",
+    status: "completed",
+    created_at: "2024-06-17T10:00:00Z",
+    completed_at: "2024-06-17T10:10:00Z",
+    total_migration_time: "10m",
+    started_by: "ram",
+    description: "Initial user and trigger migration",
+    tags: ["user", "phase1"],
+    items: [
+      {
+        item_id: 1,
+        type: "table",
+        name: "users",
+        source_total_rows: 1200,
+        target_total_rows: 1200,
+        index_validation: "2/2",
+        primary_key_validation: "1/1",
+        foreign_key_validation: "1/1",
+        status: "completed",
+        duration: "6m",
+        timestamp: "2024-06-17T10:01:00Z"
+      },
+      {
+        item_id: 2,
+        type: "trigger",
+        name: "user_audit_trigger",
+        total_triggers: "1/1",
+        status: "completed",
+        duration: "1m",
+        timestamp: "2024-06-17T10:07:00Z"
+      }
+    ]
+  }
+];
+
+
+```
 >>>>>>> Stashed changes

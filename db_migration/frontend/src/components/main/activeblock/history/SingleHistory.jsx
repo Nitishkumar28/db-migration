@@ -14,7 +14,7 @@ const GoBack = () => {
   return (
     <button
       onClick={handleBack}
-      className="px-2 py-1 flex justify-center items-center-safe gap-2 border border-sky-300 hover:bg-sky-200 cursor-pointer rounded"
+      className="px-2 py-0.5 flex justify-center items-center-safe gap-2 border border-sky-300 hover:bg-sky-200 cursor-pointer rounded"
     >
       <LeftArrowIcon />
       <span className="">Back</span>

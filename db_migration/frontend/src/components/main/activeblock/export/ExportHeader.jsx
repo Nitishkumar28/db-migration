@@ -54,7 +54,7 @@ const ExportHeader = ({isHistory=false, selectedSource, selectedTarget}) => {
       <ExportCard text="target">
         {getDBIcon(selectedTarget?.toLowerCase(), 60)}
       </ExportCard>
-      {isHistory ? <MigrationStatusTag status="Completed" /> : 
+      {isHistory ? <MigrationStatusTag status="completed" /> : 
       <BaseButton
       text="export"
       className={`font-medium py-1.5 px-2 bg-[#0492C2] text-white rounded-lg border ${
