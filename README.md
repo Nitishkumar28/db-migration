@@ -154,26 +154,19 @@ const full_history = [
         duration: "6m",
         timestamp: "2024-06-17T10:01:00Z"
       },
-      .....
+      {
+        item_id: 2,
+        type: "trigger",
+        name: "user_audit_trigger",
+        total_triggers: "1/1",
+        status: "completed",
+        duration: "1m",
+        timestamp: "2024-06-17T10:07:00Z"
+      }
     ]
   }
 ];
 
 
 ```
-
-
-Current issues:
-
-1) Frontend - Check connection button turns green after 2 clicks instead of 1
-
-2) Backend :
-a) History details endpoint - minimal (job id, job name = Demo Migration, timestamp, source, destination)
-Steps:
-1) Click on export -> must create a job id with empty history object and then update job id for the empty history object
-2) 3 api calls -> job id, export and validation
-
-endpoints
-1) Job id
-2) Export
-3) validation
+>>>>>>> Stashed changes
