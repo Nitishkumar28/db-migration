@@ -66,7 +66,7 @@ const ExportBlock = () => {
       className="w-full h-full"
     >
       <div className="w-full h-full flex flex-col justify-around items-center gap-4 py-2">
-        <div className="w-full h-[25%] flex justify-evenly items-center gap-4 p-2 bg-gray-100 rounded-lg">
+        <div className="w-full h-[25%] flex justify-evenly items-center gap-4 p-4 bg-gray-100 rounded-lg">
           <ExportCard text="source">
             {getDBIcon(selectedSource?.toLowerCase(), 60)}
           </ExportCard>

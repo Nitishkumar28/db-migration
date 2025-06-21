@@ -1,3 +1,4 @@
+// Modernized DetailsBlock.jsx
 import { BaseButton } from "../../../../base/Base";
 import { themePalette } from "../../../../base/colorPalette";
 import InputBar from "../../../../base/InputBar";
@@ -8,93 +9,64 @@ import { checkConnectionURL } from "../../../../hooks/urls";
 import useDBStore from "../../../../store/dbStore";
 import { usePost } from "../../../../hooks/usePost";
 
-const FirstColumn = ({ db_type }) => {
-  return (
-    <div className="w-[55%] h-full py-[2%] flex flex-col justify-start items-between gap-2">
-      <InputBar title="Server Address" field="host_name" db_type={db_type} />
-      <InputBar title="Username" field="username" db_type={db_type} />
-      <InputBar title="Database Name" field="db_name" db_type={db_type} />
-    </div>
-  );
-};
-
-const SecondColumn = ({ db_type }) => {
-  return (
-    <div className="w-[25%] h-full py-[2%] flex flex-col justify-start items-between gap-2">
-      <InputBar title="Port" size="small" field="port" db_type={db_type} />
+const Row = ({ db_type, fields }) => (
+  <div className="flex gap-6 w-full h-full px-[2%]">
+    {fields.map(({ title, field, type = "text" }) => (
       <InputBar
-        title="Password"
-        field="password"
-        type="password"
+        key={field}
+        title={title}
+        field={field}
         db_type={db_type}
+        type={type}
       />
-    </div>
-  );
-};
+    ))}
+  </div>
+);
 
 const DetailsBlock = ({ db_type, title }) => {
+  const { post, data: result, loading: posting } = usePost(checkConnectionURL);
   const {
-    post,
-    data: result,
-    loading: posting,
-    error: postError,
-  } = usePost(checkConnectionURL);
-
-  const { connectionDetails, setConnectionDetails, updateConnectionDetails } =
-    useDBStore();
+    connectionDetails,
+    setConnectionDetails,
+    updateConnectionDetails,
+    selectedSource,
+    selectedTarget,
+  } = useDBStore();
   const activeTheme = useUIStore((state) => state.theme);
 
-  const activeConnection = useDBStore((state) => {
-    if (db_type === "source") {
-      return state.selectedSource?.toLowerCase();
-    } else if (db_type === "target") {
-      return state.selectedTarget?.toLowerCase();
-    }
-  });
+  const activeConnection =
+    db_type === "source" ? selectedSource?.toLowerCase() : selectedTarget?.toLowerCase();
 
-  const activeConnectionDetails = useDBStore((state) => {
-    const current = state.connectionDetails.find(
-      (conn) => conn.db_type === activeConnection?.toLowerCase()
-    );
-    return current;
-  });
+  const activeConnectionDetails = connectionDetails.find(
+    (conn) => conn.db_type === activeConnection
+  );
 
   const handleReset = () => {
-    const updatedConnections = connectionDetails.map((conn) => {
-      if (conn.db_type === activeConnection.toLowerCase()) {
-        return {
-          ...conn,
-          host_name: "",
-          username: "",
-          password: "",
-          db_name: "",
-          status: "idle",
-        };
-      }
-      return conn;
-    });
-
+    const updatedConnections = connectionDetails.map((conn) =>
+      conn.db_type === activeConnection
+        ? {
+            ...conn,
+            host_name: "",
+            username: "",
+            password: "",
+            db_name: "",
+            status: "idle",
+          }
+        : conn
+    );
     setConnectionDetails(updatedConnections);
   };
 
   const handlePost = async () => {
-    console.log(activeConnectionDetails, activeConnection);
-
-    if (!activeConnectionDetails)
-      return console.warn("No matching connection found for", db_type);
-
+    if (!activeConnectionDetails) return;
     try {
-      await post({
-        ...activeConnectionDetails,
-        db_type: activeConnection.toLowerCase(),
-      });
-      if (result) {
-        updateConnectionDetails(activeConnection, "status", "success");
-      } else {
-        updateConnectionDetails(activeConnection, "status", "failed");
-      }
-    } catch (err) {
-      console.error("Post failed:", err.message);
+      await post({ ...activeConnectionDetails, db_type: activeConnection });
+      updateConnectionDetails(
+        activeConnection,
+        "status",
+        result ? "success" : "failed"
+      );
+    } catch {
       updateConnectionDetails(activeConnection, "status", "failed");
     }
   };
@@ -102,32 +74,46 @@ const DetailsBlock = ({ db_type, title }) => {
   return (
     <div
       style={{ borderColor: themePalette[activeTheme].borderPrimary }}
-      className={`relative border rounded-lg shadow-md w-[90%] h-[60%] flex flex-col justify-center items-center gap-1 py-3`}
+      className="relative w-[70%] max-w-6xl h-auto border border-sky-400 rounded-xl shadow-lg py-7 px-6 bg-white flex flex-col gap-4"
     >
       <Legend title={title} />
-      <div
-        className={`w-full h-fit flex justify-around items-center gap-4 px-[2%]`}
-      >
-        <FirstColumn db_type={db_type} />
-        <SecondColumn db_type={db_type} />
-        <WarningMessages />
-      </div>
-      <div
-        className={`flex justify-center items-center gap-4 ${
-          !activeConnection && "cursor-default opacity-50 pointer-events-none"
-        }`}
-      >
-        <BaseButton
-          onClick={() => handlePost()}
-          text={posting ? "checking..." : "check connection"}
-          styles={`bg-sky-50`}
+      <div className="w-full flex flex-col justify-between gap-3">
+        <Row
+          db_type={db_type}
+          fields={[
+            { title: "Server Address", field: "host_name" },
+            { title: "Port", field: "port" },
+          ]}
+          />
+        <Row
+          db_type={db_type}
+          fields={[
+            { title: "Username", field: "username" },
+            { title: "Password", field: "password", type: "password" },
+          ]}
+          />
+        <Row
+          db_type={db_type}
+          fields={[
+            { title: "Database Name", field: "db_name" },
+            { title: "", field: "" },
+          ]}
         />
-        <span
-          onClick={() => handleReset()}
-          className="underline underline-offset-2 text-sky-800 text-xs font-extralight cursor-pointer capitalize"
+        {/* <WarningMessages /> */}
+      </div>
+
+      <div className={`flex justify-center items-center gap-4 ${!activeConnection && "opacity-50 pointer-events-none"}`}>
+        <BaseButton
+          onClick={handlePost}
+          text={posting ? "Checking..." : "Check Connection"}
+          styles="bg-blue-100 hover:bg-blue-200 text-blue-900"
+        />
+        <button
+          onClick={handleReset}
+          className="text-xs text-blue-700 underline underline-offset-2 hover:text-blue-900"
         >
-          reset details
-        </span>
+          Reset Details
+        </button>
       </div>
     </div>
   );

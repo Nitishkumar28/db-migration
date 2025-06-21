@@ -52,15 +52,15 @@ const InputBar = ({ title, db_type, field, type = "text" }) => {
   }
 
   return (
-    <div className={`flex flex-col justify-start items-start`}>
-      <TextHolder text={title} size="small" weight="light" styles="select-none" />
-      <input
+    <div className={`w-full flex flex-col justify-start items-start`}>
+      {title && <TextHolder text={title} size="small" weight="light" styles="select-none" />}
+      {title && <input
         style={{ fontSize: header_sizes.small }}
         type={type}
         value={value}
         onChange={e => handleChange(e)}
-        className={`w-full outline-none border border-gray-400 rounded px-2 py-1 ${!activeConnection && "cursor-default bg-gray-100 pointer-events-none"}`}
-      />
+        className={`w-full outline-none border rounded border-gray-400 px-2 py-1 ${!activeConnection && "cursor-default bg-gray-100 pointer-events-none"}`}
+      />}
     </div>
   );
 };
