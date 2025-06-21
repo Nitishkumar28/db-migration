@@ -4,7 +4,7 @@ import { Icon } from '@iconify/react';
 
 const Navbar = () => {
   return (
-    <div className="flex justify-between items-center gap-1 w-full border-b-0 border-b-gray-200 px-2.5 py-3">
+    <div className="flex justify-between items-center gap-1 w-full border-b border-gray-200 px-2.5 py-2">
       <div className="w-[30%]">
         <span className="tracking-wider leading-7 text-lg font-semibold">Cloudserv.ai</span>
       </div>

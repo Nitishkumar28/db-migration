@@ -3,10 +3,16 @@ import { header_sizes } from "../../../../base/Base";
 import ConnectionHeader from "./Header";
 import DetailsBlock from "./DetailsBlock";
 import useDBStore from "../../../../store/dbStore";
+import useUIStore from "../../../../store/uistore";
 
 const ConnectionBlock = () => {
   const {selectedSource, setSelectedSource} = useDBStore();
   const {selectedTarget, setSelectedTarget} = useDBStore();
+  const { setPipelineOption } = useUIStore();
+
+  useEffect(() => {
+    setPipelineOption("connections")
+  }, [])
 
   const connectionHeaderProps = {
     selectedSource,

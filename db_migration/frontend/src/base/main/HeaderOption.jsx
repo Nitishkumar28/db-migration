@@ -17,8 +17,8 @@ const HeaderOption = ({ text, path }) => {
     <Link
     to={path}
     onClick={() => setActiveOption(text)}
-    style={{fontSize:header_sizes.small, backgroundColor: activeOption === text ? themePalette[activeTheme].backgroundPrimary : ""}}
-    className="w-full h-full flex justify-center items-center capitalize px-2 py-1.5 tracking-wide leading-6 cursor-pointer hover:opacity-70">
+    // style={{fontSize:header_sizes.small, backgroundColor: activeOption === text ? "#D1D1D1" : ""}}
+    className={`w-44 h-full ${activeOption === text ? "bg-gray-100 text-gray-500 font-bold" :"bg-gray-50"} text-medium flex justify-center items-center capitalize px-1 py-1 tracking-wide leading-6 cursor-pointer hover:opacity-90`}>
       {text}
     </Link>
   );

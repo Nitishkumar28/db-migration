@@ -1,14 +1,16 @@
 import { Outlet } from "react-router-dom";
-import Footer from "./Footer";
+import StatusBar from "./StatusBar";
+import Footer from "../../Footer";
 
 
 const ActionBlock = () => {
   return (
-    <div className="relative w-full h-full flex flex-col">
-      <div className="flex-1 overflow-y-auto w-full">
+    <div className="px-[100px] w-full h-full">
+      <div className="w-full h-full flex flex-col px-4">
+        <StatusBar />
         <Outlet />
+        <Footer />
       </div>
-      <Footer />
     </div>
   );
 };

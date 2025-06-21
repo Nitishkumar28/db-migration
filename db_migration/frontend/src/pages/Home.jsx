@@ -1,4 +1,5 @@
 import { themePalette } from "../base/colorPalette";
+import Footer from "../components/Footer";
 import MainBody from "../components/main/MainBody";
 import Navbar from "../components/Navbar";
 import { healthCheck } from "../hooks/urls";
@@ -13,9 +14,8 @@ const Home = () => {
   return (
     <div
     style={{backgroundColor: themePalette[activeTheme].background, color: themePalette[activeTheme].text}}
-    className="w-full h-screen flex flex-col items-center justify-start gap-4">
+    className="w-full h-screen flex flex-col items-center justify-start">
       <Navbar />
-      {/* <WebsocketsTest /> */}
       <MainBody />
     </div>
   );

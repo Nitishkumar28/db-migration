@@ -17,6 +17,21 @@ export const MySQLIcon = ({ size = 20, className = "" }) => (
   ></i>
 );
 
+export const OracleIcon = ({ size = 20, className = "" }) => (          
+  <i
+    style={{ fontSize: size }}
+    className={`devicon-oracle-original colored ${className}`}          
+  ></i>
+);
+
+export const getDBIcon = (db_type, size=80) => {
+  switch(db_type) {
+    case "mysql": return <MySQLIcon size={size} />
+    case "postgresql": return <PostgresqlIcon size={size} />
+    case "oracle": return <OracleIcon size={size} />
+  }
+}
+
 export const RightArrowIcon = ({ size = 20, className = "" }) => (
     <img src={rightArrow} alt="rightarrow" width={size} height={size} className={className} />
 );

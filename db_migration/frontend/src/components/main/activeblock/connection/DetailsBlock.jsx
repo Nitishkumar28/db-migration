@@ -11,11 +11,7 @@ import { usePost } from "../../../../hooks/usePost";
 const FirstColumn = ({ db_type }) => {
   return (
     <div className="w-[55%] h-full py-[2%] flex flex-col justify-start items-between gap-2">
-      <InputBar
-        title="Server Address"
-        field="host_name"
-        db_type={db_type}
-      />
+      <InputBar title="Server Address" field="host_name" db_type={db_type} />
       <InputBar title="Username" field="username" db_type={db_type} />
       <InputBar title="Database Name" field="db_name" db_type={db_type} />
     </div>
@@ -44,7 +40,8 @@ const DetailsBlock = ({ db_type, title }) => {
     error: postError,
   } = usePost(checkConnectionURL);
 
-  const { connectionDetails, setConnectionDetails, updateConnectionDetails } = useDBStore();
+  const { connectionDetails, setConnectionDetails, updateConnectionDetails } =
+    useDBStore();
   const activeTheme = useUIStore((state) => state.theme);
 
   const activeConnection = useDBStore((state) => {
@@ -87,8 +84,15 @@ const DetailsBlock = ({ db_type, title }) => {
       return console.warn("No matching connection found for", db_type);
 
     try {
-      await post({...activeConnectionDetails, "db_type": activeConnection.toLowerCase()});
-      updateConnectionDetails(activeConnection, "status", "success");
+      await post({
+        ...activeConnectionDetails,
+        db_type: activeConnection.toLowerCase(),
+      });
+      if (result) {
+        updateConnectionDetails(activeConnection, "status", "success");
+      } else {
+        updateConnectionDetails(activeConnection, "status", "failed");
+      }
     } catch (err) {
       console.error("Post failed:", err.message);
       updateConnectionDetails(activeConnection, "status", "failed");

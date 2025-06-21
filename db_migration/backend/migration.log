@@ -225,3 +225,5 @@ Log - 2025-06-20 15:23:43
 [2025-06-20 15:24:24] [INFO] [c28750d2] === ✅ Triggers exported: 3; errors: 0 ===
 
 [2025-06-20 15:24:24] [INFO] [c28750d2] API `/export/` succeeded: exported_tables={'teachers', 'courses', 'conversion', 'students'}, exported_triggers=['trg_students_audit_insert_insert', 'trg_students_audit_update_update', 'trg_students_audit_delete_delete']
+
+Log - 2025-06-21 03:39:37
