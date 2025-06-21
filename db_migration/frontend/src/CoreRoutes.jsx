@@ -3,7 +3,7 @@ import Home from "./pages/Home";
 import ActionBlock from "./components/main/activeblock/ActionBlock";
 import ExportBlock from "./components/main/activeblock/export/ExportBlock";
 import ConnectionBlock from "./components/main/activeblock/connection/ConnectionBlock";
-import HistoryBlock from "./components/main/activeblock/history/HistoryBlock";
+import SingleHistory from "./components/main/activeblock/history/SingleHistory";
 
 const CoreRoutes = () => {
     return (
@@ -14,7 +14,7 @@ const CoreRoutes = () => {
                     <Route index path="" element={<ActionBlock />}></Route>
                     <Route index path="connections" element={<ConnectionBlock />}></Route>
                     <Route index path="export" element={<ExportBlock />}></Route>
-                    <Route index path="history" element={<HistoryBlock />}></Route>
+                    <Route index path="history/:jobid" element={<SingleHistory />}></Route>
                 </Route>
             </Routes>
         </BrowserRouter>

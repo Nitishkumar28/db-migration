@@ -60,6 +60,7 @@ const DetailsBlock = ({ db_type, title }) => {
   const handlePost = async () => {
     if (!activeConnectionDetails) return;
     try {
+      setTimeout(() => {}, [3000])
       await post({ ...activeConnectionDetails, db_type: activeConnection });
       updateConnectionDetails(
         activeConnection,
@@ -74,7 +75,8 @@ const DetailsBlock = ({ db_type, title }) => {
   return (
     <div
       style={{ borderColor: themePalette[activeTheme].borderPrimary }}
-      className="relative w-[70%] max-w-6xl h-auto border border-sky-400 rounded-xl shadow-lg py-7 px-6 bg-white flex flex-col gap-4"
+      // [#E1F6FC]
+      className="relative w-[70%] max-w-6xl h-auto bg-gradient-to-tr from-sky-50 via-white to-sky-50  border border-sky-200 rounded-xl shadow-lg py-7 px-6 bg-white flex flex-col gap-4"
     >
       <Legend title={title} />
       <div className="w-full flex flex-col justify-between gap-3">
@@ -106,11 +108,11 @@ const DetailsBlock = ({ db_type, title }) => {
         <BaseButton
           onClick={handlePost}
           text={posting ? "Checking..." : "Check Connection"}
-          styles="bg-blue-100 hover:bg-blue-200 text-blue-900"
+          className="border-none rounded-lg px-2 bg-[#D5E8EC] hover:opacity-80 text-[#03729A]"
         />
         <button
           onClick={handleReset}
-          className="text-xs text-blue-700 underline underline-offset-2 hover:text-blue-900"
+          className="text-xs text-sky-700 underline underline-offset-2 hover:text-blue-900"
         >
           Reset Details
         </button>

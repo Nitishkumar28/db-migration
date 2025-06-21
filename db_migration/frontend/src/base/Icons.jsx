@@ -1,3 +1,4 @@
+import { Icon } from "@iconify/react/dist/iconify.js";
 import rightArrow from '../assets/arrow_right.png';
 import exportIcon from '../assets/upload.png'
 import lightIcon from '../assets/light.png'
@@ -24,6 +25,14 @@ export const OracleIcon = ({ size = 20, className = "" }) => (
   ></i>
 );
 
+export const LeftArrowIcon = ({ size = "20" }) => (
+    <Icon icon={`mdi:arrow-left`} width={size} height={size} />
+);
+
+export const rightArrowIcon = ({ size = "20" }) => (
+    <Icon icon={`mdi:arrow-right`} width={size} height={size} />
+);
+
 export const getDBIcon = (db_type, size=80) => {
   switch(db_type) {
     case "mysql": return <MySQLIcon size={size} />
@@ -31,10 +40,6 @@ export const getDBIcon = (db_type, size=80) => {
     case "oracle": return <OracleIcon size={size} />
   }
 }
-
-export const RightArrowIcon = ({ size = 20, className = "" }) => (
-    <img src={rightArrow} alt="rightarrow" width={size} height={size} className={className} />
-);
 
 export const ExportIcon = ({ size = 25, className = "" }) => (
     <img src={exportIcon} alt="exportIcon" width={size} height={size} className={className} />

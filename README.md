@@ -36,5 +36,8 @@ Ideas:
 
 Todos:
 - Merge export return body and stats endpoint result for table execution time
-
-
+- Single History page
+- APIs detailing
+- API connections (expected)
+- Mongo vs relational
+- APIs to store and manage history 

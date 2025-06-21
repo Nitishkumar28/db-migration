@@ -53,13 +53,13 @@ const InputBar = ({ title, db_type, field, type = "text" }) => {
 
   return (
     <div className={`w-full flex flex-col justify-start items-start`}>
-      {title && <TextHolder text={title} size="small" weight="light" styles="select-none" />}
+      {title && <TextHolder text={title} size="small" weight="normal" className="select-none" />}
       {title && <input
         style={{ fontSize: header_sizes.small }}
         type={type}
         value={value}
         onChange={e => handleChange(e)}
-        className={`w-full outline-none border rounded border-gray-400 px-2 py-1 ${!activeConnection && "cursor-default bg-gray-100 pointer-events-none"}`}
+        className={`w-full outline-none border rounded border-gray-300 px-2 py-1 focus:border-gray-500 ${!activeConnection && "cursor-default bg-gray-100 pointer-events-none"}`}
       />}
     </div>
   );

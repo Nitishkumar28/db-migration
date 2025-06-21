@@ -34,7 +34,7 @@ const Header = ({ text, size = "medium", weight = "normal", ...props }) => (
   </span>
 );
 
-const TextHolder = ({text, size, weight, type, styles="", ...props}) => {
+const TextHolder = ({text, size, weight, type, className="", ...props}) => {
   const activeTheme = useUIStore((state) => state.theme);
   let textColor = "";
 
@@ -45,7 +45,7 @@ const TextHolder = ({text, size, weight, type, styles="", ...props}) => {
   return (
     <p
       {...props}
-      className={`${header_weight[weight]} w-fit text-wrap ${styles}`}
+      className={`${header_weight[weight]} w-fit text-wrap ${className}`}
       style={{ fontSize: header_sizes[size], color: textColor }}
     >
       {text}
@@ -53,7 +53,7 @@ const TextHolder = ({text, size, weight, type, styles="", ...props}) => {
   )
 }
 
-const NavbarOption = ({ text, styles, children }) => {
+const NavbarOption = ({ text, className, children }) => {
   const activeTheme = useUIStore((state) => state.theme);
   const activeOption = useUIStore((state) => state.activeNavbarOption);
   const setActiveOption = useUIStore((state) => state.setNavbarOption);
@@ -73,7 +73,7 @@ const NavbarOption = ({ text, styles, children }) => {
             ? themePalette[activeTheme].backgroundPrimary
             : "",
       }}
-      className={`${styles} min-w-10 max-w-36 h-full flex justify-center items-center border px-2 py-1 rounded-md font-normal tracking-wide leading-6 cursor-pointer capitalize`}
+      className={`${className} min-w-10 max-w-36 h-full flex justify-center items-center border px-2 py-1 rounded-md font-normal tracking-wide leading-6 cursor-pointer capitalize`}
     >
       {text} {children}
     </span>
@@ -89,7 +89,7 @@ const BaseButton = ({text, type, children, className="", ...props}) => {
           borderColor: themePalette[activeTheme].borderSecondary, 
           fontSize: header_sizes.normal 
         }}
-        className={`min-w-20 border px-1 py-1 rounded shadow cursor-pointer capitalize hover:opacity-80 ${className}`}>
+        className={`min-w-20 px-1 py-1 border-gray-300 cursor-pointer capitalize hover:opacity-80 ${className}`}>
           <div className="flex justify-center items-center gap-2">
             <span>{text}</span>
             {children}

@@ -6,6 +6,14 @@ const statusColors = {
   Running: "bg-blue-200 text-blue-800",
 };
 
+export const MigrationStatusTag = ({ status }) => {
+  return (
+    <span className={`text-xs px-2 py-1 rounded ${statusColors[status]}`}>
+      {status}
+    </span>
+  );
+};
+
 const HistoryCards = ({ migrations = [], selectedMigration, onSelect }) => {
   return (
     <div className="flex flex-wrap items-center justify-between gap-5">
@@ -13,27 +21,29 @@ const HistoryCards = ({ migrations = [], selectedMigration, onSelect }) => {
         <div
           key={index}
           className="relative h-40 w-[250px] flex flex-col justify-between items-center p-2 bg-white border border-cyan-300 rounded-lg shadow cursor-pointer hover:shadow-md transition"
-          onClick={() => onSelect(migration.name)}
+          onClick={() => onSelect(migration.id)}
         >
           <div className="w-full flex justify-between items-center mb-2">
-            <h3 className="leading-7 tracking-wider font-medium">Job ID: {migration.id}</h3>
-            <span className={`text-xs px-2 py-1 rounded ${statusColors[migration.status]}`}>
-              {migration.status}
-            </span>
+            <h3 className="leading-7 tracking-wider font-medium">
+              Job ID: {migration.id}
+            </h3>
+            <MigrationStatusTag status={migration.status} />
           </div>
 
           <div className="w-full flex justify-evenly items-center gap-2">
             <div className="flex flex-col justify-start items-center">
-              {getDBIcon(migration.source.toLowerCase(), 40)} 
+              {getDBIcon(migration.source.toLowerCase(), 40)}
               <span className="text-xs">{migration.source}</span>
             </div>
-            ➝ 
+            ➝
             <div className="flex flex-col justify-start items-center">
               {getDBIcon(migration.target.toLowerCase(), 40)}
               <span className="text-xs">{migration.target}</span>
             </div>
           </div>
-          <span className="w-full text-xs leading-7 tracking-wide">Created: {migration.date}</span>
+          <span className="w-full text-xs leading-7 tracking-wide">
+            Created: {migration.date}
+          </span>
         </div>
       ))}
     </div>

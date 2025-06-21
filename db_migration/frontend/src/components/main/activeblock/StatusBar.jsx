@@ -26,7 +26,7 @@ const StatusBar = () => {
   return (
     <footer
       style={{ fontSize: header_sizes.small }}
-      className="w-full flex justify-start items-center border-b border-gray-300">
+      className="w-full flex justify-start items-center border-b border-gray-200 py-1">
         <SideNavBarBlock />
       <div className="w-full flex justify-end items-center gap-4 py-1">
         <StatusLight text="Source" status={selectSourceDetails?.status} />

@@ -9,7 +9,7 @@ const Navbar = () => {
         <span className="tracking-wider leading-7 text-lg font-semibold">Cloudserv.ai</span>
       </div>
       <MainHeaderSection />
-      <div className="w-[30%] flex justify-end items-center gap-1 divide-x-2 divide-amber-700">
+      <div className="w-[30%] flex justify-end items-center gap-1">
         <BaseButton text="Services" className="font-normal py-1 px-2 border-none shadow-none border-[#03729A] text-[#03729A] rounded-md">
           <Icon icon="mdi:cogs" width="20" height="20" />
         </BaseButton>

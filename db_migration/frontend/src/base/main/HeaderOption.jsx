@@ -18,7 +18,7 @@ const HeaderOption = ({ text, path }) => {
     to={path}
     onClick={() => setActiveOption(text)}
     // style={{fontSize:header_sizes.small, backgroundColor: activeOption === text ? "#D1D1D1" : ""}}
-    className={`w-44 h-full ${activeOption === text ? "font-bold" :""} text-medium flex justify-center items-center capitalize px-1 py-1 tracking-wide leading-6 cursor-pointer hover:opacity-90`}>
+    className={`w-44 h-full ${activeOption === text ? "font-bold" :""} text-md flex justify-center items-center capitalize px-1 py-1 tracking-wide leading-6 cursor-pointer hover:opacity-90`}>
       {text}
     </Link>
   );

@@ -29,7 +29,7 @@ const ConnectionHeader = ({
   }, [selectedSource, selectedTarget])
 
   return (
-    <header className="w-full flex justify-center items-center gap-8 pb-3">
+    <header className="w-full flex justify-center items-center gap-8 p-4">
       <DropdownBlock
         text="source database"
         options={dbOptions.filter((option) => option !== selectedTarget)}

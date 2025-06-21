@@ -19,6 +19,9 @@ const useDBStore = create(
     selectSourceDetails: {},
     selectTargetDetails: {},
 
+    // historySelectedSource: "",
+    // historySelectedTarget: "",
+
     connectionDetails: initialConnections,
 
     setSelectedSource: (source) => {

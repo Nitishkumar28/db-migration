@@ -21,10 +21,10 @@ const HistoryBlock = () => {
     return null;
   });
 
-  const handleCardClick = (name) => {
+  const handleCardClick = (jobid) => {
     const selected = migrations.find((m) => m.name === name);
     setSelectedMigration([selected]);
-    navigate(`/home/history/${name}`);
+    navigate(`/home/history/${jobid}`);
   };
 
   return (
