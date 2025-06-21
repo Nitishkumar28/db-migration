@@ -169,4 +169,3 @@ const full_history = [
 
 
 ```
->>>>>>> Stashed changes
