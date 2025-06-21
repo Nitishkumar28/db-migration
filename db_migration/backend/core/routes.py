@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from fastapi import HTTPException
 from core.data import DBInfo, ExportRequest
-from core.stats import collect_export_stats, get_most_recent_stats
+from core.stats import collect_export_durations
 from core.db.db_utils import (
     get_databases,
     get_table_names,
@@ -32,27 +32,27 @@ def load_homepage():
 
 @router.post("/check-connection/")
 def check_connection(request: DBInfo):
-    try:
-        print(request)
-        check_connection_stat = True
-        args = {
-            "host_name": request.host_name,
-            "username": request.username,
-            "password": request.password,
-            "port": request.port,
-            "db_name": request.db_name,
-            "db_type": request.db_type,
-            "check_connection_status": check_connection_stat
-        }
-        db_name = request.db_name
-        if request.db_type != "postgresql" and db_name != "":
-            run_query(f"CREATE DATABASE IF NOT EXISTS {db_name}", request.db_type, check_connection_status=check_connection_stat)
-        check_connection_res = get_db_engine(**args)
+    print(request)
+    check_connection_stat = True
+    args = {
+        "host_name": request.host_name,
+        "username": request.username,
+        "password": request.password,
+        "port": request.port,
+        "db_name": request.db_name,
+        "db_type": request.db_type,
+        "check_connection_status": check_connection_stat
+    }
+    db_name = request.db_name
+    if request.db_type != "postgresql" and db_name != "":
+        run_query(f"CREATE DATABASE IF NOT EXISTS {db_name}", request.db_type, check_connection_status=check_connection_stat)
+    check_connection_res = get_db_engine(**args)
+    print(check_connection_res)
+    if check_connection_res is not None:
         print("SUCESS")
-        return {"results": check_connection_res is not None}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Connection check failed: {e}")
-
+        return {"results": True}
+    return {"results": False}
+    
 
 @router.get("/databases/{db_type}")
 def fetch_databases(db_type):
@@ -164,8 +164,6 @@ def export_feature(request: ExportRequest):
         },
         }
 
-        start_time = time.time()
-
         exported, skipped, durations = export_tables(**args)
         logger.info(f"=== Tables exported: {len(exported)}; skipped: {len(skipped)} ===\n")
 
@@ -182,17 +180,7 @@ def export_feature(request: ExportRequest):
             args["target"]
         )
 
-        end_time = time.time()
-
-        collect_export_stats(
-            source={ "db_type": request.source.db_type, "db_name": request.source.db_name },
-            target={ "db_type": request.target.db_type, "db_name": request.target.db_name },
-            exported=exported,
-            errors=result.get("errors", []),
-            start_time=start_time,
-            end_time=end_time,
-            durations=durations
-         )
+        timing = collect_export_durations(durations)
 
         logger.info(f"=== ✅ Triggers exported: {len(result.get('exported', []))}; errors: {len(result.get('errors', []))} ===\n")
 
@@ -213,7 +201,8 @@ def export_feature(request: ExportRequest):
         return {
             "message": "Tables and triggers exported successfully.",
             "exported_tables": list(exported),
-            "exported_triggers": result.get("exported", [])
+            "exported_triggers": result.get("exported", []),
+            "timing": timing
         }
     
     except HTTPException:

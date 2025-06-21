@@ -9,7 +9,7 @@ from core.secret_manager import get_secret
 _mysql_engine = None
 _postgresql_engine = None
 
-def check_connection(db_engine, db_type):
+def check_connection(db_engine):
     try:
         with db_engine.begin() as conn:
             conn.execute(text("SELECT 1"))
@@ -37,8 +37,9 @@ def get_mysql_db_engine(db_name=None, check_connection_status=False, **kwargs):
 
         _mysql_engine = create_engine(conn_url, pool_size=10)
 
-        if check_connection(_mysql_engine, db_type="mysql"):
-            return _mysql_engine
+        if not check_connection(_mysql_engine):
+            _mysql_engine = None
+            return None
         
     return _mysql_engine
 
@@ -59,8 +60,10 @@ def get_postgresql_db_engine(db_name=None, check_connection_status=False, **kwar
 
         _postgresql_engine = create_engine(conn_url, pool_size=10)
 
-        if check_connection(_postgresql_engine, db_type="postgresql"):
-            return _postgresql_engine
+        if not check_connection(_postgresql_engine):
+            _postgresql_engine = None
+            return None
+        
         
     return _postgresql_engine
 

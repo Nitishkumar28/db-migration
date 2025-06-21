@@ -179,8 +179,7 @@ def get_table_ddl(db_type, db_name, table_name):
     for column in columns:
         col_name = column["name"]
         col_type_obj = column["type"] 
-        #sql_type = adapter.convert_data(col_type_obj)
-        sql_type = 'TEXT'
+        sql_type = adapter.convert_data(col_type_obj)
         null_const = "NULL" if column["nullable"] else "NOT NULL"
         default_val = ""
         col_defs.append(
