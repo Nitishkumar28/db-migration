@@ -154,18 +154,111 @@ const full_history = [
         duration: "6m",
         timestamp: "2024-06-17T10:01:00Z"
       },
-      {
-        item_id: 2,
-        type: "trigger",
-        name: "user_audit_trigger",
-        total_triggers: "1/1",
-        status: "completed",
-        duration: "1m",
-        timestamp: "2024-06-17T10:07:00Z"
-      }
     ]
   }
 ];
 
+const full_history_initial = [
+Add comment
+More actions
+
+
+  {
+    job_id: "",
+    source_db_type: "",
+    target_db_type: "",
+    source_db_name: "",
+    target_db_name: "",
+    status: "running",
+    created_at: "",
+    completed_at: "",
+    started_by: "",
+    description: "",
+    tags: [],
+    total_migration_time: "",
+    items: []
+  }
+
+
+];
+
+
+
+
+
+const new_job_id = "1241241" // random 6-digit number generator
+
+
+
+
+
+// Request body
+
+
+source_db_type: "postgresql",
+
+
+target_db_type: "mysql",
+
+
+source_db_name: "demo",
+
+
+target_db_name: "demo",
+
+
+
+
+
+// Save to DB
+
+
+object.job_id = new_job_id
+
+
+object.source_db_type = "postgresql"
+
+
+object.target_db_type = "mysql"
+
+
+...
+
+
+object.save()
+
+// AFTER create-jobid endpoint -> sample card is created -> results: true
+const new_job_id = "1241241" // random 6-digit number generator
+const full_history = [
+  {
+    job_id: new_job_id,
+    source_db_type: "postgresql",
+    target_db_type: "mysql",
+    source_db_name: "demo",
+    target_db_name: "demo",
+    status: "running",
+    created_at: "2024-06-17T10:00:00Z",
+    completed_at: "2024-06-17T10:10:00Z",
+    started_by: "",
+    description: "",
+    tags: [],
+    total_migration_time: "",
+    items: []
+  }
+];
+
+// Save to DB -> app specific(Postgresql)
+
+// EXPORT TABLES -> results: true
+total_migration_time: "", // End of the export tables
+
+// STATS -> results: true
+items: []
+
+
+// VALIDATION -> results: true
+
+
+// Final
 
 ```

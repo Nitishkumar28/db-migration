@@ -113,7 +113,6 @@ def collect_combined_stats(source, target):
             'target_trigger_count': targ.get('trigger_count', 0)
         })
     return combined
-        
 
 
 def collect_index_names(db):
@@ -159,5 +158,70 @@ def collect_trigger_names(db):
     return result
 
 
-# 1) Validator
+# 1) Validator - Could have reused other functions to reduce extra/unneccesary calls -> look into it 
+
+# Conditions for validation
+# 1) Table names match
+# 2) Row count match
+# 3) Indexes count match
+# 4) Primary keys count match
+# 5) Foreign keys count match
+# 6) Trigger count match
+
+# Meeting all of the above conditions for now indictaes a complete sucess 
+
+def validate_export_success(source, target):
+    source_tables = get_table_names(source['db_type'], source['db_name'])
+    target_tables = get_table_names(target['db_type'], target['db_name'])
+
+    # 1. Table name match
+    if set(source_tables) != set(target_tables):
+        return False
+
+    for table in source_tables:
+        # 2. Row count match
+        src_count = get_table_count(
+            run_query(f"SELECT COUNT(*) AS cnt FROM {table};", source['db_type'], source['db_name'])
+        )
+        targ_count = get_table_count(
+            run_query(f"SELECT COUNT(*) AS cnt FROM {table};", target['db_type'], target['db_name'])
+        )
+        if src_count != targ_count:
+            return False
+
+        # 3. Index count match
+        src_indexes = get_indexes_info(source['db_type'], source['db_name'], table) or []
+        targ_indexes = get_indexes_info(target['db_type'], target['db_name'], table) or []
+        if len(src_indexes) != len(targ_indexes):
+            return False
+
+        # 4. Primary key match
+        src_pk = get_primary_keys(source['db_type'], source['db_name'], table) or {}
+        targ_pk = get_primary_keys(target['db_type'], target['db_name'], table) or {}
+        if sorted(src_pk.get('constrained_columns', [])) != sorted(targ_pk.get('constrained_columns', [])):
+            return False
+
+        # 4. Foreign key match
+        src_fk = get_foreign_keys(source['db_type'], source['db_name'], table) or []
+        targ_fk = get_foreign_keys(target['db_type'], target['db_name'], table) or []
+        src_fk_names = sorted([fk.get('name') for fk in src_fk])
+        targ_fk_names = sorted([fk.get('name') for fk in targ_fk])
+        if src_fk_names != targ_fk_names:
+            return False
+
+        # 5. Trigger match
+        src_triggers = get_triggers_for_table(source['db_type'], source['db_name'], table) or []
+        targ_triggers = get_triggers_for_table(target['db_type'], target['db_name'], table) or []
+        src_trigger_names = sorted([
+            str(name) for t in src_triggers for name in [t.get('name')] if name is not None
+        ])
+        targ_trigger_names = sorted([
+            str(name) for t in targ_triggers for name in [t.get('name')] if name is not None
+        ])
+        if src_trigger_names != targ_trigger_names:
+            return False
+
+    return True
+
+
 # 2) Test

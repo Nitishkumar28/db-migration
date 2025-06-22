@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 
 class TableModel(BaseModel):
     db_name: str
@@ -36,6 +36,12 @@ class DBInfo(BaseModel):
     db_name: str
     db_type: str
 
+
+class CreateJobRequest(BaseModel):
+    source_db_type: str
+    source_db_name: str
+    target_db_type: str
+    target_db_name: str
 
 mockLogs = [
   { "time": "09:58:21 AM", "message": "✓ done" },
