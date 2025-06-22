@@ -1,18 +1,7 @@
-import {
-  BaseButton,
-  header_sizes,
-  LongArrowCustom,
-} from "../../../../base/Base";
-import {getDBIcon} from "../../../../base/Icons";
-
-import { mockLogs, columns, data as tabledata } from "../../../data/Migration";
-import MigrationLogs from "./MigrationLogs";
-
-import { Icon } from "@iconify/react";
+import {header_sizes} from "../../../../base/Base";
 import useUIStore from "../../../../store/uistore";
 import { useEffect } from "react";
 import useDBStore from "../../../../store/dbStore";
-import SummaryTable from "./SummaryTable";
 import HistoryBlock from "../history/HistoryBlock";
 import ExportHeader from "./ExportHeader";
 

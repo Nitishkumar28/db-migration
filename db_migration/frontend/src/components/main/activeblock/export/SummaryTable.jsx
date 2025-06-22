@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { handle_datetime } from "../../../../base/utils";
 
 const SummaryTable = ({ columns, data }) => {
   const [sortKey, setSortKey] = useState(null);
@@ -49,10 +50,10 @@ const SummaryTable = ({ columns, data }) => {
         </div>
         <input
           type="text"
-          placeholder="Search..."
+          placeholder="Search summary table below..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-[70%] border border-sky-200 rounded px-2 py-1 text-sm outline-none focus:ring-1 focus:ring-sky-300"
+          className="w-[70%] border border-sky-300 rounded px-2 py-1 text-sm outline-none focus:ring-1 focus:ring-sky-400"
         />
       </div>
 
@@ -80,7 +81,7 @@ const SummaryTable = ({ columns, data }) => {
               <tr key={idx} className="hover:bg-gray-50">
                 {columns.map((col) => (
                   <td key={col.key} className="px-4 py-2 text-gray-700">
-                    {row[col.key]}
+                    {col.key === "created_at" ? handle_datetime(row[col.key]) : row[col.key]}
                   </td>
                 ))}
               </tr>

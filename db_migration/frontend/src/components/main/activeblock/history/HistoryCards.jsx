@@ -1,4 +1,5 @@
 import { getDBIcon } from "../../../../base/Icons";
+import { handle_datetime } from "../../../../base/utils";
 
 const statusColors = {
   failed: "bg-red-200 text-red-800",
@@ -21,11 +22,11 @@ const HistoryCards = ({ history_cards = [], selectedMigration, onSelect }) => {
           <div
             key={index}
             className="relative h-40 w-[250px] flex flex-col justify-between items-center p-2 bg-white border border-cyan-300 rounded-lg shadow cursor-pointer hover:shadow-md transition"
-            onClick={() => onSelect(card.jobid)}
+            onClick={() => onSelect(card.job_id)}
           >
             <div className="w-full flex justify-between items-center mb-2">
               <h3 className="leading-7 tracking-wider font-medium">
-                Job ID: {card.jobid}
+                Job ID: {card.job_id}
               </h3>
               <MigrationStatusTag status={card.status} />
             </div>
@@ -42,7 +43,7 @@ const HistoryCards = ({ history_cards = [], selectedMigration, onSelect }) => {
               </div>
             </div>
             <span className="w-full text-xs leading-7 tracking-wide">
-              Created: {card.created_at}
+              Created: {handle_datetime(card.created_at)}
             </span>
           </div>
         ))}

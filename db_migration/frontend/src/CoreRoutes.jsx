@@ -9,12 +9,12 @@ const CoreRoutes = () => {
     return (
         <BrowserRouter>
             <Routes>
-                <Route path="/" element={<Navigate to="/home" />} />
+                <Route path="/" element={<Navigate to="/home/connections" />} />
+                <Route path="/home" element={<Navigate to="/home/connections/" />} />
                 <Route path="/home" element={<Home />}>
-                    <Route index path="" element={<ActionBlock />}></Route>
                     <Route index path="connections" element={<ConnectionBlock />}></Route>
-                    <Route index path="export" element={<ExportBlock />}></Route>
-                    <Route index path="history/:jobid" element={<SingleHistory />}></Route>
+                    <Route path="export" element={<ExportBlock />}></Route>
+                    <Route path="history/:job_id" element={<SingleHistory />}></Route>
                 </Route>
             </Routes>
         </BrowserRouter>

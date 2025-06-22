@@ -1,8 +1,17 @@
+<<<<<<< Updated upstream
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.orm import Session as _Session
 from core.data import DBInfo, ExportRequest, CreateJobRequest
 from core.db.db_connect import get_db_engine, get_postgresql_db_engine
+=======
+from fastapi import APIRouter, Depends
+from fastapi import HTTPException
+from sqlalchemy.orm import Session
+from typing import List
+import time
+
+>>>>>>> Stashed changes
 from core.db.db_utils import (
     get_databases,
     get_table_names,
@@ -14,6 +23,7 @@ from core.db.db_utils import (
     delete_tables,
     export_triggers,
     run_query
+<<<<<<< Updated upstream
 )
 
 from core.stats import (
@@ -32,6 +42,41 @@ from datetime import datetime
 import time
 from core.job import update_job_status, create_job_record
 from core.models import Job
+=======
+    )
+
+
+
+from core.database import get_db
+from core.stats import collect_export_stats, get_most_recent_stats
+from core.data import (
+    DBInfo,
+    ExportRequest,
+    MigrationHistorySchema,
+    MigrationHistorySchemaBrief,
+    MigrationHistorySchemaBriefInput,
+    MigrationHistoryUpdateSchema,
+    MigrationHistoryItemSchema,
+    TestModelSchema
+    )
+from core.models import MigrationHistory, TestModel
+from core.views import (
+    create_initial_job,
+    get_migration_for_jobid,
+    get_full_history,
+    get_full_history_brief,
+    update_migration_data,
+    get_full_history_items,
+    create_history_item,
+    delete_history_for_jobid,
+    delete_history_item,
+
+    drop_table
+    )
+from core.logging import logger, RUN_ID, get_next_log_counter
+from datetime import datetime
+from core.db.db_connect import get_db_engine
+>>>>>>> Stashed changes
 
 router = APIRouter()
 
@@ -50,7 +95,46 @@ def load_homepage():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
 
+
+@router.get("/test")
+def get_data(db: Session = Depends(get_db)):
+    return db.query(TestModel).all()
+
+@router.post("/test")
+def create_data(request: TestModelSchema, db: Session = Depends(get_db)):
+    new_data = TestModel(**dict(request))
+    db.add(new_data)
+    db.commit()
+    db.refresh(new_data)
+    return new_data
+
+@router.patch("/test")
+def update_data(request: TestModelSchema, db: Session = Depends(get_db)):
+    db_obj = db.query(TestModel).filter_by(id=request.id).first()
+
+    if not db_obj:
+        return None
+
+    for field, value in request.dict(exclude_unset=True).items():
+        setattr(db_obj, field, value)
     
+    db.commit()
+    db.refresh(db_obj)
+    return db_obj
+
+@router.delete("/test/{id}")
+def delete_data(id, db: Session = Depends(get_db)):
+    db_obj = db.query(TestModel).filter_by(id=id).first()
+    if db_obj:
+        db.delete(db_obj)
+        db.commit()
+        print("deleted")
+    return
+
+        
+
+
+
 
 @router.post("/check-connection/")
 def check_connection(request: DBInfo):
@@ -170,6 +254,7 @@ def export_feature(request: ExportRequest, db: Session = Depends(get_db)):
     """
     Request Body:
     {
+        "job_id": int,
         "source": {
             "db_type": db_type,
             "db_name": db_name
@@ -177,12 +262,7 @@ def export_feature(request: ExportRequest, db: Session = Depends(get_db)):
         "target": {
             "db_type": db_type,
             "db_name": db_name
-        },
-        "tables_names": [
-            table1,
-            table2,
-            ...
-        ]
+        }
     }
     """
     logger.info("=== Section: Export Tables & Data ===")
@@ -197,17 +277,22 @@ def export_feature(request: ExportRequest, db: Session = Depends(get_db)):
 
     try:
         args = {
-        "source": {
-            "db_type": request.source.db_type,
-            "db_name": request.source.db_name
-        },
-        "target": {
-            "db_type": request.target.db_type,
-            "db_name": request.target.db_name
-        },
+            "source": {
+                "db_type": request.source.db_type,
+                "db_name": request.source.db_name
+            },
+            "target": {
+                "db_type": request.target.db_type,
+                "db_name": request.target.db_name
+            },
         }
 
+<<<<<<< Updated upstream
 
+=======
+        start_time = time.time()
+        job_id = request.job_id
+>>>>>>> Stashed changes
         exported, skipped, durations = export_tables(**args)
         logger.info(f"=== Tables exported: {len(exported)}; skipped: {len(skipped)} ===\n")
 
@@ -219,16 +304,18 @@ def export_feature(request: ExportRequest, db: Session = Depends(get_db)):
         
         logger.info("=== Section: Export Triggers ===")
 
-        result = export_triggers(
-            args["source"],
-            args["target"]
-        )
+        result = export_triggers(**args)
+        # result = export_triggers(
+        #     args["source"],
+        #     args["target"]
+        # )
 
         timing = collect_combined_stats(
             {"db_type": request.source.db_type, "db_name": request.source.db_name},
             {"db_type": request.target.db_type, "db_name": request.target.db_name}
         )
 
+<<<<<<< Updated upstream
         end = datetime.utcnow()
         total_secs = (end - start).total_seconds()
         update_job_status(
@@ -238,6 +325,23 @@ def export_feature(request: ExportRequest, db: Session = Depends(get_db)):
             completed_at=end,
             total_migration_time=str(total_secs)
         )
+=======
+        total_time = (end_time - start_time)
+        update_data = {
+            "total_migration_time": total_time
+        }
+        update_migration_data(job_id, update_data, db)
+
+        collect_export_stats(
+            source={ "db_type": request.source.db_type, "db_name": request.source.db_name },
+            target={ "db_type": request.target.db_type, "db_name": request.target.db_name },
+            exported=exported,
+            errors=result.get("errors", []),
+            start_time=start_time,
+            end_time=end_time,
+            durations=durations
+         )
+>>>>>>> Stashed changes
 
         logger.info(f"=== ✅ Triggers exported: {len(result.get('exported', []))}; errors: {len(result.get('errors', []))} ===\n")
 
@@ -254,6 +358,8 @@ def export_feature(request: ExportRequest, db: Session = Depends(get_db)):
         
         
         logger.info(f"API `/export/` succeeded: exported_tables={exported}, exported_triggers={result.get('exported', [])}")
+
+
         
         return {
             "message": "Tables and triggers exported successfully.",
@@ -269,6 +375,7 @@ def export_feature(request: ExportRequest, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=f"Error exporting tables: {e}")
 
 
+<<<<<<< Updated upstream
 @router.get("/stats/source/{db_type}/{db_name}")
 def stats_source(db_type, db_name):
     return {"result": collect_source_stats({"db_type": db_type, "db_name": db_name})}
@@ -336,3 +443,79 @@ def get_job_stats(job_id, db: Session = Depends(get_db)):
         },
         "items": items
     }
+=======
+@router.get("/stats/{job_id}")
+def stats_display(job_id, db: Session = Depends(get_db)):
+    stats = get_most_recent_stats()
+    for stat in stats:
+        {
+            "job_id": job_id,
+            "name": stat["name"],
+            "source_total_rows": stat["source_total_rows"],
+            "target_total_rows": stat["target_total_rows"],
+            "index_validation": stat["index_validation"],
+            "primary_key_validation": stat["primary_key_validation"],
+            "foreign_key_validation": stat["foreign_key_validation"],
+            "status": stat["status"],
+            "duration": stat["duration"]
+        }
+        create_history_item(stat, db)
+    print("Stats updated")
+    return { "result": stats }
+
+
+@router.post("/migration-history/create", response_model=MigrationHistorySchemaBrief)
+def create_migration(history: MigrationHistorySchemaBriefInput, db: Session = Depends(get_db)):
+    created_obj = create_initial_job(history, db)
+    return created_obj
+
+@router.patch("/migration-history/{job_id}", response_model=MigrationHistoryUpdateSchema)
+def update_migration(job_id, history_update: MigrationHistoryUpdateSchema, db: Session = Depends(get_db)):
+    result = update_migration_data(job_id, history_update, db)
+    return result
+
+@router.get("/migration-history/{job_id}")
+def get_migration(job_id: int, db: Session = Depends(get_db)):
+    data = get_migration_for_jobid(job_id, db)
+    if data is None:
+        raise HTTPException(status_code=404, detail="Job not found")
+    return data
+
+@router.get("/migration-history/", response_model=List[MigrationHistorySchema])
+def get_migrations(db: Session = Depends(get_db)):
+    return get_full_history(db)
+
+@router.get("/migration-history/brief/", response_model=List[MigrationHistorySchemaBrief])
+def get_migrations_brief(db: Session = Depends(get_db)):
+    return get_full_history_brief(db)
+
+
+@router.delete("/migration-history/{job_id}", status_code=204)
+def delete_migration(job_id: int, db: Session = Depends(get_db)):
+    db_obj = db.query(MigrationHistory).filter_by(job_id=job_id).first()
+
+    if not db_obj:
+        raise HTTPException(status_code=404, detail="Migration job not found")
+
+    db.delete(db_obj)
+    db.commit()
+    return
+
+# History Items
+
+@router.get("/migration-history-items/", response_model=List[MigrationHistoryItemSchema])
+def get_migration_items(db: Session = Depends(get_db)):
+    return get_full_history_items(db)
+
+
+@router.post("/migration-history-items/create", response_model=MigrationHistoryItemSchema)
+def get_migration_items(item_obj: MigrationHistoryItemSchema, db: Session = Depends(get_db)):
+    return create_history_item(item_obj, db)
+
+
+# @router.delete("/migration-history-items/", status_code=204)
+# def delete_migration():
+#     # delete_history_item(id, db)
+#     drop_table("history_item")
+#     return "dropped"
+>>>>>>> Stashed changes

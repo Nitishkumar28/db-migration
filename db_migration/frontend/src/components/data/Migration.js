@@ -190,7 +190,7 @@ export const mockLogs = [
 ];
 
 
-export const mockHistory = Array.from({ length: 5 }, (_, i) => ({
+export const full_history = Array.from({ length: 5 }, (_, i) => ({
   job_id: `job_00${i + 1}`,
   source_db_type: "mysql",
   target_db_type: "postgresql",
@@ -219,13 +219,72 @@ export const mockHistory = Array.from({ length: 5 }, (_, i) => ({
     },
     {
       item_id: 2,
-      type: "trigger",
-      name: `trigger_${i}`,
-      total_triggers: "1/1",
+      type: "table",
+      name: `table_${i}`,
+      source_total_rows: 500 + i * 10,
+      target_total_rows: 500 + i * 10,
+      index_validation: "2/2",
+      primary_key_validation: "1/1",
+      foreign_key_validation: "1/1",
       status: "completed",
-      duration: "1m",
-      timestamp: `2024-06-17T10:0${i}:50Z`
-    }
+      duration: `${2 + i}m`,
+      timestamp: `2024-06-17T10:0${i}:30Z`
+    },
+    {
+      item_id: 3,
+      type: "table",
+      name: `table_${i}`,
+      source_total_rows: 500 + i * 10,
+      target_total_rows: 500 + i * 10,
+      index_validation: "2/2",
+      primary_key_validation: "1/1",
+      foreign_key_validation: "1/1",
+      status: "completed",
+      duration: `${2 + i}m`,
+      timestamp: `2024-06-17T10:0${i}:30Z`
+    },
+
+    {
+      item_id: 4,
+      type: "table",
+      name: `table_${i}`,
+      source_total_rows: 500 + i * 10,
+      target_total_rows: 500 + i * 10,
+      index_validation: "2/2",
+      primary_key_validation: "1/1",
+      foreign_key_validation: "1/1",
+      status: "completed",
+      duration: `${2 + i}m`,
+      timestamp: `2024-06-17T10:0${i}:30Z`
+    },
+
+    {
+      item_id: 5,
+      type: "table",
+      name: `table_${i}`,
+      source_total_rows: 500 + i * 10,
+      target_total_rows: 500 + i * 10,
+      index_validation: "2/2",
+      primary_key_validation: "1/1",
+      foreign_key_validation: "1/1",
+      status: "completed",
+      duration: `${2 + i}m`,
+      timestamp: `2024-06-17T10:0${i}:30Z`
+    },
+
+    {
+      item_id: 6,
+      type: "table",
+      name: `table_${i}`,
+      source_total_rows: 500 + i * 10,
+      target_total_rows: 500 + i * 10,
+      index_validation: "2/2",
+      primary_key_validation: "1/1",
+      foreign_key_validation: "1/1",
+      status: "completed",
+      duration: `${2 + i}m`,
+      timestamp: `2024-06-17T10:0${i}:30Z`
+    },
   ]
 }));
 
@@ -334,16 +393,18 @@ export const history_cards = [
 ]
 
 
-export const columns = [
+
+export const history_columns = [
   { key: "id", label: "ID" },
   { key: "name", label: "Name" },
   { key: "source_total_rows", label: "Source Total Rows" },
   { key: "target_total_rows", label: "Target Total Rows" },
-  { key: "indexes_count", label: "Indexes" },
-  { key: "primary_key", label: "Primary Keys" },
-  { key: "foreign_key", label: "Foreign Keys" },
+  { key: "index_validation", label: "Indexes" },
+  { key: "primary_key_validation", label: "Primary Keys" },
+  { key: "foreign_key_validation", label: "Foreign Keys" },
   { key: "status", label: "Status" },
-  { key: "timestamp", label: "Created At" },
+  { key: "duration", label: "Duration" },
+  { key: "created_at", label: "Created At" },
 ];
 
 export const data = [

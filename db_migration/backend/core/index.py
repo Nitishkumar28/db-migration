@@ -3,6 +3,9 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from core import routes
 
+from core.database import Base, engine
+from core import models
+
 app = FastAPI()
 
 app.add_middleware(
@@ -13,3 +16,6 @@ app.add_middleware(
 )
 
 app.include_router(routes.router, prefix="/api")
+
+Base.metadata.create_all(bind=engine)
+print("✅ Tables created.")

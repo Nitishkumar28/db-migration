@@ -5,7 +5,7 @@ import InputBar from "../../../../base/InputBar";
 import WarningMessages from "../../../../base/main/activeblock/WarningMessages";
 import useUIStore from "../../../../store/uistore";
 import Legend from "../../../../base/main/activeblock/Legend";
-import { checkConnectionURL } from "../../../../hooks/urls";
+import { checkConnectionAPI } from "../../../../hooks/urls";
 import useDBStore from "../../../../store/dbStore";
 import { usePost } from "../../../../hooks/usePost";
 
@@ -24,7 +24,7 @@ const Row = ({ db_type, fields }) => (
 );
 
 const DetailsBlock = ({ db_type, title }) => {
-  const { post, data: result, loading: posting } = usePost(checkConnectionURL);
+  const { post, data: result, loading: posting } = usePost(checkConnectionAPI);
   const {
     connectionDetails,
     setConnectionDetails,
@@ -60,7 +60,6 @@ const DetailsBlock = ({ db_type, title }) => {
   const handlePost = async () => {
     if (!activeConnectionDetails) return;
     try {
-      setTimeout(() => {}, [3000])
       await post({ ...activeConnectionDetails, db_type: activeConnection });
       updateConnectionDetails(
         activeConnection,

@@ -7,6 +7,24 @@ Routes with functionality:
 3) Get Indexes - http://127.0.0.1:8000/api/indexes/postgresql/demo/data
 4) Table schema - http://127.0.0.1:8000/api/schema/postgresql/demo/conversion
 
+1) Export Features - http://127.0.0.1:8000/api/export
+2) get-history-brief - http://127.0.0.1:8000/api/migration-history-brief - list of history object in brief
+3) get-history-for-job-id - http://127.0.0.1:8000/api/migration-history/{job_id} - full history object for the given jobid
+4) create history object after export is clicked - http://127.0.0.1:8000/api/migration-history/create - post request_body
+    - create jobid
+    - source and target info
+    - create a new record with these details as an initialization
+5) update history object after export - http://127.0.0.1:8000/api/migration-history/{job_id} - patch request_body
+    - total_time_taken
+    - status of export
+6) get stats - http://127.0.0.1:8000/api/get-stats - post includes request_body(source & target info) - retrieves stats and creates migration items in DB
+
+http://127.0.0.1:8000/api/export
+http://127.0.0.1:8000/api/migration-history-brief
+http://127.0.0.1:8000/api/migration-history/{job_id} 
+http://127.0.0.1:8000/api/migration-history/create
+http://127.0.0.1:8000/api/migration-history/{job_id}
+http://127.0.0.1:8000/api/get-stats
 
 TODO:
 
@@ -65,15 +83,6 @@ Todos:
 - API connections (expected)
 - Mongo vs relational
 - APIs to store and manage history 
-
-2) Statistics
-
-
-a) db_name, db_type
-
-{
-    
-}
 
 ```js
 
@@ -262,3 +271,63 @@ items: []
 // Final
 
 ```
+
+> selected source, selected target
+
+> sourceConnectionStatus, targetConnectionStatus
+
+> isExport = selected source + target ? true : false
+
+> After export is clicked: 3 separate APIs
+    > create-job API -> to initialize the process
+    > export-features API -> to export and update complete_status
+    > get-stats API -> for the current source and target
+
+> history for jobid
+
+
+[
+    {
+        "jobid": "job_001",
+        "source_db_type": "mysql",
+        "target_db_type": "postgresql",
+        "source_db_name": "user_service",
+        "target_db_name": "user_service_pg",
+        "created_at": "2024-06-17T10:24:00Z",
+        "started_by": "admin",
+        "status": "completed",
+    },
+    ...
+]
+
+[
+    {
+    job_id: `job_00${i + 1}`,
+    source_db_type: "mysql",
+    target_db_type: "postgresql",
+    source_db_name: `app_db_${i}`,
+    target_db_name: `app_pg_${i}`,
+    status: i % 2 === 0 ? "completed" : "failed",
+    created_at: `2024-06-17T10:0${i}:00Z`,
+    completed_at: `2024-06-17T10:1${i}:00Z`,
+    total_migration_time: `${10 + i}m`,
+    started_by: "preetham",
+    description: `Migration job ${i + 1}`,
+    tags: ["batch", `job_${i + 1}`],
+    items: [
+        {
+        item_id: 1,
+        type: "table",
+        name: `table_${i}`,
+        source_total_rows: 500 + i * 10,
+        target_total_rows: 500 + i * 10,
+        index_validation: "2/2",
+        primary_key_validation: "1/1",
+        foreign_key_validation: "1/1",
+        status: "completed",
+        duration: `${5 + i}m`,
+        timestamp: `2024-06-17T10:0${i}:30Z`
+        },
+    },
+    ...
+  ]

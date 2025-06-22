@@ -1,13 +1,16 @@
 import { useEffect, useState } from "react";
-import { history_cards, migrations } from "../../../data/Migration";
+import { migrations } from "../../../data/Migration";
 import { useParams, useNavigate } from "react-router-dom";
-import HistoryCards from "./HistoryCards";
 import useUIStore from "../../../../store/uistore";
+import { getHistoryBriefAPI, testAPI } from "../../../../hooks/urls";
+import { useFetch } from "../../../../hooks/useFetch";
+import HistoryCards from "./HistoryCards";
 
 const HistoryBlock = () => {
   const { migrationName } = useParams();
   const { setPipelineOption } = useUIStore();
   const navigate = useNavigate();
+  const {data: history_cards, loading, error} = useFetch(getHistoryBriefAPI());
 
   useEffect(() => {
     setPipelineOption("history");
@@ -22,10 +25,14 @@ const HistoryBlock = () => {
   });
 
   const handleCardClick = (jobid) => {
-    const selected = migrations.find((m) => m.name === name);
-    setSelectedMigration([selected]);
+    // const selected = migrations.find((m) => m.name === name);
+    // setSelectedMigration([selected]);
     navigate(`/home/history/${jobid}`);
   };
+
+  if(!history_cards) {
+    return <span>Loading...</span>
+  }
 
   return (
     <div className="w-full h-[450px] overflow-y-scroll">

@@ -25,7 +25,7 @@ const ExportCard = ({ text, children }) => {
 };
 
 const ExportHeader = ({isHistory=false, selectedSource, selectedTarget}) => {
-//   const { selectedSource, selectedTarget } = useDBStore();
+  // const { selectedSource, selectedTarget } = useDBStore();
 
   const selectSourceDetails = useDBStore((state) => {
     const current = state.connectionDetails.find(
@@ -40,9 +40,20 @@ const ExportHeader = ({isHistory=false, selectedSource, selectedTarget}) => {
     );
     return current;
   });
+
   const isConnectionStatus =
     selectSourceDetails?.status === "success" &&
     selectTargetDetails?.status === "success";
+
+  const handle_export = () => {
+    // API call to migration-history/create
+
+    // API call to export
+
+    // API call to stats
+    console.log("export")
+  }
+
   return (
     <div className="w-full h-[28%] flex justify-evenly items-center gap-4 p-2 bg-sky-50 rounded-lg">
       <ExportCard text="source">
@@ -57,6 +68,7 @@ const ExportHeader = ({isHistory=false, selectedSource, selectedTarget}) => {
       {isHistory ? <MigrationStatusTag status="completed" /> : 
       <BaseButton
       text="export"
+      onClick={() => handle_export()}
       className={`font-medium py-1.5 px-2 bg-[#0492C2] text-white rounded-lg border ${
           !isConnectionStatus && "pointer-events-none opacity-70"
           } `}
