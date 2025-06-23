@@ -19,10 +19,24 @@ const useDBStore = create(
     selectSourceDetails: {},
     selectTargetDetails: {},
 
+    
     // historySelectedSource: "",
     // historySelectedTarget: "",
-
+    
     connectionDetails: initialConnections,
+    historyCardsLocal: [],
+
+    setHistoryCards: (history_data) => {
+      set(() => ({
+        historyCardsLocal: history_data
+      }))
+    },
+
+    addNewHistoryCard: (new_history_card) => {
+      set((state) => ({
+        historyCardsLocal: [new_history_card, ...state.historyCardsLocal]
+      }));
+    },
 
     setSelectedSource: (source) => {
       set(() => ({

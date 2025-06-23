@@ -402,7 +402,7 @@ export const history_columns = [
   { key: "index_validation", label: "Indexes" },
   { key: "primary_key_validation", label: "Primary Keys" },
   { key: "foreign_key_validation", label: "Foreign Keys" },
-  { key: "status", label: "Status" },
+  { key: "trigger_count", label: "Triggers Count" },
   { key: "duration", label: "Duration" },
   { key: "created_at", label: "Created At" },
 ];

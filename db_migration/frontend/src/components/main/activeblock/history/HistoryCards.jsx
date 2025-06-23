@@ -1,5 +1,6 @@
 import { getDBIcon } from "../../../../base/Icons";
 import { handle_datetime } from "../../../../base/utils";
+import useDBStore from "../../../../store/dbStore";
 
 const statusColors = {
   failed: "bg-red-200 text-red-800",
@@ -15,7 +16,11 @@ export const MigrationStatusTag = ({ status }) => {
   );
 };
 
-const HistoryCards = ({ history_cards = [], selectedMigration, onSelect }) => {
+const HistoryCards = ({ onSelect }) => {
+  const { historyCardsLocal:history_cards } = useDBStore();
+  if (!history_cards) {
+    return <div>Loading...</div>
+  }
   return (
       <div className="grid grid-cols-4 gap-5">
         {history_cards.map((card, index) => (

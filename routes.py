@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Depends
-from fastapi import HTTPException
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, HTTPException, Depends
+from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm import Session as _Session
+from core.data import DBInfo, ExportRequest, CreateJobRequest
+from core.db.db_connect import get_db_engine, get_postgresql_db_engine
 from typing import List
 import time
-
 from core.db.db_utils import (
     get_databases,
     get_table_names,
@@ -20,6 +21,7 @@ from core.db.db_utils import (
 
 
 from core.database import get_db
+from core.stats import collect_export_stats, get_most_recent_stats
 from core.data import (
     DBInfo,
     ExportRequest,
@@ -49,6 +51,14 @@ from datetime import datetime
 from core.db.db_connect import get_db_engine
 
 router = APIRouter()
+
+def get_db():
+    engine = get_postgresql_db_engine()
+    if engine is None:
+        raise HTTPException(500, "Could not connect to jobs database")
+    with _Session(engine) as db:
+        yield db
+
 
 @router.get("/")
 def load_homepage():
@@ -100,27 +110,27 @@ def delete_data(id, db: Session = Depends(get_db)):
 
 @router.post("/check-connection/")
 def check_connection(request: DBInfo):
-    try:
-        print(request)
-        check_connection_stat = True
-        args = {
-            "host_name": request.host_name,
-            "username": request.username,
-            "password": request.password,
-            "port": request.port,
-            "db_name": request.db_name,
-            "db_type": request.db_type,
-            "check_connection_status": check_connection_stat
-        }
-        db_name = request.db_name
-        if request.db_type != "postgresql" and db_name != "":
-            run_query(f"CREATE DATABASE IF NOT EXISTS {db_name}", request.db_type, check_connection_status=check_connection_stat)
-        check_connection_res = get_db_engine(**args)
+    print(request)
+    check_connection_stat = True
+    args = {
+        "host_name": request.host_name,
+        "username": request.username,
+        "password": request.password,
+        "port": request.port,
+        "db_name": request.db_name,
+        "db_type": request.db_type,
+        "check_connection_status": check_connection_stat
+    }
+    db_name = request.db_name
+    if request.db_type != "postgresql" and db_name != "":
+        run_query(f"CREATE DATABASE IF NOT EXISTS {db_name}", request.db_type, check_connection_status=check_connection_stat)
+    check_connection_res = get_db_engine(**args)
+    print(check_connection_res)
+    if check_connection_res is not None:
         print("SUCESS")
-        return {"results": check_connection_res is not None}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Connection check failed: {e}")
-
+        return {"results": True}
+    return {"results": False}
+    
 
 @router.get("/databases/{db_type}")
 def fetch_databases(db_type):
@@ -199,6 +209,18 @@ def fetch_triggers(db_type, db_name, table_name):
         raise HTTPException(status_code=500, detail=f"Error fetching triggers: {e}")
 
 
+@router.post("/jobs/create")
+def create_job(request: CreateJobRequest, db: Session = Depends(get_db)):
+    job = create_job_record(
+        db,
+        source_db_type=request.source_db_type,
+        source_db_name=request.source_db_name,
+        target_db_type=request.target_db_type,
+        target_db_name=request.target_db_name
+    )
+    return {"result": True, "job_id": job.job_id}
+
+
 @router.post("/export/")
 def export_feature(request: ExportRequest, db: Session = Depends(get_db)):
     """
@@ -216,6 +238,15 @@ def export_feature(request: ExportRequest, db: Session = Depends(get_db)):
     }
     """
     logger.info("=== Section: Export Tables & Data ===")
+    job = create_job_record(
+        db,
+        source_db_type = request.source.db_type,
+        source_db_name = request.source.db_name,
+        target_db_type = request.target.db_type,
+        target_db_name = request.target.db_name
+    )
+    start = datetime.utcnow()
+
     try:
         args = {
             "source": {
@@ -227,6 +258,7 @@ def export_feature(request: ExportRequest, db: Session = Depends(get_db)):
                 "db_name": request.target.db_name
             },
         }
+
 
         start_time = time.time()
         job_id = request.job_id
@@ -247,8 +279,20 @@ def export_feature(request: ExportRequest, db: Session = Depends(get_db)):
         #     args["target"]
         # )
 
-        end_time = time.time()
+        timing = collect_combined_stats(
+            {"db_type": request.source.db_type, "db_name": request.source.db_name},
+            {"db_type": request.target.db_type, "db_name": request.target.db_name}
+        )
 
+        end = datetime.utcnow()
+        total_secs = (end - start).total_seconds()
+        update_job_status(
+            db,
+            job_id=job.job_id,
+            status="completed",
+            completed_at=end,
+            total_migration_time=str(total_secs)
+        )
         total_time = (end_time - start_time)
         update_data = {
             "total_migration_time": total_time
@@ -286,7 +330,8 @@ def export_feature(request: ExportRequest, db: Session = Depends(get_db)):
         return {
             "message": "Tables and triggers exported successfully.",
             "exported_tables": list(exported),
-            "exported_triggers": result.get("exported", [])
+            "exported_triggers": result.get("exported", []),
+            "timing": timing
         }
     
     except HTTPException:
@@ -296,6 +341,73 @@ def export_feature(request: ExportRequest, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=f"Error exporting tables: {e}")
 
 
+@router.get("/stats/source/{db_type}/{db_name}")
+def stats_source(db_type, db_name):
+    return {"result": collect_source_stats({"db_type": db_type, "db_name": db_name})}
+
+@router.get("/stats/target/{src_db_type}/{src_db_name}/{targ_db_type}/{targ_db_name}")
+def stats_target(src_db_type, src_db_name, targ_db_type, targ_db_name):
+    return {"result": collect_target_stats(
+        {"db_type": src_db_type, "db_name": src_db_name},
+        {"db_type": targ_db_type, "db_name": targ_db_name}
+    )}
+
+@router.get("/stats/combined/{src_db_type}/{src_db_name}/{targ_db_type}/{targ_db_name}")
+def stats_combined(src_db_type, src_db_name, targ_db_type, targ_db_name):
+    return {"result": collect_combined_stats(
+        {"db_type": src_db_type, "db_name": src_db_name},
+        {"db_type": targ_db_type, "db_name": targ_db_name}
+    )}
+
+@router.get("/names/indexes/{db_type}/{db_name}")
+def names_indexes(db_type, db_name):
+    return {"result": collect_index_names({"db_type": db_type, "db_name": db_name})}
+
+@router.get("/names/primary-keys/{db_type}/{db_name}")
+def names_primary_keys(db_type, db_name):
+    return {"result": collect_primary_key_names({"db_type": db_type, "db_name": db_name})}
+
+@router.get("/names/foreign-keys/{db_type}/{db_name}")
+def names_foreign_keys(db_type, db_name):
+    return {"result": collect_foreign_key_names({"db_type": db_type, "db_name": db_name})}
+
+@router.get("/names/triggers/{db_type}/{db_name}")
+def names_triggers(db_type, db_name):
+    return {"result": collect_trigger_names({"db_type": db_type, "db_name": db_name})}
+
+
+@router.get("/stats/")
+def stats_display():
+    return {"result": collect_export_durations({})}
+
+
+@router.get("/jobs/{job_id}/stats")
+def get_job_stats(job_id, db: Session = Depends(get_db)):
+    job = db.query(Job).filter(Job.job_id == job_id).first()
+    if not job:
+        raise HTTPException(404, "Job not found")
+
+    items = []
+    if job.status == "completed":
+        items = collect_combined_stats(
+            {"db_type": job.source_db_type, "db_name": job.source_db_name},
+            {"db_type": job.target_db_type, "db_name": job.target_db_name}
+        )
+
+    return {
+        "job": {
+            "job_id": job.job_id,
+            "source_db_type": job.source_db_type,
+            "source_db_name": job.source_db_name,
+            "target_db_type": job.target_db_type,
+            "target_db_name": job.target_db_name,
+            "status": job.status,
+            "created_at": job.created_at.isoformat(),
+            "completed_at": job.completed_at.isoformat() if job.completed_at else None,
+            "total_migration_time": job.total_migration_time
+        },
+        "items": items
+    }
 @router.get("/stats/{job_id}")
 def stats_display(job_id, db: Session = Depends(get_db)):
     stats = get_most_recent_stats()
