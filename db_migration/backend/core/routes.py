@@ -1,3 +1,4 @@
+import stat
 from fastapi import APIRouter, Depends
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
@@ -20,9 +21,11 @@ from core.db.db_utils import (
 
 
 from core.database import get_db
+from core.stats import collect_combined_stats, validate_export_success
 from core.data import (
     DBInfo,
     ExportRequest,
+    StatRequest,
     MigrationHistorySchema,
     MigrationHistorySchemaBrief,
     MigrationHistorySchemaBriefInput,
@@ -242,10 +245,6 @@ def export_feature(request: ExportRequest, db: Session = Depends(get_db)):
         logger.info("=== Section: Export Triggers ===")
 
         result = export_triggers(**args)
-        # result = export_triggers(
-        #     args["source"],
-        #     args["target"]
-        # )
 
         end_time = time.time()
 
@@ -255,15 +254,6 @@ def export_feature(request: ExportRequest, db: Session = Depends(get_db)):
         }
         update_migration_data(job_id, update_data, db)
 
-        collect_export_stats(
-            source={ "db_type": request.source.db_type, "db_name": request.source.db_name },
-            target={ "db_type": request.target.db_type, "db_name": request.target.db_name },
-            exported=exported,
-            errors=result.get("errors", []),
-            start_time=start_time,
-            end_time=end_time,
-            durations=durations
-         )
 
         logger.info(f"=== ✅ Triggers exported: {len(result.get('exported', []))}; errors: {len(result.get('errors', []))} ===\n")
 
@@ -286,7 +276,8 @@ def export_feature(request: ExportRequest, db: Session = Depends(get_db)):
         return {
             "message": "Tables and triggers exported successfully.",
             "exported_tables": list(exported),
-            "exported_triggers": result.get("exported", [])
+            "exported_triggers": result.get("exported", []),
+            "durations": durations
         }
     
     except HTTPException:
@@ -296,22 +287,25 @@ def export_feature(request: ExportRequest, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=f"Error exporting tables: {e}")
 
 
-@router.get("/stats/{job_id}")
-def stats_display(job_id, db: Session = Depends(get_db)):
-    stats = get_most_recent_stats()
+@router.post("/get-stats/")
+def stats_display(request: StatRequest, db: Session = Depends(get_db)):
+    durations = request.durations
+    stats = collect_combined_stats(request.source, request.target)
+    print("HI STATS")
     for stat in stats:
-        {
-            "job_id": job_id,
-            "name": stat["name"],
-            "source_total_rows": stat["source_total_rows"],
-            "target_total_rows": stat["target_total_rows"],
-            "index_validation": stat["index_validation"],
-            "primary_key_validation": stat["primary_key_validation"],
-            "foreign_key_validation": stat["foreign_key_validation"],
-            "status": stat["status"],
-            "duration": stat["duration"]
+        current_stat = {
+            "job_id": request.job_id,
+            "name": stat["table_name"],
+            "source_total_rows": stat["source_rows"],
+            "target_total_rows": stat["target_rows"],
+            "index_validation": stat["index_count"],
+            "primary_key_validation": stat["primary_key_count"],
+            "foreign_key_validation": stat["foreign_key_count"],
+            "trigger_count": stat["trigger_count"],
+            "duration": durations.get(stat["table_name"], 0)
         }
-        create_history_item(stat, db)
+        print("CREATE HISTORY ITEM _ BEFORE CALL")
+        create_history_item(current_stat, db)
     print("Stats updated")
     return { "result": stats }
 
@@ -361,7 +355,7 @@ def get_migration_items(db: Session = Depends(get_db)):
 
 
 @router.post("/migration-history-items/create", response_model=MigrationHistoryItemSchema)
-def get_migration_items(item_obj: MigrationHistoryItemSchema, db: Session = Depends(get_db)):
+def post_migration_items(item_obj: MigrationHistoryItemSchema, db: Session = Depends(get_db)):
     return create_history_item(item_obj, db)
 
 
@@ -370,3 +364,8 @@ def get_migration_items(item_obj: MigrationHistoryItemSchema, db: Session = Depe
 #     # delete_history_item(id, db)
 #     drop_table("history_item")
 #     return "dropped"
+
+@router.get("/validate/")
+def validate_stats_data(request: ExportRequest):
+    validate_res = validate_export_success(dict(request.source), dict(request.target))
+    return validate_res

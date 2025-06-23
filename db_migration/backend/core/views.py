@@ -15,6 +15,7 @@ def generate_unique_code():
         if code not in used_codes:
             used_codes.add(code)
             return code
+        
 
 def create_initial_job(request_obj, db):
     job_id = generate_unique_code()
@@ -59,7 +60,7 @@ def update_migration_data(job_id, data, db):
     if not db_obj:
         return None
 
-    for field, value in data.dict(exclude_unset=True).items():
+    for field, value in data.items():
         setattr(db_obj, field, value)
 
     db.commit()
@@ -83,12 +84,14 @@ def get_full_history_items(db):
     return db.query(MigrationItem).all()
 
 def create_history_item(item_obj, db):
+    print("INSIDE CREATE")
     current_data = {**dict(item_obj)}
     print(current_data)
     history_obj = MigrationItem(**current_data)
     db.add(history_obj)
     db.commit()
     db.refresh(history_obj)
+    print("SUCESS - CREATED")
     return history_obj
 
 def delete_history_item(id, db):

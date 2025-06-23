@@ -43,12 +43,20 @@ def collect_source_stats(source):
         src_count = get_table_count(
             run_query(f"SELECT COUNT(*) AS cnt FROM {table};", source['db_type'], source['db_name'])
         )
+        indexes = get_indexes_info(source['db_type'], source['db_name'], table)
+        index_count = len(indexes or [])
+        pk_info = get_primary_keys(source['db_type'], source['db_name'], table) or {}
+        pk_cols = pk_info.get('constrained_columns', [])
+        fk_count = len(get_foreign_keys(source['db_type'], source['db_name'], table))
         triggers = get_triggers_for_table(source['db_type'], source['db_name'], table)
-        trigger_count = len(triggers or [])
+        trigger_count = len(triggers)
         metrics.append({
             'sno': sno,
             'table_name': table,
             'source_rows': src_count,
+            'index_count': index_count,
+            'primary_key_count': len(pk_cols),
+            'foreign_key_count': fk_count,
             'trigger_count': trigger_count
         })
     return metrics
@@ -97,20 +105,19 @@ def collect_export_durations(durations):
 
 
 def collect_combined_stats(source, target):
-    source_stats = collect_source_stats(source)
-    target_stats = collect_target_stats(source, target)
+    source_stats = collect_source_stats(dict(source))
+    target_stats = collect_target_stats(dict(source), dict(target))
     combined = []
     for src, targ in zip(source_stats, target_stats):
         combined.append({
             'sno': src['sno'],
             'table_name': src['table_name'],
             'source_rows': src['source_rows'],
-            'source_trigger_count': src.get('trigger_count', 0),
             'target_rows': targ.get('target_rows', 0),
-            'index_count': targ.get('index_count', 0),
-            'primary_key_count': targ.get('primary_key_count', 0),
-            'foreign_key_count': targ.get('foreign_key_count', 0),
-            'target_trigger_count': targ.get('trigger_count', 0)
+            'index_count': f"{src.get('index_count', 0)}/{targ.get('index_count',0)}",
+            'primary_key_count': f"{src.get('primary_key_count', 0)}/{targ.get('primary_key_count',0)}",
+            'foreign_key_count': f"{src.get('foreign_key_count', 0)}/{targ.get('foreign_key_count',0)}",
+            'trigger_count': f"{src.get('trigger_count', 0)}/{targ.get('trigger_count',0)}"
         })
     return combined
 
@@ -220,7 +227,8 @@ def validate_export_success(source, target):
         ])
         if src_trigger_names != targ_trigger_names:
             return False
-
+        
+    
     return True
 
 

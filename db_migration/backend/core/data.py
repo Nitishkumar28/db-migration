@@ -1,7 +1,6 @@
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Dict
 from datetime import datetime
-
 
 class TableModel(BaseModel):
     db_name: str
@@ -30,6 +29,12 @@ class ExportRequest(BaseModel):
     source: Source
     target: Target
 
+class StatRequest(BaseModel):
+    job_id: int
+    source: Source
+    target: Target
+    durations: Dict
+
 
 class DBInfo(BaseModel):
     host_name: str
@@ -48,7 +53,7 @@ class MigrationHistoryItemSchema(BaseModel):
     index_validation: Optional[str] = None
     primary_key_validation: Optional[str] = None
     foreign_key_validation: Optional[str] = None
-    status: Optional[str] = "inprogress"
+    trigger_count: Optional[str] = None
     duration: Optional[str] = None
     created_at: Optional[datetime] = None
 
@@ -74,8 +79,6 @@ class MigrationHistorySchemaBriefInput(BaseModel):
     target_db_type: Optional[str]
     source_db_name: Optional[str]
     target_db_name: Optional[str]
-    status: Optional[str]
-    started_by: Optional[str]
 
     class Config:
         orm_mode = True

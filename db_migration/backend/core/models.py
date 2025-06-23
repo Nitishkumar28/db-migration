@@ -32,7 +32,7 @@ class MigrationItem(Base):
     index_validation = Column(String)
     primary_key_validation = Column(String)
     foreign_key_validation = Column(String)
-    status = Column(String, default="inprogress")
+    trigger_count = Column(String)
     duration = Column(String)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 

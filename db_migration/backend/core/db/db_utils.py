@@ -196,16 +196,29 @@ def get_table_ddl(db_type, db_name, table_name):
 
 
 def get_triggers_for_table(db_type, db_name, table_name):
-    query = f"""
-    SELECT
-        trigger_name    AS name,
-        action_timing   AS timing,
-        event_manipulation AS event,
-        action_statement   AS statement
-    FROM {table_name}.triggers
-    WHERE event_object_table = :tbl
-    AND trigger_schema = 'public';
-    """
+    if db_type == "postgresql":
+        query = f"""
+        SELECT
+            trigger_name    AS name,
+            action_timing   AS timing,
+            event_manipulation AS event,
+            action_statement   AS statement
+        FROM information_schema.triggers
+        WHERE trigger_schema = 'public'
+        AND event_object_table = '{table_name}'; 
+        """
+    elif db_type == "mysql":
+        query = f"""
+            SELECT
+            TRIGGER_NAME    AS name,
+            ACTION_TIMING   AS timing,
+            EVENT_MANIPULATION AS event,
+            ACTION_STATEMENT   AS statement
+        FROM information_schema.triggers
+        WHERE trigger_schema = '{db_name}'  -- Using parameterized query for database name
+        AND event_object_table = '{table_name}';
+        """
+        
     results = run_query(query, db_type, db_name)
     return [
         {
