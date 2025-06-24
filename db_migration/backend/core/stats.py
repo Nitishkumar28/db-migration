@@ -43,11 +43,11 @@ def collect_source_stats(source):
         src_count = get_table_count(
             run_query(f"SELECT COUNT(*) AS cnt FROM {table};", source['db_type'], source['db_name'])
         )
-        indexes = get_indexes_info(source['db_type'], source['db_name'], table)
-        index_count = len(indexes or [])
         pk_info = get_primary_keys(source['db_type'], source['db_name'], table) or {}
         pk_cols = pk_info.get('constrained_columns', [])
-        fk_count = len(get_foreign_keys(source['db_type'], source['db_name'], table))
+        fk_info = get_foreign_keys(source['db_type'], source['db_name'], table)
+        indexes = get_indexes_info(source['db_type'], source['db_name'], table)
+        index_count = len(indexes or [])
         triggers = get_triggers_for_table(source['db_type'], source['db_name'], table)
         trigger_count = len(triggers)
         metrics.append({
@@ -56,7 +56,7 @@ def collect_source_stats(source):
             'source_rows': src_count,
             'index_count': index_count,
             'primary_key_count': len(pk_cols),
-            'foreign_key_count': fk_count,
+            'foreign_key_count': len(fk_info),
             'trigger_count': trigger_count
         })
     return metrics
@@ -67,16 +67,20 @@ def collect_target_stats(source, target):
     tables = get_table_names(source['db_type'], source['db_name'])
     metrics = []
     for sno, table in enumerate(tables, start=1):
+        only_indexes = []
         targ_count = get_table_count(
             run_query(f"SELECT COUNT(*) AS cnt FROM {table};", target['db_type'], target['db_name'])
         )
-        indexes = get_indexes_info(target['db_type'], target['db_name'], table)
-        index_count = len(indexes or [])
         pk_info = get_primary_keys(target['db_type'], target['db_name'], table) or {}
         pk_cols = pk_info.get('constrained_columns', [])
         fk_list = get_foreign_keys(target['db_type'], target['db_name'], table)
         fk_names = [fk.get('name') for fk in (fk_list or [])]
         foreign_key_count = len(fk_names)
+        indexes = get_indexes_info(target['db_type'], target['db_name'], table)
+        if indexes:
+            if indexes[0]['name'] not in pk_cols and indexes[0]['name'] not in fk_names:
+                only_indexes.append(indexes)
+        index_count = len(only_indexes)
         triggers = get_triggers_for_table(target['db_type'], target['db_name'], table)
         trigger_count = len(triggers or [])
         metrics.append({

@@ -1,5 +1,5 @@
 import stat
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Response
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from typing import List
@@ -51,6 +51,10 @@ from core.logging import logger, RUN_ID, get_next_log_counter
 from datetime import datetime
 from core.db.db_connect import get_db_engine
 from core.secret_manager import set_db_secrets_for_db, get_secret
+
+from core.schemas import SignUpRequest, LoginRequest, TokenRequest
+from core.signup import register_user, authenticate_user
+from core.authentication import get_current_user, ACCESS_TOKEN_EXPIRE_MINUTES
 
 router = APIRouter()
 
@@ -201,6 +205,26 @@ def fetch_triggers(db_type, db_name, table_name):
         return {"results": trigger_data_for_table}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching triggers: {e}")
+
+
+@router.post("/signup", response_model=TokenRequest)
+def signup(data: SignUpRequest, db: Session = Depends(get_db)):
+    token = register_user(data, db)
+    return {"access_token": token, "token_type": "bearer"}
+
+@router.post("/login", response_model=TokenRequest)
+def login(data: LoginRequest, response: Response, db: Session = Depends(get_db)):
+    token = authenticate_user(data, db)
+    response.set_cookie(
+        key="access_token",
+        value=token,
+        httponly=True,                 
+        secure=False,                  
+        samesite="none",                
+        max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+        path="/" # cookies enabled for all paths
+    )
+    return {"access_token": token, "token_type": "bearer"}
 
 
 @router.post("/export/")
