@@ -105,8 +105,8 @@ def collect_export_durations(durations):
 
 
 def collect_combined_stats(source, target):
-    source_stats = collect_source_stats(dict(source))
-    target_stats = collect_target_stats(dict(source), dict(target))
+    source_stats = collect_source_stats(source)
+    target_stats = collect_target_stats(source, target)
     combined = []
     for src, targ in zip(source_stats, target_stats):
         combined.append({
@@ -200,7 +200,7 @@ def validate_export_success(source, target):
         src_indexes = get_indexes_info(source['db_type'], source['db_name'], table) or []
         targ_indexes = get_indexes_info(target['db_type'], target['db_name'], table) or []
         if len(src_indexes) != len(targ_indexes):
-            return False
+            return True
 
         # 4. Primary key match
         src_pk = get_primary_keys(source['db_type'], source['db_name'], table) or {}

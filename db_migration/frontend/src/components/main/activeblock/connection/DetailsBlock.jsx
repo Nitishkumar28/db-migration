@@ -24,7 +24,7 @@ const Row = ({ db_type, fields }) => (
 );
 
 const DetailsBlock = ({ db_type, title }) => {
-  const { post, data: result, loading: posting } = usePost(checkConnectionAPI);
+  const { post, data: result, loading: posting } = usePost(checkConnectionAPI());
   const {
     connectionDetails,
     setConnectionDetails,
@@ -58,14 +58,15 @@ const DetailsBlock = ({ db_type, title }) => {
   };
 
   const handlePost = async () => {
-    if (!activeConnectionDetails) return;
+    if (!activeConnectionDetails) {
+      // Set error message
+      return
+    }
     try {
-      await post({ ...activeConnectionDetails, db_type: activeConnection });
-      updateConnectionDetails(
-        activeConnection,
-        "status",
-        result?.results ? "success" : "failed"
-      );
+      const post_request_data = { ...activeConnectionDetails, db_type: activeConnection };
+      const response = await post(post_request_data);
+      const connection_status = response?.results ? "success" : "failed";
+      updateConnectionDetails( activeConnection, "status", connection_status);
     } catch {
       updateConnectionDetails(activeConnection, "status", "failed");
     }

@@ -35,6 +35,8 @@ TODO:
 5) Websockets for logs
 6) Docker file
 
+indexes - return True(hard coded)
+
 Errors:
 
 1) Incorrect database name must raise error - Done
@@ -331,3 +333,24 @@ items: []
     },
     ...
   ]
+
+
+
+  {
+    "host_name": "localhost",
+    "username": "root",
+    "password": "Admin@root",
+    "port": "3306",
+    "db_name": "Sample",
+    "db_type": "mysql"
+}
+
+{
+    "host_name": "localhost",
+    "username": "postgres",
+    "password": "Qwertyuiop123@",
+    "port": "5432",
+    "db_name": "postgres",
+    "db_type": "postgresql"
+}
+SELECT table_name FROM information_schema.tables WHERE table_schema = 'public';

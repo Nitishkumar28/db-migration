@@ -1,111 +1,110 @@
 import { create } from "zustand";
-import { initialConnections } from "./index";
 import { persist } from "zustand/middleware";
-
-const initialConnectionDetails = {
-  db_type: "",
-  host_name: "",
-  username: "",
-  password: "",
-  port: "",
-  db_name: "",
-  status: "idle",
-};
+import { initialConnections } from "./index";
 
 const useDBStore = create(
-  persist((set) => ({
-    selectedSource: "",
-    selectedTarget: "",
-    selectSourceDetails: {},
-    selectTargetDetails: {},
+  persist(
+    (set, get) => ({
+      // Selected DB types
+      selectedSource: "",
+      selectedTarget: "",
 
-    
-    // historySelectedSource: "",
-    // historySelectedTarget: "",
-    
-    connectionDetails: initialConnections,
-    historyCardsLocal: [],
+      // Individual DB details
+      selectSourceDetails: {},
+      selectTargetDetails: {},
 
-    setHistoryCards: (history_data) => {
-      set(() => ({
-        historyCardsLocal: history_data
-      }))
-    },
+      exportFinalStatus: "running",
+      activeJobID: null,
 
-    addNewHistoryCard: (new_history_card) => {
-      set((state) => ({
-        historyCardsLocal: [new_history_card, ...state.historyCardsLocal]
-      }));
-    },
+      // All connection entries
+      connectionDetails: initialConnections,
 
-    setSelectedSource: (source) => {
-      set(() => ({
-        selectedSource: source,
-      }));
-    },
+      // Local history cards
+      historyCardsLocal: [],
 
-    setSelectedTarget: (target) => {
-      set(() => ({
-        selectedTarget: target,
-      }));
-    },
+      // --- History actions ---
+      setHistoryCards: (cards) =>
+        set(() => ({
+          historyCardsLocal: cards,
+        })),
 
-    setSelectedSourceDetails: (newSourceDetails) => {
-      set(() => ({
-        selectSourceDetails: newSourceDetails,
-      }));
-    },
+      addNewHistoryCard: (card) =>
+        set((state) => ({
+          historyCardsLocal: [card, ...state.historyCardsLocal],
+        })),
 
-    setSelectedTargetDetails: (newTargetDetails) => {
-      set(() => ({
-        selectTargetDetails: newTargetDetails,
-      }));
-    },
+        setExportFinalStatus: (status) =>
+          set(() => ({ exportFinalStatus: status })),
 
-    updateSourceDetails: (field, value) => {
-      set((state) => ({
-        selectSourceDetails: { ...state.selectSourceDetails, [field]: value },
-      }));
-    },
+        setActiveJobID: (job_id) =>
+          set(() => ({ activeJobID: job_id })),
 
-    updateTargetDetails: (field, value) => {
-      set((state) => ({
-        selectTargetDetails: { ...state.selectTargetDetails, [field]: value },
-      }));
-    },
+      // --- Selected source/target handlers ---
+      setSelectedSource: (source) =>
+        set(() => ({ selectedSource: source })),
 
-    setConnectionDetails: (newDetails) => {
-      set(() => ({
-        connectionDetails: newDetails,
-      }));
-    },
+      setSelectedTarget: (target) =>
+        set(() => ({ selectedTarget: target })),
 
-    readConnection: (db_type) => {
-      return connectionDetails.find((conn) => conn.db_type === db_type);
-    },
+      // --- Source/Target connection detail updates ---
+      setSelectedSourceDetails: (details) =>
+        set(() => ({ selectSourceDetails: details })),
 
-    createConnection: (newConnection) => {
-      set((state) => ({
-        connectionDetails: [...state.connectionDetails, newConnection],
-      }));
-    },
+      setSelectedTargetDetails: (details) =>
+        set(() => ({ selectTargetDetails: details })),
 
-    updateConnectionDetails: (db_type, field, value) => {
-      set((state) => ({
-        connectionDetails: state.connectionDetails.map((conn) =>
-          conn.db_type === db_type ? { ...conn, [field]: value } : conn
-        ),
-      }));
-    },
+      updateSourceDetails: (field, value) =>
+        set((state) => ({
+          selectSourceDetails: {
+            ...state.selectSourceDetails,
+            [field]: value,
+          },
+        })),
 
-    deleteConnection: (db_type) => {
-      set((state) => ({
-        connectionDetails: state.connectionDetails.filter(
-          (conn) => conn.db_type !== db_type
-        ),
-      }));
-    },
-  }))
+      updateTargetDetails: (field, value) =>
+        set((state) => ({
+          selectTargetDetails: {
+            ...state.selectTargetDetails,
+            [field]: value,
+          },
+        })),
+
+      // --- Connection detail handlers ---
+      setConnectionDetails: (newDetails) =>
+        set(() => ({ connectionDetails: newDetails })),
+
+      readConnection: (db_type) => {
+        const state = get();
+        return state.connectionDetails.find(
+          (conn) => conn.db_type === db_type
+        );
+      },
+
+      createConnection: (newConnection) =>
+        set((state) => ({
+          connectionDetails: [...state.connectionDetails, newConnection],
+        })),
+
+      updateConnectionDetails: (db_type, field, value) =>
+        set((state) => ({
+          connectionDetails: state.connectionDetails.map((conn) =>
+            conn.db_type === db_type
+              ? { ...conn, [field]: value }
+              : conn
+          ),
+        })),
+
+      deleteConnection: (db_type) =>
+        set((state) => ({
+          connectionDetails: state.connectionDetails.filter(
+            (conn) => conn.db_type !== db_type
+          ),
+        })),
+    }),
+    {
+      name: "db-store",
+    }
+  )
 );
 
 export default useDBStore;

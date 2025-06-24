@@ -50,6 +50,7 @@ from core.views import (
 from core.logging import logger, RUN_ID, get_next_log_counter
 from datetime import datetime
 from core.db.db_connect import get_db_engine
+from core.secret_manager import set_db_secrets_for_db, get_secret
 
 router = APIRouter()
 
@@ -209,31 +210,34 @@ def export_feature(request: ExportRequest, db: Session = Depends(get_db)):
     {
         "job_id": int,
         "source": {
+            "host_name":"",
+            "username": "",
+            "password": "",
+            "port": "",
             "db_type": db_type,
             "db_name": db_name
         },
         "target": {
+            "host_name": "",
+            "username": "",
+            "password": "",
+            "port": "",
             "db_type": db_type,
             "db_name": db_name
         }
     }
     """
     logger.info("=== Section: Export Tables & Data ===")
+    source_details = dict(request.source)
+    target_details = dict(request.target)
+    set_db_secrets_for_db(source_details["db_type"], source_details)
+    set_db_secrets_for_db(target_details["db_type"], target_details)
+    print("connection_details")
+    print(source_details, target_details)
     try:
-        args = {
-            "source": {
-                "db_type": request.source.db_type,
-                "db_name": request.source.db_name
-            },
-            "target": {
-                "db_type": request.target.db_type,
-                "db_name": request.target.db_name
-            },
-        }
-
         start_time = time.time()
         job_id = request.job_id
-        exported, skipped, durations = export_tables(**args)
+        exported, skipped, durations = export_tables(source=source_details, target=target_details)
         logger.info(f"=== Tables exported: {len(exported)}; skipped: {len(skipped)} ===\n")
 
         if skipped:
@@ -243,8 +247,7 @@ def export_feature(request: ExportRequest, db: Session = Depends(get_db)):
             )
         
         logger.info("=== Section: Export Triggers ===")
-
-        result = export_triggers(**args)
+        result = export_triggers(source=source_details, target=target_details)
 
         end_time = time.time()
 
@@ -279,7 +282,6 @@ def export_feature(request: ExportRequest, db: Session = Depends(get_db)):
             "exported_triggers": result.get("exported", []),
             "durations": durations
         }
-    
     except HTTPException:
         raise
     except Exception as e:
@@ -289,8 +291,12 @@ def export_feature(request: ExportRequest, db: Session = Depends(get_db)):
 
 @router.post("/get-stats/")
 def stats_display(request: StatRequest, db: Session = Depends(get_db)):
+    source_details = dict(request.source)
+    target_details = dict(request.target)
+    set_db_secrets_for_db(source_details["db_type"], source_details)
+    set_db_secrets_for_db(target_details["db_type"], target_details)
     durations = request.durations
-    stats = collect_combined_stats(request.source, request.target)
+    stats = collect_combined_stats(source_details, target_details)
     print("HI STATS")
     for stat in stats:
         current_stat = {
@@ -304,9 +310,9 @@ def stats_display(request: StatRequest, db: Session = Depends(get_db)):
             "trigger_count": stat["trigger_count"],
             "duration": durations.get(stat["table_name"], 0)
         }
-        print("CREATE HISTORY ITEM _ BEFORE CALL")
+        print("History Item Created!")
         create_history_item(current_stat, db)
-    print("Stats updated")
+    print("Stats Updated")
     return { "result": stats }
 
 
@@ -365,7 +371,14 @@ def post_migration_items(item_obj: MigrationHistoryItemSchema, db: Session = Dep
 #     drop_table("history_item")
 #     return "dropped"
 
-@router.get("/validate/")
-def validate_stats_data(request: ExportRequest):
-    validate_res = validate_export_success(dict(request.source), dict(request.target))
-    return validate_res
+@router.post("/validate/")
+def validate_stats_data(request: ExportRequest, db: Session = Depends(get_db)):
+    job_id = request.job_id
+    source_details = dict(request.source)
+    target_details = dict(request.target)
+    set_db_secrets_for_db(source_details["db_type"], source_details)
+    set_db_secrets_for_db(target_details["db_type"], target_details)
+    final_validation_result = validate_export_success(source_details, target_details)
+    final_status = "completed" if final_validation_result else "failed"
+    update_migration_data(job_id, {"status": final_status}, db)
+    return final_status

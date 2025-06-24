@@ -9,16 +9,12 @@ const ConnectionHeader = ({
   setSelectedTarget,
 }) => {
   const dbOptions = ["MySQL", "PostgreSQL", "Oracle"];
-  const {selectSourceDetails, selectTargetDetails, setSelectedSourceDetails, setSelectedTargetDetails, connectionDetails} = useDBStore();
+  const {setSelectedTargetDetails, connectionDetails} = useDBStore();
   
   useEffect(() => {
     if (selectedSource !== "") {
       const current = connectionDetails.find(conn => conn.db_type === selectedSource?.toLowerCase())
       setSelectedTargetDetails(current)
-      // console.log(current, selectSourceDetails);
-      // if (selectSourceDetails?.db_type !== selectedSource?.toLowerCase()) {
-      //   setSelectedSourceDetails(current)
-      // }
     } 
     
     if (selectedTarget !== "") {

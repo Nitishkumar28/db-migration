@@ -302,6 +302,7 @@ def create_foreign_keys_export(source, target, table_name):
 def export_tables(source, target):
     logger.info(f"Begin exporting tables from `{source['db_name']}` to `{target['db_name']}`")
     source_tables = get_table_names(source["db_type"], source["db_name"])
+    print(f"source tables: {source_tables}")
     skipped, exported = set(), set()
     table_durations = {}
 

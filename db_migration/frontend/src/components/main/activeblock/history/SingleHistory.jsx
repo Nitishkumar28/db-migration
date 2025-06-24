@@ -6,6 +6,7 @@ import { LeftArrowIcon } from "../../../../base/Icons";
 import useDBStore from "../../../../store/dbStore";
 import { useFetch } from "../../../../hooks/useFetch";
 import { getHistoryForJobidAPI } from "../../../../hooks/urls";
+import { useEffect } from "react";
 
 const GoBack = () => {
   const navigate = useNavigate();
@@ -26,21 +27,45 @@ const GoBack = () => {
 
 const SingleHistory = () => {
   const { job_id } = useParams();
-  const { selectedSource, selectedTarget } = useDBStore();
-  const {data: history_for_jobid, loading, error} = useFetch(getHistoryForJobidAPI(job_id));
+  const { selectedSource, selectedTarget, exportFinalStatus } = useDBStore();
+  const {data: history_for_jobid, loading, error, refetch} = useFetch(job_id ? getHistoryForJobidAPI(job_id) : null);
   // const history_for_jobid = full_history.find(curr => curr.job_id === job_id);    // full_history from API
-  if(loading) {
-    return <div>Loading...</div>
+  useEffect(() => {
+    console.log("REFECTCHED");
+    if (exportFinalStatus && job_id) {
+      refetch();
+    }
+  }, [exportFinalStatus, job_id])
+
+    if (!job_id) {
+    return <div className="text-red-600">Invalid Job ID</div>;
   }
+
+  if (loading) {
+    return <div className="text-gray-500">Loading history...</div>;
+  }
+
+  if (error || !history_for_jobid) {
+    return <div className="text-red-500">Failed to load history.</div>;
+  }
+
   return (
-    <div className="w-full h-full flex flex-col justify-start items-start p-2 gap-y-3">
+    <div className="w-full h-full flex flex-col justify-start items-start p-4 gap-y-4">
       <div className="w-full flex justify-between items-center">
         <GoBack />
         <span className="font-semibold text-lg">Job ID: {job_id}</span>
       </div>
-      <ExportHeader isHistory={true} selectedSource={selectedSource} selectedTarget={selectedTarget}  />
-      {history_for_jobid.items && <SummaryTable columns={history_columns} data={history_for_jobid?.items} />}
-      {/* {JSON.stringify(history_for_jobid.items)} */}
+
+      <ExportHeader
+        isHistory={true}
+        selectedSource={selectedSource}
+        selectedTarget={selectedTarget}
+      />
+      {Array.isArray(history_for_jobid.items) && history_for_jobid.items.length > 0 ? (
+        <SummaryTable columns={history_columns} data={history_for_jobid.items} />
+      ) : (
+        <div className="text-gray-500">No item history available.</div>
+      )}
     </div>
   );
 };

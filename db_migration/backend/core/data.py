@@ -15,11 +15,19 @@ class TriggerModel(BaseModel):
 
 
 class Source(BaseModel):
+    host_name: str
+    username: str
+    password: str
+    port: str
     db_type: str
     db_name: str
 
 
 class Target(BaseModel):
+    host_name: str
+    username: str
+    password: str
+    port: str
     db_type: str
     db_name: str
 

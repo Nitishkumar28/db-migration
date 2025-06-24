@@ -1,3 +1,4 @@
+from sqlalchemy import desc
 from sqlalchemy.orm import joinedload
 from core.models import MigrationHistory, MigrationItem
 from core.data import MigrationHistorySchemaBrief, MigrationHistorySchema
@@ -34,10 +35,10 @@ def get_migration_for_jobid(job_id, db):
 
 
 def get_full_history(db):
-    return db.query(MigrationHistory).all()
+    return db.query(MigrationHistory).order_by(desc(MigrationHistory.created_at)).all()
 
 def get_full_history_brief(db):
-    history_objs = db.query(MigrationHistory).all()
+    history_objs = db.query(MigrationHistory).order_by(desc(MigrationHistory.created_at)).all()
     result = []
     for history in history_objs:
         curr = {
@@ -84,14 +85,10 @@ def get_full_history_items(db):
     return db.query(MigrationItem).all()
 
 def create_history_item(item_obj, db):
-    print("INSIDE CREATE")
-    current_data = {**dict(item_obj)}
-    print(current_data)
-    history_obj = MigrationItem(**current_data)
+    history_obj = MigrationItem(**dict(item_obj))
     db.add(history_obj)
     db.commit()
     db.refresh(history_obj)
-    print("SUCESS - CREATED")
     return history_obj
 
 def delete_history_item(id, db):

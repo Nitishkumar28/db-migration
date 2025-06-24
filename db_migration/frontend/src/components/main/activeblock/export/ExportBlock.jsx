@@ -10,7 +10,7 @@ import ExportHeader from "./ExportHeader";
 
 const ExportBlock = () => {
   const { selectedSource, selectedTarget } = useDBStore();
-    const { setPipelineOption } = useUIStore();
+  const { setPipelineOption } = useUIStore();
 
     useEffect(() => {
       setPipelineOption("export")
@@ -25,7 +25,6 @@ const ExportBlock = () => {
       <div className="w-full h-full flex flex-col justify-around items-center gap-4 py-2">
         <ExportHeader selectedSource={selectedSource} selectedTarget={selectedTarget}   />
         <div className="w-full h-full flex-1 border-t pt-4 px-2">
-          <h2 className="text-base font-semibold text-gray-700 mb-3">History</h2>
           <HistoryBlock />
         </div>
       </div>

@@ -5,7 +5,7 @@ import Footer from "../../Footer";
 
 const ActionBlock = () => {
   return (
-    <div className="px-[100px] w-full h-full">
+    <div className="px-[150px] w-full h-full">
       <div className="w-full h-full flex flex-col px-4">
         <StatusBar />
         <Outlet />

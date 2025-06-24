@@ -1,9 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 export function useFetch(url, options = {}) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [trigger, setTrigger] = useState(0);
+
+  const refetch = useCallback(() => {
+      setTrigger(prev => prev + 1);
+    }, [])
 
   useEffect(() => {
     if (!url) return;
@@ -17,7 +22,7 @@ export function useFetch(url, options = {}) {
       .then(setData)
       .catch(setError)
       .finally(() => setLoading(false));
-  }, [url]);
+  }, [url, trigger]);
 
-  return { data, loading, error };
+  return { data, loading, error, refetch };
 }
