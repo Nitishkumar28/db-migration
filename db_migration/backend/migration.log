@@ -36,7 +36,6 @@ Log - 2025-06-20 21:40:11
 
 Log - 2025-06-20 21:40:20
 
-<<<<<<< Updated upstream
 [2025-06-20 15:23:58] [INFO] [c28750d2]  ✅ Export complete: 0 tables exported, 0 skipped
 [2025-06-20 15:23:58] [INFO] [c28750d2] === Tables exported: 4; skipped: 0 ===
 
@@ -176,14 +175,10 @@ Log - 2025-06-20 21:40:20
 [2025-06-20 15:24:24] [INFO] [c28750d2] API `/export/` succeeded: exported_tables={'teachers', 'courses', 'conversion', 'students'}, exported_triggers=['trg_students_audit_insert_insert', 'trg_students_audit_update_update', 'trg_students_audit_delete_delete']
 
 Log - 2025-06-21 03:39:37
-=======
-Log - 2025-06-20 21:40:25
->>>>>>> Stashed changes
 
-<<<<<<< Updated upstream
 Log - 2025-06-21 16:40:56
-<<<<<<< Updated upstream
-=======
+
+
 Log - 2025-06-21 16:40:36
 
 Log - 2025-06-21 16:40:53
@@ -2402,4 +2397,3 @@ Log - 2025-06-24 02:38:42
 [2025-06-24 02:58:01] [INFO] [0856d65f]   -> Foreign keys added for `teachers`
 [2025-06-24 02:58:01] [INFO] [0856d65f]  ✅ Export complete: 1 tables exported, 2 skipped
 [2025-06-24 02:58:01] [INFO] [0856d65f] === Tables exported: 1; skipped: 2 ===
-
