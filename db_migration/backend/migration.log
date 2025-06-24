@@ -2397,3 +2397,141 @@ Log - 2025-06-24 02:38:42
 [2025-06-24 02:58:01] [INFO] [0856d65f]   -> Foreign keys added for `teachers`
 [2025-06-24 02:58:01] [INFO] [0856d65f]  ✅ Export complete: 1 tables exported, 2 skipped
 [2025-06-24 02:58:01] [INFO] [0856d65f] === Tables exported: 1; skipped: 2 ===
+<<<<<<< Updated upstream
+=======
+
+[2025-06-24 11:28:41] [INFO] [0856d65f] === Section: Export Tables & Data ===
+[2025-06-24 11:28:41] [INFO] [0856d65f] Begin exporting tables from `postgres` to `sample`
+[2025-06-24 11:28:41] [INFO] [0856d65f] - Dropping `courses` if exists
+[2025-06-24 11:28:41] [INFO] [0856d65f] - Created table `courses`
+[2025-06-24 11:28:41] [INFO] [0856d65f] - Loaded data into `courses`
+[2025-06-24 11:28:41] [INFO] [0856d65f]   -> Indexes created for `courses`
+[2025-06-24 11:28:41] [INFO] [0856d65f]   -> Foreign keys added for `courses`
+[2025-06-24 11:28:41] [INFO] [0856d65f] - Dropping `students` if exists
+[2025-06-24 11:28:41] [INFO] [0856d65f] - Created table `students`
+[2025-06-24 11:28:41] [INFO] [0856d65f] - Loaded data into `students`
+[2025-06-24 11:28:41] [INFO] [0856d65f]   -> Indexes created for `students`
+[2025-06-24 11:28:41] [INFO] [0856d65f]   -> Foreign keys added for `students`
+[2025-06-24 11:28:41] [INFO] [0856d65f] - Dropping `teachers` if exists
+[2025-06-24 11:28:41] [INFO] [0856d65f] - Created table `teachers`
+[2025-06-24 11:28:41] [INFO] [0856d65f] - Loaded data into `teachers`
+[2025-06-24 11:28:41] [INFO] [0856d65f]   -> Indexes created for `teachers`
+[2025-06-24 11:28:41] [INFO] [0856d65f]   -> Foreign keys added for `teachers`
+[2025-06-24 11:28:41] [INFO] [0856d65f]  ✅ Export complete: 3 tables exported, 0 skipped
+[2025-06-24 11:28:41] [INFO] [0856d65f] === Tables exported: 3; skipped: 0 ===
+
+[2025-06-24 11:28:41] [INFO] [0856d65f] === Section: Export Triggers ===
+[2025-06-24 11:28:41] [INFO] [0856d65f] === ✅ Triggers exported: 0; errors: 0 ===
+
+[2025-06-24 11:28:41] [INFO] [0856d65f] API `/export/` succeeded: exported_tables={'teachers', 'courses', 'students'}, exported_triggers=[]
+[2025-06-24 11:30:23] [INFO] [0856d65f] === Section: Export Tables & Data ===
+[2025-06-24 11:30:23] [INFO] [0856d65f] Begin exporting tables from `postgres` to `sample`
+[2025-06-24 11:30:23] [INFO] [0856d65f] - Dropping `courses` if exists
+[2025-06-24 11:30:24] [INFO] [0856d65f] - Created table `courses`
+[2025-06-24 11:30:24] [INFO] [0856d65f] - Loaded data into `courses`
+[2025-06-24 11:30:24] [INFO] [0856d65f]   -> Indexes created for `courses`
+[2025-06-24 11:30:24] [INFO] [0856d65f]   -> Foreign keys added for `courses`
+[2025-06-24 11:30:24] [INFO] [0856d65f] - Dropping `students` if exists
+[2025-06-24 11:30:24] [INFO] [0856d65f] - Created table `students`
+[2025-06-24 11:30:24] [INFO] [0856d65f] - Loaded data into `students`
+[2025-06-24 11:30:24] [INFO] [0856d65f]   -> Indexes created for `students`
+[2025-06-24 11:30:24] [INFO] [0856d65f]   -> Foreign keys added for `students`
+[2025-06-24 11:30:24] [INFO] [0856d65f] - Dropping `teachers` if exists
+[2025-06-24 11:30:24] [INFO] [0856d65f] - Created table `teachers`
+[2025-06-24 11:30:24] [INFO] [0856d65f] - Loaded data into `teachers`
+[2025-06-24 11:30:24] [INFO] [0856d65f]   -> Indexes created for `teachers`
+[2025-06-24 11:30:24] [INFO] [0856d65f]   -> Foreign keys added for `teachers`
+[2025-06-24 11:30:24] [INFO] [0856d65f]  ✅ Export complete: 3 tables exported, 0 skipped
+[2025-06-24 11:30:24] [INFO] [0856d65f] === Tables exported: 3; skipped: 0 ===
+
+[2025-06-24 11:30:24] [INFO] [0856d65f] === Section: Export Triggers ===
+[2025-06-24 11:30:24] [INFO] [0856d65f] === ✅ Triggers exported: 0; errors: 0 ===
+
+[2025-06-24 11:30:24] [INFO] [0856d65f] API `/export/` succeeded: exported_tables={'teachers', 'courses', 'students'}, exported_triggers=[]
+[2025-06-24 11:50:42] [INFO] [0856d65f] === Section: Export Tables & Data ===
+[2025-06-24 11:50:42] [INFO] [0856d65f] Begin exporting tables from `postgres` to `sample`
+[2025-06-24 11:50:42] [INFO] [0856d65f] - Dropping `courses` if exists
+[2025-06-24 11:50:42] [INFO] [0856d65f] - Created table `courses`
+[2025-06-24 11:50:43] [INFO] [0856d65f] - Loaded data into `courses`
+[2025-06-24 11:50:43] [INFO] [0856d65f]   -> Indexes created for `courses`
+[2025-06-24 11:50:43] [INFO] [0856d65f]   -> Foreign keys added for `courses`
+[2025-06-24 11:50:43] [INFO] [0856d65f] - Dropping `students` if exists
+[2025-06-24 11:50:43] [INFO] [0856d65f] - Created table `students`
+[2025-06-24 11:50:43] [INFO] [0856d65f] - Loaded data into `students`
+[2025-06-24 11:50:43] [INFO] [0856d65f]   -> Indexes created for `students`
+[2025-06-24 11:50:43] [INFO] [0856d65f]   -> Foreign keys added for `students`
+[2025-06-24 11:50:43] [INFO] [0856d65f] - Dropping `teachers` if exists
+[2025-06-24 11:50:43] [INFO] [0856d65f] - Created table `teachers`
+[2025-06-24 11:50:43] [INFO] [0856d65f] - Loaded data into `teachers`
+[2025-06-24 11:50:43] [INFO] [0856d65f]   -> Indexes created for `teachers`
+[2025-06-24 11:50:43] [INFO] [0856d65f]   -> Foreign keys added for `teachers`
+[2025-06-24 11:50:43] [INFO] [0856d65f]  ✅ Export complete: 3 tables exported, 0 skipped
+[2025-06-24 11:50:43] [INFO] [0856d65f] === Tables exported: 3; skipped: 0 ===
+
+[2025-06-24 11:50:43] [INFO] [0856d65f] === Section: Export Triggers ===
+[2025-06-24 11:50:43] [INFO] [0856d65f] === ✅ Triggers exported: 0; errors: 0 ===
+
+[2025-06-24 11:50:43] [INFO] [0856d65f] API `/export/` succeeded: exported_tables={'teachers', 'courses', 'students'}, exported_triggers=[]
+[2025-06-24 11:53:14] [INFO] [0856d65f] === Section: Export Tables & Data ===
+[2025-06-24 11:53:14] [INFO] [0856d65f] Begin exporting tables from `postgres` to `sample`
+[2025-06-24 11:53:14] [INFO] [0856d65f] - Dropping `courses` if exists
+[2025-06-24 11:53:14] [INFO] [0856d65f] - Created table `courses`
+[2025-06-24 11:53:14] [INFO] [0856d65f] - Dropping `students` if exists
+[2025-06-24 11:53:14] [INFO] [0856d65f] - Created table `students`
+[2025-06-24 11:53:15] [INFO] [0856d65f] - Dropping `teachers` if exists
+[2025-06-24 11:53:15] [INFO] [0856d65f] - Created table `teachers`
+[2025-06-24 11:53:15] [INFO] [0856d65f] - Loaded data into `teachers`
+[2025-06-24 11:53:15] [INFO] [0856d65f]   -> Indexes created for `teachers`
+[2025-06-24 11:53:15] [INFO] [0856d65f]   -> Foreign keys added for `teachers`
+[2025-06-24 11:53:15] [INFO] [0856d65f]  ✅ Export complete: 1 tables exported, 2 skipped
+[2025-06-24 11:53:15] [INFO] [0856d65f] === Tables exported: 1; skipped: 2 ===
+
+[2025-06-24 11:55:55] [INFO] [0856d65f] === Section: Export Tables & Data ===
+[2025-06-24 11:55:55] [INFO] [0856d65f] Begin exporting tables from `postgres` to `sample`
+[2025-06-24 11:55:55] [INFO] [0856d65f] - Dropping `courses` if exists
+[2025-06-24 11:55:55] [INFO] [0856d65f] - Created table `courses`
+[2025-06-24 11:55:55] [INFO] [0856d65f] - Loaded data into `courses`
+[2025-06-24 11:55:55] [INFO] [0856d65f]   -> Indexes created for `courses`
+[2025-06-24 11:55:55] [INFO] [0856d65f]   -> Foreign keys added for `courses`
+[2025-06-24 11:55:55] [INFO] [0856d65f] - Dropping `students` if exists
+[2025-06-24 11:55:55] [INFO] [0856d65f] - Created table `students`
+[2025-06-24 11:55:55] [INFO] [0856d65f] - Loaded data into `students`
+[2025-06-24 11:55:55] [INFO] [0856d65f]   -> Indexes created for `students`
+[2025-06-24 11:55:55] [INFO] [0856d65f]   -> Foreign keys added for `students`
+[2025-06-24 11:55:55] [INFO] [0856d65f] - Dropping `teachers` if exists
+[2025-06-24 11:55:55] [INFO] [0856d65f] - Created table `teachers`
+[2025-06-24 11:55:55] [INFO] [0856d65f] - Loaded data into `teachers`
+[2025-06-24 11:55:55] [INFO] [0856d65f]   -> Indexes created for `teachers`
+[2025-06-24 11:55:55] [INFO] [0856d65f]   -> Foreign keys added for `teachers`
+[2025-06-24 11:55:55] [INFO] [0856d65f]  ✅ Export complete: 3 tables exported, 0 skipped
+[2025-06-24 11:55:55] [INFO] [0856d65f] === Tables exported: 3; skipped: 0 ===
+
+[2025-06-24 11:55:55] [INFO] [0856d65f] === Section: Export Triggers ===
+[2025-06-24 11:55:55] [INFO] [0856d65f] === ✅ Triggers exported: 0; errors: 0 ===
+
+[2025-06-24 11:55:55] [INFO] [0856d65f] API `/export/` succeeded: exported_tables={'teachers', 'courses', 'students'}, exported_triggers=[]
+[2025-06-24 11:56:32] [INFO] [0856d65f] === Section: Export Tables & Data ===
+[2025-06-24 11:56:32] [INFO] [0856d65f] Begin exporting tables from `postgres` to `sample`
+[2025-06-24 11:56:33] [INFO] [0856d65f] - Dropping `courses` if exists
+[2025-06-24 11:56:33] [INFO] [0856d65f] - Created table `courses`
+[2025-06-24 11:56:33] [INFO] [0856d65f] - Loaded data into `courses`
+[2025-06-24 11:56:33] [INFO] [0856d65f]   -> Indexes created for `courses`
+[2025-06-24 11:56:33] [INFO] [0856d65f]   -> Foreign keys added for `courses`
+[2025-06-24 11:56:33] [INFO] [0856d65f] - Dropping `students` if exists
+[2025-06-24 11:56:33] [INFO] [0856d65f] - Created table `students`
+[2025-06-24 11:56:33] [INFO] [0856d65f] - Loaded data into `students`
+[2025-06-24 11:56:33] [INFO] [0856d65f]   -> Indexes created for `students`
+[2025-06-24 11:56:33] [INFO] [0856d65f]   -> Foreign keys added for `students`
+[2025-06-24 11:56:33] [INFO] [0856d65f] - Dropping `teachers` if exists
+[2025-06-24 11:56:33] [INFO] [0856d65f] - Created table `teachers`
+[2025-06-24 11:56:33] [INFO] [0856d65f] - Loaded data into `teachers`
+[2025-06-24 11:56:33] [INFO] [0856d65f]   -> Indexes created for `teachers`
+[2025-06-24 11:56:33] [INFO] [0856d65f]   -> Foreign keys added for `teachers`
+[2025-06-24 11:56:33] [INFO] [0856d65f]  ✅ Export complete: 3 tables exported, 0 skipped
+[2025-06-24 11:56:33] [INFO] [0856d65f] === Tables exported: 3; skipped: 0 ===
+
+[2025-06-24 11:56:33] [INFO] [0856d65f] === Section: Export Triggers ===
+[2025-06-24 11:56:33] [INFO] [0856d65f] === ✅ Triggers exported: 0; errors: 0 ===
+
+[2025-06-24 11:56:33] [INFO] [0856d65f] API `/export/` succeeded: exported_tables={'teachers', 'courses', 'students'}, exported_triggers=[]
+>>>>>>> Stashed changes

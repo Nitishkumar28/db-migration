@@ -18,7 +18,7 @@ export const MigrationStatusTag = ({ status }) => (
 );
 
 const HistoryCards = ({ onSelect }) => {
-  const { data: history_cards, loading, error } = useFetch(getHistoryBriefAPI());
+  const { data: history_cards, loading, error, refetch } = useFetch(getHistoryBriefAPI());
   const {
     historyCardsLocal,
     setHistoryCards,
@@ -28,8 +28,9 @@ const HistoryCards = ({ onSelect }) => {
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
+    refetch();
     setHistoryCards(history_cards);
-  }, [history_cards, setHistoryCards]);
+  }, [history_cards, setHistoryCards, exportFinalStatus]);
 
   const filteredCards = historyCardsLocal?.filter((card) => {
     const query = searchTerm.toLowerCase();

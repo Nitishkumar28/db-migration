@@ -34,10 +34,18 @@ const ExportCard = ({ text, children }) => {
 
 const ExportHeader = ({ isHistory = false, selectedSource, selectedTarget }) => {
   const { job_id } = useParams()
-  const { addNewHistoryCard, setExportFinalStatus, setActiveJobID } = useDBStore();
+  const { addNewHistoryCard, setExportFinalStatus, exportFinalStatus, setActiveJobID } = useDBStore();
   const shouldFetch = !!job_id;
   const {data: history_for_jobid, loading, error} = useFetch(shouldFetch ? getHistoryForJobidAPI(job_id) : null);
-  const exportFinalStatus = (shouldFetch && history_for_jobid) ? history_for_jobid.status  : "running";
+  // const exportFinalStatus = (shouldFetch && history_for_jobid) ? history_for_jobid.status  : "running";
+
+  useEffect(() => {
+    if (history_for_jobid) { 
+      console.log("status changed")
+      const currStatus = (shouldFetch && history_for_jobid) ? history_for_jobid.status  : "running";
+      setExportFinalStatus(currStatus)
+    }
+  }, [shouldFetch, history_for_jobid])
 
   const {
     post: initialPost,
