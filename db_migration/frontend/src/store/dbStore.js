@@ -33,18 +33,15 @@ const useDBStore = create(
           historyCardsLocal: [card, ...state.historyCardsLocal],
         })),
 
-        setExportFinalStatus: (status) =>
-          set(() => ({ exportFinalStatus: status })),
+      setExportFinalStatus: (status) =>
+        set(() => ({ exportFinalStatus: status })),
 
-        setActiveJobID: (job_id) =>
-          set(() => ({ activeJobID: job_id })),
+      setActiveJobID: (job_id) => set(() => ({ activeJobID: job_id })),
 
       // --- Selected source/target handlers ---
-      setSelectedSource: (source) =>
-        set(() => ({ selectedSource: source })),
+      setSelectedSource: (source) => set(() => ({ selectedSource: source })),
 
-      setSelectedTarget: (target) =>
-        set(() => ({ selectedTarget: target })),
+      setSelectedTarget: (target) => set(() => ({ selectedTarget: target })),
 
       // --- Source/Target connection detail updates ---
       setSelectedSourceDetails: (details) =>
@@ -75,9 +72,7 @@ const useDBStore = create(
 
       readConnection: (db_type) => {
         const state = get();
-        return state.connectionDetails.find(
-          (conn) => conn.db_type === db_type
-        );
+        return state.connectionDetails.find((conn) => conn.db_type === db_type);
       },
 
       createConnection: (newConnection) =>
@@ -88,9 +83,7 @@ const useDBStore = create(
       updateConnectionDetails: (db_type, field, value) =>
         set((state) => ({
           connectionDetails: state.connectionDetails.map((conn) =>
-            conn.db_type === db_type
-              ? { ...conn, [field]: value }
-              : conn
+            conn.db_type === db_type ? { ...conn, [field]: value } : conn
           ),
         })),
 

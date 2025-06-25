@@ -5,11 +5,11 @@ import ActionBlock from "./activeblock/ActionBlock";
 import SideNavBarBlock from "./sidebar/SideNavBarBlock";
 
 const MainBody = () => {
-  const activeTheme = useUIStore(state => state.theme);
+  const activeTheme = useUIStore((state) => state.theme);
   return (
     <div className="relative w-full h-screen flex justify-center items-center">
-        {/* <SideNavBarBlock /> */}
-        <ActionBlock />
+      {/* <SideNavBarBlock /> */}
+      <ActionBlock />
     </div>
   );
 };

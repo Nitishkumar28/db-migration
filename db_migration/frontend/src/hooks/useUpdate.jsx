@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState } from "react";
 
 export function useUpdate(url) {
   const [data, setData] = useState(null);
@@ -10,11 +10,11 @@ export function useUpdate(url) {
     setError(null);
     try {
       const res = await fetch(url, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      if (!res.ok) throw new Error('Failed to update data');
+      if (!res.ok) throw new Error("Failed to update data");
       const json = await res.json();
       setData(json);
     } catch (err) {

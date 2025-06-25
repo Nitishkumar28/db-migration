@@ -6,19 +6,19 @@ import ConnectionBlock from "./components/main/activeblock/connection/Connection
 import SingleHistory from "./components/main/activeblock/history/SingleHistory";
 
 const CoreRoutes = () => {
-    return (
-        <BrowserRouter>
-            <Routes>
-                <Route path="/" element={<Navigate to="/home/connections" />} />
-                <Route path="/home" element={<Navigate to="/home/connections/" />} />
-                <Route path="/home" element={<Home />}>
-                    <Route index path="connections" element={<ConnectionBlock />}></Route>
-                    <Route path="export" element={<ExportBlock />}></Route>
-                    <Route path="history/:job_id" element={<SingleHistory />}></Route>
-                </Route>
-            </Routes>
-        </BrowserRouter>
-    )
-}
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Navigate to="/home/connections" />} />
+        <Route path="/home" element={<Navigate to="/home/connections/" />} />
+        <Route path="/home" element={<Home />}>
+          <Route index path="connections" element={<ConnectionBlock />}></Route>
+          <Route path="export" element={<ExportBlock />}></Route>
+          <Route path="history/:job_id" element={<SingleHistory />}></Route>
+        </Route>
+      </Routes>
+    </BrowserRouter>
+  );
+};
 
 export default CoreRoutes;

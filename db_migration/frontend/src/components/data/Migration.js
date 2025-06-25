@@ -10,7 +10,7 @@ export const migrations = [
     source: "Mysql",
     target: "PostgreSql",
     date: "2011-08-03 02:26:32",
-    status: "Completed"
+    status: "Completed",
   },
   {
     id: "9673465",
@@ -23,9 +23,9 @@ export const migrations = [
     source: "Mysql",
     target: "PostgreSql",
     date: "2011-08-03 02:26:32",
-    status: "Idle"
+    status: "Idle",
   },
-    {
+  {
     id: "92373465",
     name: "User",
     totalRows: 9920,
@@ -36,9 +36,9 @@ export const migrations = [
     source: "Mysql",
     target: "PostgreSql",
     date: "2011-08-03 02:26:32",
-    status: "Idle"
+    status: "Idle",
   },
-    {
+  {
     id: "9673465",
     name: "User",
     totalRows: 9920,
@@ -49,9 +49,9 @@ export const migrations = [
     source: "Mysql",
     target: "PostgreSql",
     date: "2011-08-03 02:26:32",
-    status: "Idle"
+    status: "Idle",
   },
-    {
+  {
     id: "9673465",
     name: "User",
     totalRows: 9920,
@@ -62,9 +62,9 @@ export const migrations = [
     source: "Mysql",
     target: "PostgreSql",
     date: "2011-08-03 02:26:32",
-    status: "Idle"
+    status: "Idle",
   },
-    {
+  {
     id: "9673465",
     name: "User",
     totalRows: 9920,
@@ -75,9 +75,9 @@ export const migrations = [
     source: "Mysql",
     target: "PostgreSql",
     date: "2011-08-03 02:26:32",
-    status: "Idle"
+    status: "Idle",
   },
-    {
+  {
     id: "9673465",
     name: "User",
     totalRows: 9920,
@@ -88,9 +88,9 @@ export const migrations = [
     source: "Mysql",
     target: "PostgreSql",
     date: "2011-08-03 02:26:32",
-    status: "Idle"
+    status: "Idle",
   },
-    {
+  {
     id: "1673465",
     name: "User",
     totalRows: 9920,
@@ -101,9 +101,9 @@ export const migrations = [
     source: "Mysql",
     target: "PostgreSql",
     date: "2011-08-03 02:26:32",
-    status: "Idle"
+    status: "Idle",
   },
-    {
+  {
     id: "53733465",
     name: "User",
     totalRows: 9920,
@@ -114,9 +114,9 @@ export const migrations = [
     source: "Mysql",
     target: "PostgreSql",
     date: "2011-08-03 02:26:32",
-    status: "Idle"
+    status: "Idle",
   },
-    {
+  {
     id: "9673465",
     name: "User",
     totalRows: 9920,
@@ -127,10 +127,10 @@ export const migrations = [
     source: "Mysql",
     target: "PostgreSql",
     date: "2011-08-03 02:26:32",
-    status: "Idle"
+    status: "Idle",
   },
 
-    {
+  {
     id: "7673465",
     name: "User",
     totalRows: 9920,
@@ -141,7 +141,7 @@ export const migrations = [
     source: "Mysql",
     target: "PostgreSql",
     date: "2011-08-03 02:26:32",
-    status: "Idle"
+    status: "Idle",
   },
   {
     id: "67743465",
@@ -154,7 +154,7 @@ export const migrations = [
     source: "Mysql",
     target: "PostgreSql",
     date: "2011-08-03 02:26:32",
-    status: "Running"
+    status: "Running",
   },
   {
     id: "16761365",
@@ -167,7 +167,7 @@ export const migrations = [
     source: "Mysql",
     target: "PostgreSql",
     date: "2011-08-03 02:26:32",
-    status: "Completed"
+    status: "Completed",
   },
   // add others similarly...
 ];
@@ -182,13 +182,18 @@ export const mockLogs = [
   { time: "09:58:25 AM", message: "==> Installing dependencies..." },
   { time: "09:58:30 AM", message: "==> Dependencies installed" },
   { time: "09:58:31 AM", message: "==> Requesting Node version 20" },
-  { time: "09:58:31 AM", message: "==> Using Node version 20.11.1 via env var" },
-  { time: "09:58:31 AM", message: "==> Docs: https://render.com/docs/node-version" },
+  {
+    time: "09:58:31 AM",
+    message: "==> Using Node version 20.11.1 via env var",
+  },
+  {
+    time: "09:58:31 AM",
+    message: "==> Docs: https://render.com/docs/node-version",
+  },
   { time: "09:58:32 AM", message: "==> Running 'node server.js'" },
   { time: "09:58:33 AM", message: "Listening on http://0.0.0.0:3000" },
   { time: "09:58:35 AM", message: "Your service is live 🎉" },
 ];
-
 
 export const full_history = Array.from({ length: 5 }, (_, i) => ({
   job_id: `job_00${i + 1}`,
@@ -215,7 +220,7 @@ export const full_history = Array.from({ length: 5 }, (_, i) => ({
       foreign_key_validation: "1/1",
       status: "completed",
       duration: `${5 + i}m`,
-      timestamp: `2024-06-17T10:0${i}:30Z`
+      timestamp: `2024-06-17T10:0${i}:30Z`,
     },
     {
       item_id: 2,
@@ -228,7 +233,7 @@ export const full_history = Array.from({ length: 5 }, (_, i) => ({
       foreign_key_validation: "1/1",
       status: "completed",
       duration: `${2 + i}m`,
-      timestamp: `2024-06-17T10:0${i}:30Z`
+      timestamp: `2024-06-17T10:0${i}:30Z`,
     },
     {
       item_id: 3,
@@ -241,7 +246,7 @@ export const full_history = Array.from({ length: 5 }, (_, i) => ({
       foreign_key_validation: "1/1",
       status: "completed",
       duration: `${2 + i}m`,
-      timestamp: `2024-06-17T10:0${i}:30Z`
+      timestamp: `2024-06-17T10:0${i}:30Z`,
     },
 
     {
@@ -255,7 +260,7 @@ export const full_history = Array.from({ length: 5 }, (_, i) => ({
       foreign_key_validation: "1/1",
       status: "completed",
       duration: `${2 + i}m`,
-      timestamp: `2024-06-17T10:0${i}:30Z`
+      timestamp: `2024-06-17T10:0${i}:30Z`,
     },
 
     {
@@ -269,7 +274,7 @@ export const full_history = Array.from({ length: 5 }, (_, i) => ({
       foreign_key_validation: "1/1",
       status: "completed",
       duration: `${2 + i}m`,
-      timestamp: `2024-06-17T10:0${i}:30Z`
+      timestamp: `2024-06-17T10:0${i}:30Z`,
     },
 
     {
@@ -283,116 +288,113 @@ export const full_history = Array.from({ length: 5 }, (_, i) => ({
       foreign_key_validation: "1/1",
       status: "completed",
       duration: `${2 + i}m`,
-      timestamp: `2024-06-17T10:0${i}:30Z`
+      timestamp: `2024-06-17T10:0${i}:30Z`,
     },
-  ]
+  ],
 }));
 
-
 export const history_cards = [
-    {
-        "jobid": "job_001",
-        "source_db_type": "mysql",
-        "target_db_type": "postgresql",
-        "source_db_name": "user_service",
-        "target_db_name": "user_service_pg",
-        "created_at": "2024-06-17T10:24:00Z",
-        "started_by": "admin",
-        "status": "completed",
-    },
-    {
-        "jobid": "job_002",
-        "source_db_type": "oracle",
-        "target_db_type": "mysql",
-        "source_db_name": "billing",
-        "target_db_name": "billing_mysql",
-        "created_at": "2024-06-17T11:30:00Z",
-        "started_by": "preetham",
-        "status": "failed",
-    },
-    {
-        "jobid": "job_003",
-        "source_db_type": "mysql",
-        "target_db_type": "postgresql",
-        "source_db_name": "inventory_db",
-        "target_db_name": "inventory_pg",
-        "created_at": "2024-06-18T09:15:00Z",
-        "started_by": "preetham",
-        "status": "completed",
-    },
-    {
-        "jobid": "job_004",
-        "source_db_type": "mysql",
-        "target_db_type": "oracle",
-        "source_db_name": "analytics",
-        "target_db_name": "analytics_ora",
-        "created_at": "2024-06-19T14:45:00Z",
-        "started_by": "admin",
-        "status": "running",
-    },
-    {
-        "jobid": "job_005",
-        "source_db_type": "postgresql",
-        "target_db_type": "oracle",
-        "source_db_name": "ecommerce",
-        "target_db_name": "ecommerce_mig",
-        "created_at": "2024-06-20T08:00:00Z",
-        "started_by": "team_user",
-        "status": "completed",
-    },
-    {
-        "jobid": "job_006",
-        "source_db_type": "mysql",
-        "target_db_type": "postgresql",
-        "source_db_name": "auth_service",
-        "target_db_name": "auth_pg",
-        "created_at": "2024-06-20T10:10:00Z",
-        "started_by": "preetham",
-        "status": "running",
-    },
-    {
-        "jobid": "job_007",
-        "source_db_type": "oracle",
-        "target_db_type": "mysql",
-        "source_db_name": "legacy_hr",
-        "target_db_name": "hr_mysql",
-        "created_at": "2024-06-21T13:20:00Z",
-        "started_by": "admin",
-        "status": "completed",
-    },
-    {
-        "jobid": "job_008",
-        "source_db_type": "sqlserver",
-        "target_db_type": "postgresql",
-        "source_db_name": "payments",
-        "target_db_name": "payments_pg",
-        "created_at": "2024-06-21T14:55:00Z",
-        "started_by": "devops",
-        "status": "failed",
-    },
-    {
-        "jobid": "job_009",
-        "source_db_type": "postgresql",
-        "target_db_type": "oracle",
-        "source_db_name": "analytics_db",
-        "target_db_name": "analytics_ora",
-        "created_at": "2024-06-22T07:40:00Z",
-        "started_by": "admin",
-        "status": "running",
-    },
-    {
-        "jobid": "job_010",
-        "source_db_type": "mysql",
-        "target_db_type": "postgresql",
-        "source_db_name": "marketing",
-        "target_db_name": "marketing_mig",
-        "created_at": "2024-06-22T09:05:00Z",
-        "started_by": "preetham",
-        "status": "completed",
-    },
-]
-
-
+  {
+    jobid: "job_001",
+    source_db_type: "mysql",
+    target_db_type: "postgresql",
+    source_db_name: "user_service",
+    target_db_name: "user_service_pg",
+    created_at: "2024-06-17T10:24:00Z",
+    started_by: "admin",
+    status: "completed",
+  },
+  {
+    jobid: "job_002",
+    source_db_type: "oracle",
+    target_db_type: "mysql",
+    source_db_name: "billing",
+    target_db_name: "billing_mysql",
+    created_at: "2024-06-17T11:30:00Z",
+    started_by: "preetham",
+    status: "failed",
+  },
+  {
+    jobid: "job_003",
+    source_db_type: "mysql",
+    target_db_type: "postgresql",
+    source_db_name: "inventory_db",
+    target_db_name: "inventory_pg",
+    created_at: "2024-06-18T09:15:00Z",
+    started_by: "preetham",
+    status: "completed",
+  },
+  {
+    jobid: "job_004",
+    source_db_type: "mysql",
+    target_db_type: "oracle",
+    source_db_name: "analytics",
+    target_db_name: "analytics_ora",
+    created_at: "2024-06-19T14:45:00Z",
+    started_by: "admin",
+    status: "running",
+  },
+  {
+    jobid: "job_005",
+    source_db_type: "postgresql",
+    target_db_type: "oracle",
+    source_db_name: "ecommerce",
+    target_db_name: "ecommerce_mig",
+    created_at: "2024-06-20T08:00:00Z",
+    started_by: "team_user",
+    status: "completed",
+  },
+  {
+    jobid: "job_006",
+    source_db_type: "mysql",
+    target_db_type: "postgresql",
+    source_db_name: "auth_service",
+    target_db_name: "auth_pg",
+    created_at: "2024-06-20T10:10:00Z",
+    started_by: "preetham",
+    status: "running",
+  },
+  {
+    jobid: "job_007",
+    source_db_type: "oracle",
+    target_db_type: "mysql",
+    source_db_name: "legacy_hr",
+    target_db_name: "hr_mysql",
+    created_at: "2024-06-21T13:20:00Z",
+    started_by: "admin",
+    status: "completed",
+  },
+  {
+    jobid: "job_008",
+    source_db_type: "sqlserver",
+    target_db_type: "postgresql",
+    source_db_name: "payments",
+    target_db_name: "payments_pg",
+    created_at: "2024-06-21T14:55:00Z",
+    started_by: "devops",
+    status: "failed",
+  },
+  {
+    jobid: "job_009",
+    source_db_type: "postgresql",
+    target_db_type: "oracle",
+    source_db_name: "analytics_db",
+    target_db_name: "analytics_ora",
+    created_at: "2024-06-22T07:40:00Z",
+    started_by: "admin",
+    status: "running",
+  },
+  {
+    jobid: "job_010",
+    source_db_type: "mysql",
+    target_db_type: "postgresql",
+    source_db_name: "marketing",
+    target_db_name: "marketing_mig",
+    created_at: "2024-06-22T09:05:00Z",
+    started_by: "preetham",
+    status: "completed",
+  },
+];
 
 export const history_columns = [
   { key: "id", label: "ID" },
@@ -417,7 +419,7 @@ export const data = [
     primary_key: "1/1",
     foreign_key: "3/3",
     status: "Completed",
-    timestamp: "2024-06-17"
+    timestamp: "2024-06-17",
   },
   {
     id: 2,
@@ -428,7 +430,7 @@ export const data = [
     primary_key: "2/2",
     foreign_key: "1/1",
     status: "Running",
-    timestamp: "2024-06-18"
+    timestamp: "2024-06-18",
   },
   {
     id: 3,
@@ -439,6 +441,6 @@ export const data = [
     primary_key: "2/2",
     foreign_key: "4/4",
     status: "Idle",
-    timestamp: "2024-06-19"
-  }
+    timestamp: "2024-06-19",
+  },
 ];

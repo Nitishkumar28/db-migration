@@ -9,7 +9,9 @@ const SideNavBarBlock = () => {
   const background = themePalette[activeTheme].backgroundSecondary;
   return (
     <div className="w-[60%] h-full flex justify-start items-center gap-4">
-      <header className={`w-full flex justify-start items-center divide-x divide-gray-300`}>
+      <header
+        className={`w-full flex justify-start items-center divide-x divide-gray-300`}
+      >
         <HeaderOption text="connections" path="/home/connections" />
         <HeaderOption text="export" path="/home/export" />
       </header>
@@ -18,7 +20,6 @@ const SideNavBarBlock = () => {
 };
 
 export default SideNavBarBlock;
-
 
 /*
 import { Header } from "../../../base/Base";

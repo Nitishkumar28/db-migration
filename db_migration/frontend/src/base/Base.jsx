@@ -2,7 +2,6 @@ import { useState } from "react";
 import useUIStore from "../store/uistore";
 import { themePalette } from "./colorPalette";
 
-
 export const header_sizes = {
   extrasmall: "10px",
   small: "13px",
@@ -22,8 +21,6 @@ export const header_weight = {
   bold: "font-bold",
 };
 
-
-
 const Header = ({ text, size = "medium", weight = "normal", ...props }) => (
   <span
     {...props}
@@ -34,7 +31,7 @@ const Header = ({ text, size = "medium", weight = "normal", ...props }) => (
   </span>
 );
 
-const TextHolder = ({text, size, weight, type, className="", ...props}) => {
+const TextHolder = ({ text, size, weight, type, className = "", ...props }) => {
   const activeTheme = useUIStore((state) => state.theme);
   let textColor = "";
 
@@ -50,8 +47,8 @@ const TextHolder = ({text, size, weight, type, className="", ...props}) => {
     >
       {text}
     </p>
-  )
-}
+  );
+};
 
 const NavbarOption = ({ text, className, children }) => {
   const activeTheme = useUIStore((state) => state.theme);
@@ -80,23 +77,24 @@ const NavbarOption = ({ text, className, children }) => {
   );
 };
 
-const BaseButton = ({text, type, children, className="", ...props}) => {
+const BaseButton = ({ text, type, children, className = "", ...props }) => {
   const activeTheme = useUIStore((state) => state.theme);
   return (
-      <button
+    <button
       {...props}
-        style={{ 
-          borderColor: themePalette[activeTheme].borderSecondary, 
-          fontSize: header_sizes.normal 
-        }}
-        className={`min-w-20 px-1 py-1 border-gray-300 cursor-pointer capitalize hover:opacity-80 ${className}`}>
-          <div className="flex justify-center items-center gap-2">
-            <span>{text}</span>
-            {children}
-          </div>
-      </button>
-  )
-}
+      style={{
+        borderColor: themePalette[activeTheme].borderSecondary,
+        fontSize: header_sizes.normal,
+      }}
+      className={`min-w-20 px-1 py-1 border-gray-300 cursor-pointer capitalize hover:opacity-80 ${className}`}
+    >
+      <div className="flex justify-center items-center gap-2">
+        <span>{text}</span>
+        {children}
+      </div>
+    </button>
+  );
+};
 
 // #0492C2, #48AAAD
 const LongArrowCustom = ({ width = 100, color = "#0492C2" }) => {
@@ -122,8 +120,5 @@ const LongArrowCustom = ({ width = 100, color = "#0492C2" }) => {
     </div>
   );
 };
-
-
-
 
 export { Header, TextHolder, NavbarOption, BaseButton, LongArrowCustom };

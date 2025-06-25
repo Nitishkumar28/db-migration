@@ -9,7 +9,7 @@ import {
   exportAPI,
   getHistoryForJobidAPI,
   getStatsAPI,
-  validateAPI
+  validateAPI,
 } from "../../../../hooks/urls";
 import { usePost } from "../../../../hooks/usePost";
 import { useFetch } from "../../../../hooks/useFetch";
@@ -32,56 +32,76 @@ const ExportCard = ({ text, children }) => {
   );
 };
 
-const ExportHeader = ({ isHistory = false, selectedSource, selectedTarget }) => {
-  const { job_id } = useParams()
-  const { addNewHistoryCard, setExportFinalStatus, exportFinalStatus, setActiveJobID } = useDBStore();
+const ExportHeader = ({
+  isHistory = false,
+  selectedSource,
+  selectedTarget,
+}) => {
+  const { job_id } = useParams();
+  const {
+    addNewHistoryCard,
+    setExportFinalStatus,
+    exportFinalStatus,
+    setActiveJobID,
+  } = useDBStore();
   const shouldFetch = !!job_id;
-  const {data: history_for_jobid, loading, error} = useFetch(shouldFetch ? getHistoryForJobidAPI(job_id) : null);
+  const {
+    data: history_for_jobid,
+    loading,
+    error,
+  } = useFetch(shouldFetch ? getHistoryForJobidAPI(job_id) : null);
   // const exportFinalStatus = (shouldFetch && history_for_jobid) ? history_for_jobid.status  : "running";
 
   useEffect(() => {
-    if (history_for_jobid) { 
-      console.log("status changed")
-      const currStatus = (shouldFetch && history_for_jobid) ? history_for_jobid.status  : "running";
-      setExportFinalStatus(currStatus)
+    if (history_for_jobid) {
+      console.log("status changed");
+      const currStatus =
+        shouldFetch && history_for_jobid ? history_for_jobid.status : "running";
+      setExportFinalStatus(currStatus);
     }
-  }, [shouldFetch, history_for_jobid])
+  }, [shouldFetch, history_for_jobid]);
 
   const {
     post: initialPost,
     data: initialJobData,
     posting: isCreatingJob,
-    error: initialJobError
+    error: initialJobError,
   } = usePost(createHistoryJobAPI());
 
   const {
     post: exportPost,
     data: exportJobData,
     posting: isExporting,
-    error: exportJobError
+    error: exportJobError,
   } = usePost(exportAPI());
 
   const {
     post: statsPost,
     posting: isPostingStats,
-    error: statsJobError
+    error: statsJobError,
   } = usePost(getStatsAPI());
 
   const {
     post: validatePost,
     data: validateJobData,
     posting: isValidating,
-    error: validateJobError
+    error: validateJobError,
   } = usePost(validateAPI());
 
-  const selectDetails = (type) => useDBStore.getState().connectionDetails.find(
-    (conn) => conn.db_type === (type === "source" ? selectedSource : selectedTarget)?.toLowerCase()
-  );
+  const selectDetails = (type) =>
+    useDBStore
+      .getState()
+      .connectionDetails.find(
+        (conn) =>
+          conn.db_type ===
+          (type === "source" ? selectedSource : selectedTarget)?.toLowerCase()
+      );
 
   const sourceDetails = selectDetails("source");
   const targetDetails = selectDetails("target");
 
-  const isConnectionReady = sourceDetails?.status === "success" && targetDetails?.status === "success";
+  const isConnectionReady =
+    sourceDetails?.status === "success" && targetDetails?.status === "success";
 
   const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
@@ -95,60 +115,68 @@ const ExportHeader = ({ isHistory = false, selectedSource, selectedTarget }) => 
       };
 
       const job = await initialPost(jobPayload);
-      console.log(`Job result: ${JSON.stringify(job)}`)
+      console.log(`Job result: ${JSON.stringify(job)}`);
       if (!job?.job_id) throw new Error("Job creation failed");
-      
+
       addNewHistoryCard(job);
       await delay(5000);
-      
+
       setActiveJobID(job?.job_id);
-      
-      
-      console.log(`Job card ${job?.job_id} added!`)
-      
+
+      console.log(`Job card ${job?.job_id} added!`);
+
       const basePayload = {
-        "job_id": job.job_id,
-        "source": {
-          "host_name": sourceDetails.host_name,
-          "username": sourceDetails.username,
-          "password": sourceDetails.password,
-          "port": sourceDetails.port,
-          "db_name": sourceDetails.db_name,
-          "db_type": sourceDetails.db_type
+        job_id: job.job_id,
+        source: {
+          host_name: sourceDetails.host_name,
+          username: sourceDetails.username,
+          password: sourceDetails.password,
+          port: sourceDetails.port,
+          db_name: sourceDetails.db_name,
+          db_type: sourceDetails.db_type,
         },
-        "target": {
-          "host_name": targetDetails.host_name,
-          "username": targetDetails.username,
-          "password": targetDetails.password,
-          "port": targetDetails.port,
-          "db_name": targetDetails.db_name,
-          "db_type": targetDetails.db_type
-        }
+        target: {
+          host_name: targetDetails.host_name,
+          username: targetDetails.username,
+          password: targetDetails.password,
+          port: targetDetails.port,
+          db_name: targetDetails.db_name,
+          db_type: targetDetails.db_type,
+        },
       };
       console.log(`export request body: ${JSON.stringify(basePayload)}`);
       const exportResult = await exportPost(basePayload);
-      console.log(`Export API called: ${exportResult}`)
-      
+      console.log(`Export API called: ${exportResult}`);
+
       await delay(5000);
-      
+
       await statsPost({ ...basePayload, durations: exportResult?.durations });
-      console.log(`Stat API called!`)
+      console.log(`Stat API called!`);
       const validation = await validatePost(basePayload);
-      console.log(`Validation API called: ${validation}`)
-      setExportFinalStatus((exportJobError || statsJobError) ? "failed" : validation)
+      console.log(`Validation API called: ${validation}`);
+      setExportFinalStatus(
+        exportJobError || statsJobError ? "failed" : validation
+      );
     } catch (error) {
       console.error("Export failed:", error);
-      setExportFinalStatus("failed")
+      setExportFinalStatus("failed");
     }
   };
 
-  const anyError = initialJobError || exportJobError || statsJobError || validateJobError;
+  const anyError =
+    initialJobError || exportJobError || statsJobError || validateJobError;
 
   return (
     <div className="w-full h-[25%] flex justify-evenly items-center gap-4 p-2 bg-sky-50 rounded-lg">
-      <ExportCard text="source">{getDBIcon(selectedSource?.toLowerCase(), 60)}</ExportCard>
-      <span><LongArrowCustom /></span>
-      <ExportCard text="target">{getDBIcon(selectedTarget?.toLowerCase(), 60)}</ExportCard>
+      <ExportCard text="source">
+        {getDBIcon(selectedSource?.toLowerCase(), 60)}
+      </ExportCard>
+      <span>
+        <LongArrowCustom />
+      </span>
+      <ExportCard text="target">
+        {getDBIcon(selectedTarget?.toLowerCase(), 60)}
+      </ExportCard>
 
       {isHistory ? (
         <MigrationStatusTag status={anyError ? "failed" : exportFinalStatus} />

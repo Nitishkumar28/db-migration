@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from "react";
 
 export function useFetch(url, options = {}) {
   const [data, setData] = useState(null);
@@ -7,8 +7,8 @@ export function useFetch(url, options = {}) {
   const [trigger, setTrigger] = useState(0);
 
   const refetch = useCallback(() => {
-      setTrigger(prev => prev + 1);
-    }, [])
+    setTrigger((prev) => prev + 1);
+  }, []);
 
   useEffect(() => {
     if (!url) return;
@@ -16,7 +16,7 @@ export function useFetch(url, options = {}) {
     setLoading(true);
     fetch(url, options)
       .then((res) => {
-        if (!res.ok) throw new Error('Network response was not ok');
+        if (!res.ok) throw new Error("Network response was not ok");
         return res.json();
       })
       .then(setData)

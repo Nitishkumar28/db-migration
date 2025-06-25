@@ -1,8 +1,8 @@
-import CoreRoutes from "./CoreRoutes"
-import Test from "./pages/Test"
+import CoreRoutes from "./CoreRoutes";
+import Test from "./pages/Test";
 
 function App() {
-  return <CoreRoutes />
+  return <CoreRoutes />;
 }
 
 export default App;

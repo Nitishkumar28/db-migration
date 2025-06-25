@@ -3,7 +3,12 @@ import { themePalette } from "./colorPalette";
 import useUIStore from "../store/uistore";
 import { Header, TextHolder } from "./Base";
 
-const DropdownOption = ({ option, selectedOption, setSelectedOption, setIsOpen }) => {
+const DropdownOption = ({
+  option,
+  selectedOption,
+  setSelectedOption,
+  setIsOpen,
+}) => {
   const activeTheme = useUIStore((state) => state.theme);
   const isSelected = option === selectedOption;
   const selectedBG = themePalette[activeTheme].backgroundPrimary;
@@ -28,7 +33,12 @@ const DropdownOption = ({ option, selectedOption, setSelectedOption, setIsOpen }
   );
 };
 
-const DropdownOptions = ({ options, selectedOption, setSelectedOption, setIsOpen }) => {
+const DropdownOptions = ({
+  options,
+  selectedOption,
+  setSelectedOption,
+  setIsOpen,
+}) => {
   const activeTheme = useUIStore((state) => state.theme);
   const fullOptions = ["", ...options];
 
@@ -74,19 +84,13 @@ const InnerDropdownBlock = ({ selectedOption, setSelectedOption, options }) => {
   }, []);
 
   return (
-    <div
-      ref={dropdownRef}
-      className="relative w-40 max-w-56"
-    >
+    <div ref={dropdownRef} className="relative w-40 max-w-56">
       <div
         onClick={() => setIsOpen((prev) => !prev)}
         style={{ borderColor: themePalette[activeTheme].borderPrimary }}
         className="border px-2 py-1 rounded-sm flex justify-between items-center gap-2 cursor-pointer select-none hover:bg-slate-50"
       >
-        <TextHolder
-          text={selectedOption || "Select a database"}
-          size="small"
-        />
+        <TextHolder text={selectedOption || "Select a database"} size="small" />
         <i className="fa fa-caret-down text-xs" />
       </div>
       {isOpen && (
@@ -101,7 +105,12 @@ const InnerDropdownBlock = ({ selectedOption, setSelectedOption, options }) => {
   );
 };
 
-const DropdownBlock = ({ text = "", selectedOption, setSelectedOption, options }) => {
+const DropdownBlock = ({
+  text = "",
+  selectedOption,
+  setSelectedOption,
+  options,
+}) => {
   return (
     <div className="flex justify-center items-center gap-2">
       {text && <Header text={text} size="normal" weight="medium" />}

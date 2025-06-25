@@ -36,5 +36,4 @@ const WarningMessages = () => {
   );
 };
 
-
 export default WarningMessages;
