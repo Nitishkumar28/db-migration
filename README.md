@@ -359,6 +359,9 @@ SELECT table_name FROM information_schema.tables WHERE table_schema = 'public';
 
 # Current issues
 
-1) Home page - connections default shows no color for source and red for target (need to fix either both should be red or have no colour indication)
-2) Check connection not working on frontend
-3) 
+1) Connections page - For target enter incorrect details -> click -> red -> Chnage the fields with correct details now -> click -> remains red
+
+
+
+# Error/Edge cases handling
+1) 

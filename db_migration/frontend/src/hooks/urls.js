@@ -1,4 +1,4 @@
-const BASE_URL = "http://localhost:8001/api";
+const BASE_URL = "http://localhost:8000/api";
 
 // http://127.0.0.1:8000/api/export
 // http://127.0.0.1:8000/api/migration-history-brief
