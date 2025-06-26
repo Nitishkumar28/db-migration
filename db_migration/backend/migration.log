@@ -3777,3 +3777,423 @@ Log - 2025-06-24 15:57:22
 Log - 2025-06-24 15:57:44
 
 Log - 2025-06-24 15:57:47
+
+Log - 2025-06-25 12:51:48
+[2025-06-25 12:52:22] [INFO] [f076429f] === Section: Export Tables & Data ===
+[2025-06-25 12:52:22] [INFO] [f076429f] Begin exporting tables from `demo` to `demo`
+[2025-06-25 12:52:22] [INFO] [f076429f] - Dropping `conversion` if exists
+[2025-06-25 12:52:22] [INFO] [f076429f] - Created table `conversion`
+[2025-06-25 12:52:22] [INFO] [f076429f] - Loaded data into `conversion`
+[2025-06-25 12:52:22] [INFO] [f076429f]   -> Indexes created for `conversion`
+[2025-06-25 12:52:22] [INFO] [f076429f]   -> Foreign keys added for `conversion`
+[2025-06-25 12:52:22] [INFO] [f076429f] - Dropping `teachers` if exists
+[2025-06-25 12:52:22] [INFO] [f076429f] - Created table `teachers`
+[2025-06-25 12:52:22] [INFO] [f076429f] - Loaded data into `teachers`
+[2025-06-25 12:52:22] [INFO] [f076429f]   -> Indexes created for `teachers`
+[2025-06-25 12:52:22] [INFO] [f076429f]   -> Foreign keys added for `teachers`
+[2025-06-25 12:52:22] [INFO] [f076429f] - Dropping `courses` if exists
+[2025-06-25 12:52:22] [INFO] [f076429f] - Created table `courses`
+[2025-06-25 12:52:22] [INFO] [f076429f] - Dropping `students` if exists
+[2025-06-25 12:52:22] [INFO] [f076429f] - Created table `students`
+[2025-06-25 12:52:22] [INFO] [f076429f]  ✅ Export complete: 2 tables exported, 2 skipped
+[2025-06-25 12:52:22] [INFO] [f076429f] === Tables exported: 2; skipped: 2 ===
+
+
+Log - 2025-06-25 12:52:48
+[2025-06-25 12:52:58] [INFO] [4598d6a5] === Section: Deleting All Tables ===
+[2025-06-25 12:52:58] [INFO] [4598d6a5] Deleted table `conversion`
+[2025-06-25 12:52:58] [INFO] [4598d6a5] Deleted table `courses`
+[2025-06-25 12:52:58] [INFO] [4598d6a5] Deleted table `students`
+[2025-06-25 12:52:58] [INFO] [4598d6a5] Deleted table `teachers`
+[2025-06-25 12:52:58] [INFO] [4598d6a5] === Deleted 4 tables ===
+
+
+Log - 2025-06-25 12:53:18
+[2025-06-25 12:53:34] [INFO] [dc906163] === Section: Export Tables & Data ===
+[2025-06-25 12:53:34] [INFO] [dc906163] Begin exporting tables from `demo` to `demo`
+[2025-06-25 12:53:34] [INFO] [dc906163] - Dropping `conversion` if exists
+[2025-06-25 12:53:34] [INFO] [dc906163] - Created table `conversion`
+[2025-06-25 12:53:34] [INFO] [dc906163] - Loaded data into `conversion`
+[2025-06-25 12:53:34] [INFO] [dc906163]   -> Indexes created for `conversion`
+[2025-06-25 12:53:34] [INFO] [dc906163]   -> Foreign keys added for `conversion`
+[2025-06-25 12:53:34] [INFO] [dc906163] - Dropping `teachers` if exists
+[2025-06-25 12:53:34] [INFO] [dc906163] - Created table `teachers`
+[2025-06-25 12:53:34] [INFO] [dc906163] - Loaded data into `teachers`
+[2025-06-25 12:53:34] [INFO] [dc906163]   -> Indexes created for `teachers`
+[2025-06-25 12:53:34] [INFO] [dc906163]   -> Foreign keys added for `teachers`
+[2025-06-25 12:53:34] [INFO] [dc906163] - Dropping `courses` if exists
+[2025-06-25 12:53:34] [INFO] [dc906163] - Created table `courses`
+[2025-06-25 12:53:34] [INFO] [dc906163] - Loaded data into `courses`
+[2025-06-25 12:53:34] [INFO] [dc906163]   -> Indexes created for `courses`
+[2025-06-25 12:53:34] [INFO] [dc906163]   -> Foreign keys added for `courses`
+[2025-06-25 12:53:34] [INFO] [dc906163] - Dropping `students` if exists
+[2025-06-25 12:53:34] [INFO] [dc906163] - Created table `students`
+[2025-06-25 12:53:34] [INFO] [dc906163] - Loaded data into `students`
+[2025-06-25 12:53:34] [INFO] [dc906163] - Creating index `student_class` on `students`
+[2025-06-25 12:53:34] [INFO] [dc906163] Created index `student_class` on `students`
+[2025-06-25 12:53:34] [INFO] [dc906163]   -> Indexes created for `students`
+[2025-06-25 12:53:34] [INFO] [dc906163]   -> Foreign keys added for `students`
+[2025-06-25 12:53:34] [INFO] [dc906163]  ✅ Export complete: 4 tables exported, 0 skipped
+[2025-06-25 12:53:34] [INFO] [dc906163] === Tables exported: 4; skipped: 0 ===
+
+[2025-06-25 12:53:34] [INFO] [dc906163] === Section: Export Triggers ===
+[2025-06-25 12:53:34] [INFO] [dc906163] === ✅ Triggers exported: 3; errors: 0 ===
+
+[2025-06-25 12:53:34] [INFO] [dc906163] API `/export/` succeeded: exported_tables={'teachers', 'courses', 'conversion', 'students'}, exported_triggers=['trg_students_audit_insert_insert', 'trg_students_audit_update_update', 'trg_students_audit_delete_delete']
+
+Log - 2025-06-25 13:31:38
+
+Log - 2025-06-25 13:32:05
+
+Log - 2025-06-25 13:32:53
+
+Log - 2025-06-25 13:34:13
+[2025-06-25 13:34:45] [INFO] [37b76d84] === Section: Export Tables & Data ===
+[2025-06-25 13:34:45] [INFO] [37b76d84] Begin exporting tables from `demo` to `demo`
+[2025-06-25 13:34:45] [INFO] [37b76d84] - Dropping `conversion` if exists
+[2025-06-25 13:34:45] [INFO] [37b76d84] - Created table `conversion`
+[2025-06-25 13:34:45] [INFO] [37b76d84] - Loaded data into `conversion`
+[2025-06-25 13:34:45] [INFO] [37b76d84]   -> Indexes created for `conversion`
+[2025-06-25 13:34:45] [INFO] [37b76d84]   -> Foreign keys added for `conversion`
+[2025-06-25 13:34:45] [INFO] [37b76d84] - Dropping `teachers` if exists
+[2025-06-25 13:34:45] [INFO] [37b76d84] - Created table `teachers`
+[2025-06-25 13:34:45] [INFO] [37b76d84] - Loaded data into `teachers`
+[2025-06-25 13:34:45] [INFO] [37b76d84]   -> Indexes created for `teachers`
+[2025-06-25 13:34:45] [INFO] [37b76d84]   -> Foreign keys added for `teachers`
+[2025-06-25 13:34:45] [INFO] [37b76d84] - Dropping `courses` if exists
+[2025-06-25 13:34:45] [INFO] [37b76d84] - Created table `courses`
+[2025-06-25 13:34:45] [INFO] [37b76d84] - Dropping `students` if exists
+[2025-06-25 13:34:45] [INFO] [37b76d84] - Created table `students`
+[2025-06-25 13:34:45] [INFO] [37b76d84]  ✅ Export complete: 2 tables exported, 2 skipped
+[2025-06-25 13:34:45] [INFO] [37b76d84] === Tables exported: 2; skipped: 2 ===
+
+
+Log - 2025-06-25 13:35:25
+
+Log - 2025-06-25 13:37:56
+[2025-06-25 13:37:58] [INFO] [cfc5ccd7] === Section: Deleting All Tables ===
+[2025-06-25 13:37:58] [INFO] [cfc5ccd7] Deleted table `conversion`
+[2025-06-25 13:37:58] [INFO] [cfc5ccd7] Deleted table `courses`
+[2025-06-25 13:37:58] [INFO] [cfc5ccd7] Deleted table `students`
+[2025-06-25 13:37:58] [INFO] [cfc5ccd7] Deleted table `teachers`
+[2025-06-25 13:37:58] [INFO] [cfc5ccd7] === Deleted 4 tables ===
+
+
+Log - 2025-06-25 13:38:03
+
+Log - 2025-06-25 13:38:58
+[2025-06-25 13:39:11] [INFO] [f8ec5e42] === Section: Export Tables & Data ===
+[2025-06-25 13:39:11] [INFO] [f8ec5e42] Begin exporting tables from `demo` to `demo`
+[2025-06-25 13:39:11] [INFO] [f8ec5e42] - Dropping `conversion` if exists
+[2025-06-25 13:39:11] [INFO] [f8ec5e42] - Created table `conversion`
+[2025-06-25 13:39:11] [INFO] [f8ec5e42] - Loaded data into `conversion`
+[2025-06-25 13:39:11] [INFO] [f8ec5e42]   -> Indexes created for `conversion`
+[2025-06-25 13:39:11] [INFO] [f8ec5e42]   -> Foreign keys added for `conversion`
+[2025-06-25 13:39:11] [INFO] [f8ec5e42] - Dropping `teachers` if exists
+[2025-06-25 13:39:11] [INFO] [f8ec5e42] - Created table `teachers`
+[2025-06-25 13:39:11] [INFO] [f8ec5e42] - Loaded data into `teachers`
+[2025-06-25 13:39:11] [INFO] [f8ec5e42]   -> Indexes created for `teachers`
+[2025-06-25 13:39:11] [INFO] [f8ec5e42]   -> Foreign keys added for `teachers`
+[2025-06-25 13:39:11] [INFO] [f8ec5e42] - Dropping `courses` if exists
+[2025-06-25 13:39:11] [INFO] [f8ec5e42] - Created table `courses`
+[2025-06-25 13:39:11] [INFO] [f8ec5e42] - Loaded data into `courses`
+[2025-06-25 13:39:11] [INFO] [f8ec5e42]   -> Indexes created for `courses`
+[2025-06-25 13:39:11] [INFO] [f8ec5e42]   -> Foreign keys added for `courses`
+[2025-06-25 13:39:11] [INFO] [f8ec5e42] - Dropping `students` if exists
+[2025-06-25 13:39:11] [INFO] [f8ec5e42] - Created table `students`
+[2025-06-25 13:39:11] [INFO] [f8ec5e42] - Loaded data into `students`
+[2025-06-25 13:39:11] [INFO] [f8ec5e42] - Creating index `student_class` on `students`
+[2025-06-25 13:39:11] [INFO] [f8ec5e42] Created index `student_class` on `students`
+[2025-06-25 13:39:11] [INFO] [f8ec5e42]   -> Indexes created for `students`
+[2025-06-25 13:39:11] [INFO] [f8ec5e42]   -> Foreign keys added for `students`
+[2025-06-25 13:39:11] [INFO] [f8ec5e42]  ✅ Export complete: 4 tables exported, 0 skipped
+[2025-06-25 13:39:11] [INFO] [f8ec5e42] === Tables exported: 4; skipped: 0 ===
+
+[2025-06-25 13:39:11] [INFO] [f8ec5e42] === Section: Export Triggers ===
+[2025-06-25 13:39:11] [INFO] [f8ec5e42] === ✅ Triggers exported: 3; errors: 0 ===
+
+[2025-06-25 13:39:11] [INFO] [f8ec5e42] API `/export/` succeeded: exported_tables={'conversion', 'teachers', 'courses', 'students'}, exported_triggers=['trg_students_audit_insert_insert', 'trg_students_audit_update_update', 'trg_students_audit_delete_delete']
+
+Log - 2025-06-25 13:40:10
+
+Log - 2025-06-25 13:40:29
+[2025-06-25 13:40:43] [INFO] [c970e6ab] === Section: Export Tables & Data ===
+[2025-06-25 13:40:43] [INFO] [c970e6ab] Begin exporting tables from `demo` to `demo`
+[2025-06-25 13:40:43] [INFO] [c970e6ab] - Dropping `conversion` if exists
+[2025-06-25 13:40:43] [INFO] [c970e6ab] - Created table `conversion`
+[2025-06-25 13:40:43] [INFO] [c970e6ab] - Loaded data into `conversion`
+[2025-06-25 13:40:43] [INFO] [c970e6ab]   -> Indexes created for `conversion`
+[2025-06-25 13:40:43] [INFO] [c970e6ab]   -> Foreign keys added for `conversion`
+[2025-06-25 13:40:43] [INFO] [c970e6ab] - Dropping `teachers` if exists
+[2025-06-25 13:40:43] [INFO] [c970e6ab] - Created table `teachers`
+[2025-06-25 13:40:43] [INFO] [c970e6ab] - Loaded data into `teachers`
+[2025-06-25 13:40:43] [INFO] [c970e6ab]   -> Indexes created for `teachers`
+[2025-06-25 13:40:43] [INFO] [c970e6ab]   -> Foreign keys added for `teachers`
+[2025-06-25 13:40:43] [INFO] [c970e6ab] - Dropping `courses` if exists
+[2025-06-25 13:40:43] [INFO] [c970e6ab] - Created table `courses`
+[2025-06-25 13:40:43] [INFO] [c970e6ab] - Dropping `students` if exists
+[2025-06-25 13:40:43] [INFO] [c970e6ab] - Created table `students`
+[2025-06-25 13:40:43] [INFO] [c970e6ab]  ✅ Export complete: 2 tables exported, 2 skipped
+[2025-06-25 13:40:43] [INFO] [c970e6ab] === Tables exported: 2; skipped: 2 ===
+
+
+Log - 2025-06-25 13:41:09
+[2025-06-25 13:41:16] [INFO] [cc59eac5] === Section: Deleting All Tables ===
+[2025-06-25 13:41:16] [INFO] [cc59eac5] Deleted table `conversion`
+[2025-06-25 13:41:16] [INFO] [cc59eac5] Deleted table `courses`
+[2025-06-25 13:41:16] [INFO] [cc59eac5] Deleted table `students`
+[2025-06-25 13:41:16] [INFO] [cc59eac5] Deleted table `teachers`
+[2025-06-25 13:41:16] [INFO] [cc59eac5] === Deleted 4 tables ===
+
+
+Log - 2025-06-25 13:41:26
+[2025-06-25 13:41:47] [INFO] [c9e5b492] === Section: Export Tables & Data ===
+[2025-06-25 13:41:47] [INFO] [c9e5b492] Begin exporting tables from `demo` to `demo`
+[2025-06-25 13:41:47] [INFO] [c9e5b492] - Dropping `conversion` if exists
+[2025-06-25 13:41:47] [INFO] [c9e5b492] - Created table `conversion`
+[2025-06-25 13:41:47] [INFO] [c9e5b492] - Loaded data into `conversion`
+[2025-06-25 13:41:47] [INFO] [c9e5b492]   -> Indexes created for `conversion`
+[2025-06-25 13:41:48] [INFO] [c9e5b492]   -> Foreign keys added for `conversion`
+[2025-06-25 13:41:48] [INFO] [c9e5b492] - Dropping `teachers` if exists
+[2025-06-25 13:41:48] [INFO] [c9e5b492] - Created table `teachers`
+[2025-06-25 13:41:48] [INFO] [c9e5b492] - Loaded data into `teachers`
+[2025-06-25 13:41:48] [INFO] [c9e5b492]   -> Indexes created for `teachers`
+[2025-06-25 13:41:48] [INFO] [c9e5b492]   -> Foreign keys added for `teachers`
+[2025-06-25 13:41:48] [INFO] [c9e5b492] - Dropping `courses` if exists
+[2025-06-25 13:41:48] [INFO] [c9e5b492] - Created table `courses`
+[2025-06-25 13:41:48] [INFO] [c9e5b492] - Loaded data into `courses`
+[2025-06-25 13:41:48] [INFO] [c9e5b492]   -> Indexes created for `courses`
+[2025-06-25 13:41:48] [INFO] [c9e5b492]   -> Foreign keys added for `courses`
+[2025-06-25 13:41:48] [INFO] [c9e5b492] - Dropping `students` if exists
+[2025-06-25 13:41:48] [INFO] [c9e5b492] - Created table `students`
+[2025-06-25 13:41:48] [INFO] [c9e5b492] - Loaded data into `students`
+[2025-06-25 13:41:48] [INFO] [c9e5b492] - Creating index `student_class` on `students`
+[2025-06-25 13:41:48] [INFO] [c9e5b492] Created index `student_class` on `students`
+[2025-06-25 13:41:48] [INFO] [c9e5b492]   -> Indexes created for `students`
+[2025-06-25 13:41:48] [INFO] [c9e5b492]   -> Foreign keys added for `students`
+[2025-06-25 13:41:48] [INFO] [c9e5b492]  ✅ Export complete: 4 tables exported, 0 skipped
+[2025-06-25 13:41:48] [INFO] [c9e5b492] === Tables exported: 4; skipped: 0 ===
+
+[2025-06-25 13:41:48] [INFO] [c9e5b492] === Section: Export Triggers ===
+[2025-06-25 13:41:48] [INFO] [c9e5b492] === ✅ Triggers exported: 3; errors: 0 ===
+
+[2025-06-25 13:41:48] [INFO] [c9e5b492] API `/export/` succeeded: exported_tables={'students', 'teachers', 'courses', 'conversion'}, exported_triggers=['trg_students_audit_insert_insert', 'trg_students_audit_update_update', 'trg_students_audit_delete_delete']
+
+Log - 2025-06-25 15:45:44
+[2025-06-25 15:45:48] [INFO] [90ff4dd4] === Section: Deleting All Tables ===
+[2025-06-25 15:45:48] [INFO] [90ff4dd4] Deleted table `conversion`
+[2025-06-25 15:45:48] [INFO] [90ff4dd4] Deleted table `courses`
+[2025-06-25 15:45:48] [INFO] [90ff4dd4] Deleted table `students`
+[2025-06-25 15:45:48] [INFO] [90ff4dd4] Deleted table `teachers`
+[2025-06-25 15:45:48] [INFO] [90ff4dd4] === Deleted 4 tables ===
+
+
+Log - 2025-06-25 15:45:52
+[2025-06-25 15:46:16] [INFO] [f0faa7f9] === Section: Export Tables & Data ===
+[2025-06-25 15:46:16] [INFO] [f0faa7f9] Begin exporting tables from `demo` to `demo`
+[2025-06-25 15:46:16] [INFO] [f0faa7f9] - Dropping `conversion` if exists
+[2025-06-25 15:46:16] [INFO] [f0faa7f9] - Created table `conversion`
+[2025-06-25 15:46:16] [INFO] [f0faa7f9] - Loaded data into `conversion`
+[2025-06-25 15:46:16] [INFO] [f0faa7f9]   -> Indexes created for `conversion`
+[2025-06-25 15:46:16] [INFO] [f0faa7f9]   -> Foreign keys added for `conversion`
+[2025-06-25 15:46:16] [INFO] [f0faa7f9] - Dropping `teachers` if exists
+[2025-06-25 15:46:16] [INFO] [f0faa7f9] - Created table `teachers`
+[2025-06-25 15:46:16] [INFO] [f0faa7f9] - Loaded data into `teachers`
+[2025-06-25 15:46:16] [INFO] [f0faa7f9]   -> Indexes created for `teachers`
+[2025-06-25 15:46:16] [INFO] [f0faa7f9]   -> Foreign keys added for `teachers`
+[2025-06-25 15:46:16] [INFO] [f0faa7f9] - Dropping `courses` if exists
+[2025-06-25 15:46:16] [INFO] [f0faa7f9] - Created table `courses`
+[2025-06-25 15:46:16] [INFO] [f0faa7f9] - Loaded data into `courses`
+[2025-06-25 15:46:16] [INFO] [f0faa7f9]   -> Indexes created for `courses`
+[2025-06-25 15:46:16] [INFO] [f0faa7f9]   -> Foreign keys added for `courses`
+[2025-06-25 15:46:16] [INFO] [f0faa7f9] - Dropping `students` if exists
+[2025-06-25 15:46:16] [INFO] [f0faa7f9] - Created table `students`
+[2025-06-25 15:46:16] [INFO] [f0faa7f9] - Loaded data into `students`
+[2025-06-25 15:46:16] [INFO] [f0faa7f9] - Creating index `student_class` on `students`
+[2025-06-25 15:46:16] [INFO] [f0faa7f9] Created index `student_class` on `students`
+[2025-06-25 15:46:16] [INFO] [f0faa7f9]   -> Indexes created for `students`
+[2025-06-25 15:46:16] [INFO] [f0faa7f9]   -> Foreign keys added for `students`
+[2025-06-25 15:46:16] [INFO] [f0faa7f9]  ✅ Export complete: 4 tables exported, 0 skipped
+[2025-06-25 15:46:16] [INFO] [f0faa7f9] === Tables exported: 4; skipped: 0 ===
+
+[2025-06-25 15:46:16] [INFO] [f0faa7f9] === Section: Export Triggers ===
+[2025-06-25 15:46:16] [INFO] [f0faa7f9] === ✅ Triggers exported: 3; errors: 0 ===
+
+[2025-06-25 15:46:16] [INFO] [f0faa7f9] API `/export/` succeeded: exported_tables={'students', 'courses', 'teachers', 'conversion'}, exported_triggers=['trg_students_audit_insert_insert', 'trg_students_audit_update_update', 'trg_students_audit_delete_delete']
+
+Log - 2025-06-25 15:46:40
+[2025-06-25 15:46:46] [INFO] [db109b15] === Section: Deleting All Tables ===
+[2025-06-25 15:46:46] [INFO] [db109b15] Deleted table `conversion`
+[2025-06-25 15:46:46] [INFO] [db109b15] Deleted table `courses`
+[2025-06-25 15:46:46] [INFO] [db109b15] Deleted table `students`
+[2025-06-25 15:46:46] [INFO] [db109b15] Deleted table `teachers`
+[2025-06-25 15:46:46] [INFO] [db109b15] === Deleted 4 tables ===
+
+
+Log - 2025-06-25 15:46:49
+[2025-06-25 15:47:04] [INFO] [7478b335] === Section: Export Tables & Data ===
+[2025-06-25 15:47:04] [INFO] [7478b335] Begin exporting tables from `demo` to `demo`
+[2025-06-25 15:47:04] [INFO] [7478b335] - Dropping `conversion` if exists
+[2025-06-25 15:47:04] [INFO] [7478b335] - Created table `conversion`
+[2025-06-25 15:47:04] [INFO] [7478b335] - Loaded data into `conversion`
+[2025-06-25 15:47:04] [INFO] [7478b335]   -> Indexes created for `conversion`
+[2025-06-25 15:47:04] [INFO] [7478b335]   -> Foreign keys added for `conversion`
+[2025-06-25 15:47:04] [INFO] [7478b335] - Dropping `teachers` if exists
+[2025-06-25 15:47:04] [INFO] [7478b335] - Created table `teachers`
+[2025-06-25 15:47:04] [INFO] [7478b335] - Loaded data into `teachers`
+[2025-06-25 15:47:04] [INFO] [7478b335]   -> Indexes created for `teachers`
+[2025-06-25 15:47:04] [INFO] [7478b335]   -> Foreign keys added for `teachers`
+[2025-06-25 15:47:04] [INFO] [7478b335] - Dropping `courses` if exists
+[2025-06-25 15:47:04] [INFO] [7478b335] - Created table `courses`
+[2025-06-25 15:47:04] [INFO] [7478b335] - Loaded data into `courses`
+[2025-06-25 15:47:04] [INFO] [7478b335]   -> Indexes created for `courses`
+[2025-06-25 15:47:04] [INFO] [7478b335]   -> Foreign keys added for `courses`
+[2025-06-25 15:47:04] [INFO] [7478b335] - Dropping `students` if exists
+[2025-06-25 15:47:04] [INFO] [7478b335] - Created table `students`
+[2025-06-25 15:47:04] [INFO] [7478b335] - Loaded data into `students`
+[2025-06-25 15:47:04] [INFO] [7478b335] - Creating index `student_class` on `students`
+[2025-06-25 15:47:04] [INFO] [7478b335] Created index `student_class` on `students`
+[2025-06-25 15:47:04] [INFO] [7478b335]   -> Indexes created for `students`
+[2025-06-25 15:47:04] [INFO] [7478b335]   -> Foreign keys added for `students`
+[2025-06-25 15:47:04] [INFO] [7478b335]  ✅ Export complete: 4 tables exported, 0 skipped
+[2025-06-25 15:47:04] [INFO] [7478b335] === Tables exported: 4; skipped: 0 ===
+
+[2025-06-25 15:47:04] [INFO] [7478b335] === Section: Export Triggers ===
+[2025-06-25 15:47:04] [INFO] [7478b335] === ✅ Triggers exported: 3; errors: 0 ===
+
+[2025-06-25 15:47:04] [INFO] [7478b335] API `/export/` succeeded: exported_tables={'courses', 'students', 'teachers', 'conversion'}, exported_triggers=['trg_students_audit_insert_insert', 'trg_students_audit_update_update', 'trg_students_audit_delete_delete']
+
+Log - 2025-06-25 15:47:37
+[2025-06-25 15:47:42] [INFO] [35e54221] === Section: Deleting All Tables ===
+[2025-06-25 15:47:42] [INFO] [35e54221] Deleted table `conversion`
+[2025-06-25 15:47:42] [INFO] [35e54221] Deleted table `courses`
+[2025-06-25 15:47:42] [INFO] [35e54221] Deleted table `students`
+[2025-06-25 15:47:42] [INFO] [35e54221] Deleted table `teachers`
+[2025-06-25 15:47:42] [INFO] [35e54221] === Deleted 4 tables ===
+
+
+Log - 2025-06-25 15:48:25
+
+Log - 2025-06-25 15:48:42
+[2025-06-25 15:48:58] [INFO] [483f87d8] === Section: Export Tables & Data ===
+[2025-06-25 15:48:58] [INFO] [483f87d8] Begin exporting tables from `demo` to `demo`
+[2025-06-25 15:48:58] [INFO] [483f87d8] - Dropping `conversion` if exists
+[2025-06-25 15:48:58] [INFO] [483f87d8] - Created table `conversion`
+[2025-06-25 15:48:58] [INFO] [483f87d8] - Loaded data into `conversion`
+[2025-06-25 15:48:58] [INFO] [483f87d8]   -> Indexes created for `conversion`
+[2025-06-25 15:48:58] [INFO] [483f87d8]   -> Foreign keys added for `conversion`
+[2025-06-25 15:48:58] [INFO] [483f87d8] - Dropping `teachers` if exists
+[2025-06-25 15:48:58] [INFO] [483f87d8] - Created table `teachers`
+[2025-06-25 15:48:58] [INFO] [483f87d8] - Loaded data into `teachers`
+[2025-06-25 15:48:58] [INFO] [483f87d8]   -> Indexes created for `teachers`
+[2025-06-25 15:48:59] [INFO] [483f87d8]   -> Foreign keys added for `teachers`
+[2025-06-25 15:48:59] [INFO] [483f87d8] - Dropping `courses` if exists
+[2025-06-25 15:48:59] [INFO] [483f87d8] - Created table `courses`
+[2025-06-25 15:48:59] [INFO] [483f87d8] - Loaded data into `courses`
+[2025-06-25 15:48:59] [INFO] [483f87d8]   -> Indexes created for `courses`
+[2025-06-25 15:48:59] [INFO] [483f87d8]   -> Foreign keys added for `courses`
+[2025-06-25 15:48:59] [INFO] [483f87d8] - Dropping `students` if exists
+[2025-06-25 15:48:59] [INFO] [483f87d8] - Created table `students`
+[2025-06-25 15:48:59] [INFO] [483f87d8] - Loaded data into `students`
+[2025-06-25 15:48:59] [INFO] [483f87d8] - Creating index `student_class` on `students`
+[2025-06-25 15:48:59] [INFO] [483f87d8] Created index `student_class` on `students`
+[2025-06-25 15:48:59] [INFO] [483f87d8]   -> Indexes created for `students`
+[2025-06-25 15:48:59] [INFO] [483f87d8]   -> Foreign keys added for `students`
+[2025-06-25 15:48:59] [INFO] [483f87d8]  ✅ Export complete: 4 tables exported, 0 skipped
+[2025-06-25 15:48:59] [INFO] [483f87d8] === Tables exported: 4; skipped: 0 ===
+
+[2025-06-25 15:48:59] [INFO] [483f87d8] === Section: Export Triggers ===
+[2025-06-25 15:48:59] [INFO] [483f87d8] === ✅ Triggers exported: 3; errors: 0 ===
+
+[2025-06-25 15:48:59] [INFO] [483f87d8] API `/export/` succeeded: exported_tables={'students', 'courses', 'teachers', 'conversion'}, exported_triggers=['trg_students_audit_insert_insert', 'trg_students_audit_update_update', 'trg_students_audit_delete_delete']
+
+Log - 2025-06-25 15:49:13
+[2025-06-25 15:49:22] [INFO] [7a6ef864] === Section: Deleting All Tables ===
+[2025-06-25 15:49:22] [INFO] [7a6ef864] Deleted table `conversion`
+[2025-06-25 15:49:22] [INFO] [7a6ef864] Deleted table `courses`
+[2025-06-25 15:49:22] [INFO] [7a6ef864] Deleted table `students`
+[2025-06-25 15:49:22] [INFO] [7a6ef864] Deleted table `teachers`
+[2025-06-25 15:49:22] [INFO] [7a6ef864] === Deleted 4 tables ===
+
+
+Log - 2025-06-25 15:49:42
+
+Log - 2025-06-25 15:50:19
+[2025-06-25 15:50:25] [INFO] [9a4175ba] === Section: Deleting All Tables ===
+[2025-06-25 15:50:25] [INFO] [9a4175ba] === Deleted 0 tables ===
+
+
+Log - 2025-06-26 13:55:39
+[2025-06-26 13:56:02] [INFO] [9bdfaab6] === Section: Export Tables & Data ===
+[2025-06-26 13:56:02] [INFO] [9bdfaab6] Begin exporting tables from `demo` to `demo`
+[2025-06-26 13:56:02] [INFO] [9bdfaab6] - Dropping `conversion` if exists
+[2025-06-26 13:56:02] [INFO] [9bdfaab6] - Created table `conversion`
+[2025-06-26 13:56:02] [INFO] [9bdfaab6] - Loaded data into `conversion`
+[2025-06-26 13:56:03] [INFO] [9bdfaab6]   -> Indexes created for `conversion`
+[2025-06-26 13:56:03] [INFO] [9bdfaab6]   -> Foreign keys added for `conversion`
+[2025-06-26 13:56:03] [INFO] [9bdfaab6] - Dropping `teachers` if exists
+[2025-06-26 13:56:03] [INFO] [9bdfaab6] - Created table `teachers`
+[2025-06-26 13:56:03] [INFO] [9bdfaab6] - Loaded data into `teachers`
+[2025-06-26 13:56:03] [INFO] [9bdfaab6]   -> Indexes created for `teachers`
+[2025-06-26 13:56:03] [INFO] [9bdfaab6]   -> Foreign keys added for `teachers`
+[2025-06-26 13:56:03] [INFO] [9bdfaab6] - Dropping `courses` if exists
+[2025-06-26 13:56:03] [INFO] [9bdfaab6] - Created table `courses`
+[2025-06-26 13:56:03] [INFO] [9bdfaab6] - Loaded data into `courses`
+[2025-06-26 13:56:03] [INFO] [9bdfaab6]   -> Indexes created for `courses`
+[2025-06-26 13:56:03] [INFO] [9bdfaab6]   -> Foreign keys added for `courses`
+[2025-06-26 13:56:03] [INFO] [9bdfaab6] - Dropping `students` if exists
+[2025-06-26 13:56:03] [INFO] [9bdfaab6] - Created table `students`
+[2025-06-26 13:56:03] [INFO] [9bdfaab6] - Loaded data into `students`
+[2025-06-26 13:56:03] [INFO] [9bdfaab6] - Creating index `student_class` on `students`
+[2025-06-26 13:56:03] [INFO] [9bdfaab6] Created index `student_class` on `students`
+[2025-06-26 13:56:03] [INFO] [9bdfaab6]   -> Indexes created for `students`
+[2025-06-26 13:56:03] [INFO] [9bdfaab6]   -> Foreign keys added for `students`
+[2025-06-26 13:56:03] [INFO] [9bdfaab6]  ✅ Export complete: 4 tables exported, 0 skipped
+[2025-06-26 13:56:03] [INFO] [9bdfaab6] === Tables exported: 4; skipped: 0 ===
+
+[2025-06-26 13:56:03] [INFO] [9bdfaab6] === Section: Export Triggers ===
+[2025-06-26 13:56:03] [INFO] [9bdfaab6] === ✅ Triggers exported: 3; errors: 0 ===
+
+[2025-06-26 13:56:03] [INFO] [9bdfaab6] API `/export/` succeeded: exported_tables={'teachers', 'students', 'courses', 'conversion'}, exported_triggers=['trg_students_audit_insert_insert', 'trg_students_audit_update_update', 'trg_students_audit_delete_delete']
+
+Log - 2025-06-26 13:58:45
+[2025-06-26 13:58:52] [INFO] [b6fc5572] === Section: Deleting All Tables ===
+[2025-06-26 13:58:52] [INFO] [b6fc5572] Deleted table `conversion`
+[2025-06-26 13:58:52] [INFO] [b6fc5572] Deleted table `courses`
+[2025-06-26 13:58:52] [INFO] [b6fc5572] Deleted table `students`
+[2025-06-26 13:58:52] [INFO] [b6fc5572] Deleted table `teachers`
+[2025-06-26 13:58:52] [INFO] [b6fc5572] === Deleted 4 tables ===
+
+
+Log - 2025-06-26 13:58:57
+[2025-06-26 13:59:14] [INFO] [28aa8cdf] === Section: Export Tables & Data ===
+[2025-06-26 13:59:14] [INFO] [28aa8cdf] Begin exporting tables from `demo` to `demo`
+[2025-06-26 13:59:14] [INFO] [28aa8cdf] - Dropping `conversion` if exists
+[2025-06-26 13:59:14] [INFO] [28aa8cdf] - Created table `conversion`
+[2025-06-26 13:59:14] [INFO] [28aa8cdf] - Loaded data into `conversion`
+[2025-06-26 13:59:14] [INFO] [28aa8cdf]   -> Indexes created for `conversion`
+[2025-06-26 13:59:14] [INFO] [28aa8cdf]   -> Foreign keys added for `conversion`
+[2025-06-26 13:59:14] [INFO] [28aa8cdf] - Dropping `teachers` if exists
+[2025-06-26 13:59:14] [INFO] [28aa8cdf] - Created table `teachers`
+[2025-06-26 13:59:14] [INFO] [28aa8cdf] - Loaded data into `teachers`
+[2025-06-26 13:59:14] [INFO] [28aa8cdf]   -> Indexes created for `teachers`
+[2025-06-26 13:59:14] [INFO] [28aa8cdf]   -> Foreign keys added for `teachers`
+[2025-06-26 13:59:14] [INFO] [28aa8cdf] - Dropping `courses` if exists
+[2025-06-26 13:59:14] [INFO] [28aa8cdf] - Created table `courses`
+[2025-06-26 13:59:14] [INFO] [28aa8cdf] - Loaded data into `courses`
+[2025-06-26 13:59:14] [INFO] [28aa8cdf]   -> Indexes created for `courses`
+[2025-06-26 13:59:14] [INFO] [28aa8cdf]   -> Foreign keys added for `courses`
+[2025-06-26 13:59:14] [INFO] [28aa8cdf] - Dropping `students` if exists
+[2025-06-26 13:59:14] [INFO] [28aa8cdf] - Created table `students`
+[2025-06-26 13:59:14] [INFO] [28aa8cdf] - Loaded data into `students`
+[2025-06-26 13:59:14] [INFO] [28aa8cdf] - Creating index `student_class` on `students`
+[2025-06-26 13:59:14] [INFO] [28aa8cdf] Created index `student_class` on `students`
+[2025-06-26 13:59:14] [INFO] [28aa8cdf]   -> Indexes created for `students`
+[2025-06-26 13:59:14] [INFO] [28aa8cdf]   -> Foreign keys added for `students`
+[2025-06-26 13:59:14] [INFO] [28aa8cdf]  ✅ Export complete: 4 tables exported, 0 skipped
+[2025-06-26 13:59:14] [INFO] [28aa8cdf] === Tables exported: 4; skipped: 0 ===
+
+[2025-06-26 13:59:14] [INFO] [28aa8cdf] === Section: Export Triggers ===
+[2025-06-26 13:59:14] [INFO] [28aa8cdf] === ✅ Triggers exported: 3; errors: 0 ===
+
+[2025-06-26 13:59:14] [INFO] [28aa8cdf] API `/export/` succeeded: exported_tables={'teachers', 'students', 'courses', 'conversion'}, exported_triggers=['trg_students_audit_insert_insert', 'trg_students_audit_update_update', 'trg_students_audit_delete_delete']

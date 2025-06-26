@@ -20,6 +20,7 @@ def run_query(query, db_type, db_name=None, check_connection_status=False):
                 return results
         except Exception as e:
             print(f"Exception occurred while running query: {query}, {str(e)}")
+            logger.error("Exception while running query '%s' on %s/%s: %s",query, db_type, db_name, e, exc_info=True)
     return []
 
 
@@ -31,6 +32,7 @@ def get_db_inspector(db_type, db_name):
         return inspector
     except Exception as e:
         print(f"Error occurred while creating the inspector")
+        logger.error("Error creating inspector for %s/%s: %s", db_type, db_name, e, exc_info=True)
     return None
 
 
@@ -51,11 +53,11 @@ def get_table_names(db_type, db_name):
     inspector = get_db_inspector(db_type, db_name)
     table_names = []
     try:
-        if inspector is not None:
-            table_names = inspector.get_table_names()
+        return inspector.get_table_names() if inspector else []
     except Exception as e:
         print(f"Error occurred while retrieving table names: {str(e)}")
-    return table_names
+        logger.error("Error retrieving table names for %s/%s: %s", db_type, db_name, e, exc_info=True)
+    return []
 
 
 
@@ -102,8 +104,10 @@ def get_column_info(db_type, db_name, table_name):
         return processed_columns
 
     except NoSuchTableError:
+        logger.error("Table '%s' does not exist in %s/%s",table_name, db_type, db_name)
         raise ValueError(f"Table '{table_name}' does not exist.")
     except SQLAlchemyError as e:
+        logger.error("Error accessing columns of %s/%s.%s: %s",db_type, db_name, table_name, e, exc_info=True)
         raise RuntimeError(f"Error accessing columns: {str(e)}")
 
 
@@ -113,20 +117,20 @@ def get_indexes_info(db_type, db_name, table_name):
     processed_indexes = []
 
     try:
-        if inspector is not None:
+        if inspector:
             indexes = inspector.get_indexes(table_name)
             for index in indexes:
-                index_info = {
+                processed_indexes.append({
                     "name": index.get("name"),
                     "column_names": index.get("column_names", []),
                     "unique": index.get("unique", False),
-                }
-                processed_indexes.append(index_info)
+                })
         return processed_indexes
-
     except NoSuchTableError:
+        logger.error("Table '%s' does not exist for indexes in %s/%s",table_name, db_type, db_name)
         raise ValueError(f"Table '{table_name}' does not exist.")
     except SQLAlchemyError as e:
+        logger.error("Error accessing indexes of %s/%s.%s: %s",db_type, db_name, table_name, e, exc_info=True)
         raise RuntimeError(f"Error accessing columns: {str(e)}")
 
 
@@ -137,6 +141,7 @@ def get_foreign_keys(db_type, db_name, table_name):
     try:
         foreign_keys = inspector.get_foreign_keys(table_name)
     except (NoSuchTableError, SQLAlchemyError) as e:
+        logger.error("Could not retrieve foreign keys for %s/%s.%s: %s", db_type, db_name, table_name, e, exc_info=True)
         raise RuntimeError(f"Could not retrieve FKs for {table_name}: {e}")
     processed = []
     for fkey in foreign_keys:
@@ -152,11 +157,9 @@ def get_foreign_keys(db_type, db_name, table_name):
 
 
 def get_table_schema(db_type, db_name, table_name):
-    processed_columns = get_column_info(db_type, db_name, table_name)
-    processed_indexes = get_indexes_info(db_type, db_name, table_name)
     return {
-        "column_data": processed_columns,
-        "Index_data": processed_indexes,
+        "column_data": get_column_info(db_type, db_name, table_name),
+        "Index_data": get_indexes_info(db_type, db_name, table_name),
         "ForeignKey_data": get_foreign_keys(db_type, db_name, table_name),
     }
 
@@ -196,39 +199,45 @@ def get_table_ddl(db_type, db_name, table_name):
 
 
 def get_triggers_for_table(db_type, db_name, table_name):
-    if db_type == "postgresql":
-        query = f"""
-        SELECT
-            trigger_name    AS name,
-            action_timing   AS timing,
-            event_manipulation AS event,
-            action_statement   AS statement
-        FROM information_schema.triggers
-        WHERE trigger_schema = 'public'
-        AND event_object_table = '{table_name}'; 
-        """
-    elif db_type == "mysql":
-        query = f"""
+    try:
+        if db_type == "postgresql":
+            query = f"""
             SELECT
-            TRIGGER_NAME    AS name,
-            ACTION_TIMING   AS timing,
-            EVENT_MANIPULATION AS event,
-            ACTION_STATEMENT   AS statement
-        FROM information_schema.triggers
-        WHERE trigger_schema = '{db_name}'  -- Using parameterized query for database name
-        AND event_object_table = '{table_name}';
-        """
-        
-    results = run_query(query, db_type, db_name)
-    return [
-        {
-            "name": row.name,
-            "timing": row.timing,
-            "event": row.event,
-            "statement": row.statement.strip()
-        }
-        for row in results
-    ]
+                trigger_name    AS name,
+                action_timing   AS timing,
+                event_manipulation AS event,
+                action_statement   AS statement
+            FROM information_schema.triggers
+            WHERE trigger_schema = 'public'
+            AND event_object_table = '{table_name}'; 
+            """
+        elif db_type == "mysql":
+            query = f"""
+                SELECT
+                TRIGGER_NAME    AS name,
+                ACTION_TIMING   AS timing,
+                EVENT_MANIPULATION AS event,
+                ACTION_STATEMENT   AS statement
+            FROM information_schema.triggers
+            WHERE trigger_schema = '{db_name}'  
+            AND event_object_table = '{table_name}';
+            """
+            
+        results = run_query(query, db_type, db_name)
+        return [
+            {
+                "name": row.name,
+                "timing": row.timing,
+                "event": row.event,
+                "statement": row.statement.strip()
+            }
+            for row in results
+        ]
+    except Exception as e:
+        logger.error("Error retrieving triggers for %s/%s.%s: %s",
+                     db_type, db_name, table_name, e, exc_info=True)
+        return []
+
 
 
 def load_data_to_table(db_type, db_name, table_name, df, dtype_map, if_exists="replace"):
@@ -240,6 +249,7 @@ def load_data_to_table(db_type, db_name, table_name, df, dtype_map, if_exists="r
         df.to_sql(table_name, engine, if_exists=if_exists, index=False, dtype=dtype_map)
         return True
     except Exception as e:
+        logger.error("Error loading DataFrame into %s/%s.%s: %s", db_type, db_name, table_name, e, exc_info=True)
         print(f"Error occurred while loading data: {str(e)}")
         return False
 
@@ -308,66 +318,68 @@ def export_tables(source, target):
 
     for table in source_tables:
         t0 = time.time()
+        try:
+            # Section 1: Dropping and Creating Table
+            logger.info(f"- Dropping `{table}` if exists")
+            run_query(f"DROP TABLE IF EXISTS `{table}`;", target["db_type"], target["db_name"])
 
-        # Section 1: Dropping and Creating Table
-        logger.info(f"- Dropping `{table}` if exists")
-        run_query(f"DROP TABLE IF EXISTS `{table}`;", target["db_type"], target["db_name"])
+            data = run_query(f"SELECT * FROM {table};", source["db_type"], source["db_name"])
+            if not data:
+                skipped.add(table)
+                t1 = time.time()
+                table_durations[table] = t1 - t0
+                continue
 
-        data = run_query(f"SELECT * FROM {table};", source["db_type"], source["db_name"])
-        if not data:
-            skipped.add(table)
-            t1 = time.time()
-            table_durations[table] = t1 - t0
-            continue
+            ddl = get_table_ddl(source["db_type"], source["db_name"], table)
+            logger.debug(f"  DDL for `{table}`: {ddl}")
+            if not run_query(ddl, target["db_type"], target["db_name"]):
+                skipped.add(table)
+                t1 = time.time()
+                table_durations[table] = t1 - t0
+                continue
+            logger.info(f"- Created table `{table}`")
 
-        ddl = get_table_ddl(source["db_type"], source["db_name"], table)
-        logger.debug(f"  DDL for `{table}`: {ddl}")
-        if not run_query(ddl, target["db_type"], target["db_name"]):
-            skipped.add(table)
-            t1 = time.time()
-            table_durations[table] = t1 - t0
-            continue
-        logger.info(f"- Created table `{table}`")
+            # Section 2: Loading Data
+            cols = [each_col["name"] for each_col in get_column_info(target["db_type"], target["db_name"], table)]
+            df = pd.DataFrame(run_query(f"SELECT * FROM {table};", source["db_type"], source["db_name"]),columns=cols)
 
-        # Section 2: Loading Data
-        cols = [each_col["name"] for each_col in get_column_info(target["db_type"], target["db_name"], table)]
-        df = pd.DataFrame(run_query(f"SELECT * FROM {table};", source["db_type"], source["db_name"]),columns=cols)
-
-        success = load_data_to_table(
-            target["db_type"],
-            target["db_name"],
-            table,
-            df,
-            {c["name"]: c["type"] for c in get_column_info(target["db_type"], target["db_name"], table)},
-            if_exists="append"
-        )
-
-        if not success:
-            skipped.add(table)
-            t1 = time.time()
-            table_durations[table] = t1 - t0
-            continue
-        logger.info(f"- Loaded data into `{table}`")
-
-        # Section 3: Creating Indexes
-        for idx in get_indexes_info(source["db_type"], source["db_name"], table):
-            logger.info(f"- Creating index `{idx['name']}` on `{table}`")
-            create_index_during_export(
-                target,
-                get_column_info(target["db_type"], target["db_name"], table),
-                [idx],
+            success = load_data_to_table(
+                target["db_type"],
+                target["db_name"],
                 table,
-                skipped
+                df,
+                {c["name"]: c["type"] for c in get_column_info(target["db_type"], target["db_name"], table)},
+                if_exists="append"
             )
-        logger.info(f"  -> Indexes created for `{table}`")
 
-        # Section 4: Foreign Keys
-        create_foreign_keys_export(source, target, table)
-        logger.info(f"  -> Foreign keys added for `{table}`")
+            if not success:
+                skipped.add(table)
+                t1 = time.time()
+                table_durations[table] = t1 - t0
+                continue
+            logger.info(f"- Loaded data into `{table}`")
 
-        t1 = time.time()
-        table_durations[table] = t1 - t0
-        exported.add(table)
+            # Section 3: Creating Indexes
+            for idx in get_indexes_info(source["db_type"], source["db_name"], table):
+                logger.info(f"- Creating index `{idx['name']}` on `{table}`")
+                create_index_during_export(
+                    target,
+                    get_column_info(target["db_type"], target["db_name"], table),
+                    [idx],
+                    table,
+                    skipped
+                )
+            logger.info(f"  -> Indexes created for `{table}`")
+
+            # Section 4: Foreign Keys
+            create_foreign_keys_export(source, target, table)
+            logger.info(f"  -> Foreign keys added for `{table}`")
+            exported.add(table)
+        except Exception as e:
+            logger.error("Error exporting table `%s`: %s", table, e, exc_info=True)
+            skipped.add(table)
+        finally:
+            table_durations[table] = time.time() - t0
 
     logger.info(f" ✅ Export complete: {len(exported)} tables exported, {len(skipped)} skipped")
     return exported, skipped, table_durations
@@ -375,13 +387,18 @@ def export_tables(source, target):
 
 
 def get_source_triggers(db_type, db_name, table_name):
-    sql = f"""
-    SELECT trigger_name, action_timing, event_manipulation, action_statement
-      FROM information_schema.triggers
-     WHERE event_object_table = '{table_name}'
-       AND trigger_schema      = 'public';
-    """
-    return run_query(sql, db_type, db_name)
+    try:
+        sql = f"""
+        SELECT trigger_name, action_timing, event_manipulation, action_statement
+        FROM information_schema.triggers
+        WHERE event_object_table = '{table_name}'
+        AND trigger_schema      = 'public';
+        """
+        return run_query(sql, db_type, db_name)
+    except Exception as e:
+        logger.error("Error fetching source triggers for %s/%s.%s: %s", db_type, db_name, table_name, e, exc_info=True)
+        return []
+
 
 
 def fetch_function_definition(function_name, db_type, db_name):
@@ -415,6 +432,7 @@ def trigger_body_definition(definition, event):
         raise ValueError(f"Unsupported event type: {event}")
     match = re.search(pattern, definition, re.S | re.I)
     if not match:
+        logger.error("Could not extract trigger body for %s", event)
         raise ValueError(f"Could not extract body for {event}")
 
     body = match.group(1)
@@ -424,25 +442,26 @@ def trigger_body_definition(definition, event):
 
 
 def trigger_body_to_sql(body_sql, column_names, event):
-    body_sql = re.sub(r"RAISE\s+(?:NOTICE|LOG|INFO)\b.*?;\s*", "", body_sql, flags=re.I | re.S).strip()
-    body_sql = re.sub(r"\n\s*\n+", "\n", body_sql)
+    try:
+        body_sql = re.sub(r"RAISE\s+(?:NOTICE|LOG|INFO)\b.*?;\s*", "", body_sql, flags=re.I | re.S).strip()
+        body_sql = re.sub(r"\n\s*\n+", "\n", body_sql)
 
-    def build_json(alias: str) -> str:
-        pairs = ", ".join(f"'{col}', {alias}.{col}" for col in column_names)
-        return f"JSON_OBJECT({pairs})"
+        def build_json(alias: str) -> str:
+            pairs = ", ".join(f"'{col}', {alias}.{col}" for col in column_names)
+            return f"JSON_OBJECT({pairs})"
 
-    sql = body_sql.replace("TG_OP", f"'{event.upper()}'")
-    sql = re.sub(r"\bto_jsonb\s*\(\s*NEW\s*\)", build_json("NEW"), sql, flags=re.I)
-    sql = re.sub(r"\bto_jsonb\s*\(\s*OLD\s*\)", build_json("OLD"), sql, flags=re.I)
-    return sql
+        sql = body_sql.replace("TG_OP", f"'{event.upper()}'")
+        sql = re.sub(r"\bto_jsonb\s*\(\s*NEW\s*\)", build_json("NEW"), sql, flags=re.I)
+        sql = re.sub(r"\bto_jsonb\s*\(\s*OLD\s*\)", build_json("OLD"), sql, flags=re.I)
+        return sql
+    except Exception as e:
+        logger.error("Error converting trigger body to SQL for %s: %s", event, e, exc_info=True)
+        raise
 
 
 def generate_mysql_trigger_ddl(trigger_name, timing, event, table_name, body_sql):
     cleaned = re.sub(r"RAISE\s+(?:NOTICE|LOG|INFO)\b.*?;\s*", "", body_sql, flags=re.I | re.S).strip()
-    
-    if not cleaned:
-        cleaned = "-- no operation"
-
+    cleaned = cleaned or "-- no operation"
     return f"""
     CREATE TRIGGER `{trigger_name}`
     {timing.upper()} {event.upper()} ON `{table_name}`
@@ -496,5 +515,6 @@ def export_triggers(source, target):
 
                 exported.append(trigger_name)
         except Exception as e:
+            logger.error("Error exporting trigger for table %s: %s", table, e, exc_info=True)
             errors.append({"table": table, "error": str(e)})
     return {"exported": exported, "errors": errors}

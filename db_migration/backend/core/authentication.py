@@ -1,6 +1,7 @@
 from pathlib import Path
 from dotenv import load_dotenv
-import os, re
+import os
+import re
 from datetime import datetime, timedelta
 import jwt
 from passlib.context import CryptContext
