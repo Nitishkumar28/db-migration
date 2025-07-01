@@ -79,7 +79,7 @@ const DetailsBlock = ({ db_type, title }) => {
       className="relative w-[70%] max-w-6xl h-auto bg-gradient-to-tr from-sky-50 via-white to-sky-50  border border-sky-200 rounded-xl shadow-lg py-7 px-6 bg-white flex flex-col gap-4"
     >
       <Legend title={title} />
-      <div className="w-full flex flex-col justify-between gap-3">
+      <div className="flex flex-col justify-between w-full gap-3">
         <Row
           db_type={db_type}
           fields={[
@@ -108,11 +108,11 @@ const DetailsBlock = ({ db_type, title }) => {
         <BaseButton
           onClick={handlePost}
           text={posting ? "Checking..." : "Check Connection"}
-          className="border-none rounded-lg px-2 bg-[#D5E8EC] hover:opacity-80 text-[#03729A]"
+          className="rounded-lg px-2 border border-sky-500 hover:opacity-80 text-[#03729A]"
         />
         <button
           onClick={handleReset}
-          className="text-xs text-sky-700 underline underline-offset-2 hover:text-blue-900"
+          className="text-xs underline text-sky-700 underline-offset-2 hover:text-blue-900"
         >
           Reset Details
         </button>

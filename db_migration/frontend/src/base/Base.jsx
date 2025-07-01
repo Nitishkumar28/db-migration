@@ -84,11 +84,11 @@ const BaseButton = ({ text, type, children, className = "", ...props }) => {
       {...props}
       style={{
         borderColor: themePalette[activeTheme].borderSecondary,
-        fontSize: header_sizes.normal,
+        // fontSize: header_sizes.normal,
       }}
       className={`min-w-20 px-1 py-1 border-gray-300 cursor-pointer capitalize hover:opacity-80 ${className}`}
     >
-      <div className="flex justify-center items-center gap-2">
+      <div className="flex items-center justify-center gap-2">
         <span>{text}</span>
         {children}
       </div>
