@@ -28,9 +28,16 @@ const HistoryCards = ({ onSelect }) => {
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
-    refetch();
-    setHistoryCards(history_cards);
-  }, [history_cards, setHistoryCards, exportFinalStatus]);
+    if (history_cards && history_cards.length > 0) {
+      setHistoryCards(history_cards);
+    }
+  }, [history_cards]);
+
+  useEffect(() => {
+    if (exportFinalStatus) {
+      refetch();
+    }
+  }, [exportFinalStatus]);
 
   const filteredCards = historyCardsLocal?.filter((card) => {
     const query = searchTerm.toLowerCase();
