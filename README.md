@@ -26,6 +26,10 @@ http://127.0.0.1:8000/api/migration-history/create
 http://127.0.0.1:8000/api/migration-history/{job_id}
 http://127.0.0.1:8000/api/get-stats
 
+
+Login ->  http://127.0.0.1:8000/api/login
+Signup ->  http://127.0.0.1:8000/api/signup
+
 TODO:
 
 1) check_connection() testing -  Done
