@@ -1,4 +1,5 @@
 from sqlalchemy import column
+
 from sqlalchemy.dialects.postgresql import (
     UUID as PostGre_UUID,
     VARCHAR as PostGre_VARCHAR,

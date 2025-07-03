@@ -1,12 +1,11 @@
 import pandas as pd
+import re
+import json
+import time
 from sqlalchemy import inspect, text
 from sqlalchemy.exc import NoSuchTableError, SQLAlchemyError
 from sqlalchemy.engine import CursorResult
 from core.logging import logger
-import re
-import json
-import time
-
 from core.db.db_connect import get_db_engine
 from core.process import PostgresToMySQLDataTypeAdapter
 

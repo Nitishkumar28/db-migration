@@ -4,6 +4,16 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 import time
+from core.database import get_db
+from core.stats import collect_combined_stats, validate_export_success
+from core.models import MigrationHistory, TestModel
+from core.logging import logger, RUN_ID, get_next_log_counter
+from datetime import datetime
+from core.db.db_connect import get_db_engine
+from core.secret_manager import set_db_secrets_for_db, get_secret
+from core.schemas import SignUpRequest, LoginRequest, TokenRequest
+from core.signup import register_user, authenticate_user
+from core.authentication import get_current_user, ACCESS_TOKEN_EXPIRE_MINUTES
 
 from core.db.db_utils import (
     get_databases,
@@ -18,9 +28,6 @@ from core.db.db_utils import (
     run_query
     )
 
-
-from core.database import get_db
-from core.stats import collect_combined_stats, validate_export_success
 from core.data import (
     DBInfo,
     ExportRequest,
@@ -32,7 +39,7 @@ from core.data import (
     MigrationHistoryItemSchema,
     TestModelSchema
     )
-from core.models import MigrationHistory, TestModel
+
 from core.views import (
     create_initial_job,
     get_migration_for_jobid,
@@ -43,22 +50,12 @@ from core.views import (
     create_history_item,
     delete_history_for_jobid,
     delete_history_item,
-
     drop_table
     )
 
-from core.logging import logger, RUN_ID, get_next_log_counter
-from datetime import datetime
-from core.db.db_connect import get_db_engine
-from core.secret_manager import set_db_secrets_for_db, get_secret
-
-from core.schemas import SignUpRequest, LoginRequest, TokenRequest
-from core.signup import register_user, authenticate_user
-from core.authentication import get_current_user, ACCESS_TOKEN_EXPIRE_MINUTES
-
 router = APIRouter()
 
-@router.get("/")
+@router.get("/", dependencies=[Depends(get_current_user)])
 def load_homepage():
     try:
         return {"result": "data"}
@@ -66,11 +63,12 @@ def load_homepage():
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
 
 
-@router.get("/test")
+@router.get("/test", dependencies=[Depends(get_current_user)])
 def get_data(db: Session = Depends(get_db)):
     return db.query(TestModel).all()
 
-@router.post("/test")
+
+@router.post("/test", dependencies=[Depends(get_current_user)])
 def create_data(request: TestModelSchema, db: Session = Depends(get_db)):
     new_data = TestModel(**dict(request))
     db.add(new_data)
@@ -78,7 +76,8 @@ def create_data(request: TestModelSchema, db: Session = Depends(get_db)):
     db.refresh(new_data)
     return new_data
 
-@router.patch("/test")
+
+@router.patch("/test", dependencies=[Depends(get_current_user)])
 def update_data(request: TestModelSchema, db: Session = Depends(get_db)):
     db_obj = db.query(TestModel).filter_by(id=request.id).first()
 
@@ -92,7 +91,8 @@ def update_data(request: TestModelSchema, db: Session = Depends(get_db)):
     db.refresh(db_obj)
     return db_obj
 
-@router.delete("/test/{id}")
+
+@router.delete("/test/{id}", dependencies=[Depends(get_current_user)])
 def delete_data(id, db: Session = Depends(get_db)):
     db_obj = db.query(TestModel).filter_by(id=id).first()
     if db_obj:
@@ -101,12 +101,8 @@ def delete_data(id, db: Session = Depends(get_db)):
         print("deleted")
     return
 
-        
 
-
-
-
-@router.post("/check-connection/")
+@router.post("/check-connection/", dependencies=[Depends(get_current_user)])
 def check_connection(request: DBInfo):
     try:
         print(request)
@@ -130,7 +126,7 @@ def check_connection(request: DBInfo):
         raise HTTPException(status_code=500, detail=f"Connection check failed: {e}")
 
 
-@router.get("/databases/{db_type}")
+@router.get("/databases/{db_type}", dependencies=[Depends(get_current_user)])
 def fetch_databases(db_type):
     try:
         databases = get_databases(db_type)
@@ -138,7 +134,8 @@ def fetch_databases(db_type):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching databases: {e}")
 
-@router.get("/tables/{db_type}/{db_name}")
+
+@router.get("/tables/{db_type}/{db_name}", dependencies=[Depends(get_current_user)])
 def fetch_table_names_from_db(db_type, db_name):
     try:
         table_names = get_table_names(db_type, db_name)
@@ -149,7 +146,7 @@ def fetch_table_names_from_db(db_type, db_name):
         raise HTTPException(status_code=500, detail=f"Error fetching tables: {e}")
 
 
-@router.delete("/tables/{db_type}/{db_name}/{table_name}")
+@router.delete("/tables/{db_type}/{db_name}/{table_name}", dependencies=[Depends(get_current_user)])
 def remove_table(db_type, db_name, table_name):
     logger.info("=== Section: Deleting Tables ===")
     try:
@@ -161,7 +158,8 @@ def remove_table(db_type, db_name, table_name):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error deleting table '{table_name}': {e}")
 
-@router.delete("/tables/{db_type}/{db_name}")
+
+@router.delete("/tables/{db_type}/{db_name}", dependencies=[Depends(get_current_user)])
 def remove_tables(db_type, db_name):
     logger.info("=== Section: Deleting All Tables ===")
     try:
@@ -173,7 +171,8 @@ def remove_tables(db_type, db_name):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error deleting tables from {db_type}:{db_name}: {e}")
 
-@router.get("/indexes/{db_type}/{db_name}/{table_name}")
+
+@router.get("/indexes/{db_type}/{db_name}/{table_name}", dependencies=[Depends(get_current_user)])
 def fetch_indexes_for_table(db_type, db_name, table_name):
     try:
         indexes = get_indexes_info(db_type, db_name, table_name)
@@ -181,7 +180,8 @@ def fetch_indexes_for_table(db_type, db_name, table_name):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching indexes: {e}")
 
-@router.get("/schema/{db_type}/{db_name}/{table_name}")
+
+@router.get("/schema/{db_type}/{db_name}/{table_name}", dependencies=[Depends(get_current_user)])
 def fetch_table_schema(db_type, db_name, table_name):
     try:
         schema = get_table_schema(db_type, db_name, table_name)
@@ -189,7 +189,8 @@ def fetch_table_schema(db_type, db_name, table_name):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching schema: {e}")
 
-@router.get("/schema-ddl/{db_type}/{db_name}/{table_name}")
+
+@router.get("/schema-ddl/{db_type}/{db_name}/{table_name}", dependencies=[Depends(get_current_user)])
 def fetch_table_ddl(db_type, db_name, table_name):
     try:
         table_ddl = get_table_ddl(db_type, db_name, table_name)
@@ -198,7 +199,7 @@ def fetch_table_ddl(db_type, db_name, table_name):
         raise HTTPException(status_code=500, detail=f"Error fetching DDL: {e}")
     
 
-@router.get("/triggers/{db_type}/{db_name}/{table_name}")
+@router.get("/triggers/{db_type}/{db_name}/{table_name}", dependencies=[Depends(get_current_user)])
 def fetch_triggers(db_type, db_name, table_name):
     try:
         trigger_data_for_table = get_triggers_for_table(db_type, db_name, table_name)
@@ -208,8 +209,17 @@ def fetch_triggers(db_type, db_name, table_name):
 
 
 @router.post("/signup", response_model=TokenRequest)
-def signup(data: SignUpRequest, db: Session = Depends(get_db)):
+def signup(data: SignUpRequest, response: Response, db: Session = Depends(get_db)):
     token = register_user(data, db)
+    response.set_cookie(
+        key="access_token",
+        value=token,
+        httponly=True,
+        secure=False,      
+        samesite="none",
+        max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+        path="/"
+    )
     return {"access_token": token, "token_type": "bearer"}
 
 @router.post("/login", response_model=TokenRequest)
@@ -218,16 +228,16 @@ def login(data: LoginRequest, response: Response, db: Session = Depends(get_db))
     response.set_cookie(
         key="access_token",
         value=token,
-        httponly=True,                 
-        secure=False,                  
-        samesite="none",                
+        httponly=True,
+        secure=False,
+        samesite="none",
         max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
-        path="/" # cookies enabled for all paths
+        path="/"
     )
     return {"access_token": token, "token_type": "bearer"}
 
 
-@router.post("/export/")
+@router.post("/export/", dependencies=[Depends(get_current_user)])
 def export_feature(request: ExportRequest, db: Session = Depends(get_db)):
     """
     Request Body:
@@ -313,7 +323,7 @@ def export_feature(request: ExportRequest, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=f"Error exporting tables: {e}")
 
 
-@router.post("/get-stats/")
+@router.post("/get-stats/", dependencies=[Depends(get_current_user)])
 def stats_display(request: StatRequest, db: Session = Depends(get_db)):
     source_details = dict(request.source)
     target_details = dict(request.target)
@@ -340,33 +350,37 @@ def stats_display(request: StatRequest, db: Session = Depends(get_db)):
     return { "result": stats }
 
 
-@router.post("/migration-history/create", response_model=MigrationHistorySchemaBrief)
+@router.post("/migration-history/create", response_model=MigrationHistorySchemaBrief, dependencies=[Depends(get_current_user)])
 def create_migration(history: MigrationHistorySchemaBriefInput, db: Session = Depends(get_db)):
     created_obj = create_initial_job(history, db)
     return created_obj
 
-@router.patch("/migration-history/{job_id}", response_model=MigrationHistoryUpdateSchema)
+
+@router.patch("/migration-history/{job_id}", response_model=MigrationHistoryUpdateSchema, dependencies=[Depends(get_current_user)])
 def update_migration(job_id, history_update: MigrationHistoryUpdateSchema, db: Session = Depends(get_db)):
     result = update_migration_data(job_id, history_update, db)
     return result
 
-@router.get("/migration-history/{job_id}")
+
+@router.patch("/migration-history/{job_id}", response_model=MigrationHistoryUpdateSchema, dependencies=[Depends(get_current_user)])
 def get_migration(job_id: int, db: Session = Depends(get_db)):
     data = get_migration_for_jobid(job_id, db)
     if data is None:
         raise HTTPException(status_code=404, detail="Job not found")
     return data
 
-@router.get("/migration-history/", response_model=List[MigrationHistorySchema])
+
+@router.get("/migration-history/", response_model=List[MigrationHistorySchema], dependencies=[Depends(get_current_user)])
 def get_migrations(db: Session = Depends(get_db)):
     return get_full_history(db)
 
-@router.get("/migration-history/brief/", response_model=List[MigrationHistorySchemaBrief])
+
+@router.get("/migration-history/brief/", response_model=List[MigrationHistorySchemaBrief], dependencies=[Depends(get_current_user)])
 def get_migrations_brief(db: Session = Depends(get_db)):
     return get_full_history_brief(db)
 
 
-@router.delete("/migration-history/{job_id}", status_code=204)
+@router.delete("/migration-history/{job_id}", status_code=204, dependencies=[Depends(get_current_user)])
 def delete_migration(job_id: int, db: Session = Depends(get_db)):
     db_obj = db.query(MigrationHistory).filter_by(job_id=job_id).first()
 
@@ -379,15 +393,15 @@ def delete_migration(job_id: int, db: Session = Depends(get_db)):
 
 # History Items
 
-@router.get("/migration-history-items/", response_model=List[MigrationHistoryItemSchema])
+@router.get("/migration-history-items/", response_model=List[MigrationHistoryItemSchema], dependencies=[Depends(get_current_user)])
 def get_migration_items(db: Session = Depends(get_db)):
     return get_full_history_items(db)
 
 
-@router.post("/migration-history-items/create", response_model=MigrationHistoryItemSchema)
+
+@router.post("/migration-history-items/create", response_model=MigrationHistoryItemSchema, dependencies=[Depends(get_current_user)])
 def post_migration_items(item_obj: MigrationHistoryItemSchema, db: Session = Depends(get_db)):
     return create_history_item(item_obj, db)
-
 
 # @router.delete("/migration-history-items/", status_code=204)
 # def delete_migration():
@@ -395,7 +409,8 @@ def post_migration_items(item_obj: MigrationHistoryItemSchema, db: Session = Dep
 #     drop_table("history_item")
 #     return "dropped"
 
-@router.post("/validate/")
+
+@router.post("/migration-history-items/create", response_model=MigrationHistoryItemSchema, dependencies=[Depends(get_current_user)])
 def validate_stats_data(request: ExportRequest, db: Session = Depends(get_db)):
     job_id = request.job_id
     source_details = dict(request.source)

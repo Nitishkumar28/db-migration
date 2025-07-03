@@ -5,7 +5,7 @@ import re
 from datetime import datetime, timedelta
 import jwt
 from passlib.context import CryptContext
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Cookie
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from core.database import get_db
@@ -46,20 +46,22 @@ def create_session_token(token_target):
 
 
 def verify_session_token(token):
-    verify_token = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-    return verify_token.get("sub")
-
-
-def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     try:
-        username = verify_session_token(token)
-        if not username:
-            raise HTTPException(status_code=401, detail="Invalid token")
+        token_dec = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
     except jwt.PyJWTError:
         raise HTTPException(status_code=401, detail="Could not validate credentials")
-    
-    user = db.query(LoginUser).filter(LoginUser.username == username).first()
+
+    email = token_dec.get("sub")
+    if email is None:
+        raise HTTPException(status_code=401, detail="Invalid token payload")
+    return email
+
+
+def get_current_user(access_token: str = Cookie(None), db: Session = Depends(get_db)):
+    if not access_token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    email = verify_session_token(access_token)
+    user  = db.query(LoginUser).filter(LoginUser.email == email).first()
     if not user:
         raise HTTPException(status_code=401, detail="User not found")
-    
     return user

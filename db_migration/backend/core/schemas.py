@@ -4,7 +4,6 @@ class SignUpRequest(BaseModel):
     first_name: constr(min_length=1)
     last_name:  constr(min_length=1)
     email:      EmailStr
-    username:   constr(min_length=3)
     password:   constr(min_length=8)
     password_confirm: str
 
@@ -15,7 +14,7 @@ class SignUpRequest(BaseModel):
         return values
     
 class LoginRequest(BaseModel):
-    username_email: str   
+    email: EmailStr  
     password:   str
 
 class TokenRequest(BaseModel):
