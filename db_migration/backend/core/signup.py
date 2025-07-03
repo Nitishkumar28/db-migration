@@ -10,6 +10,13 @@ from core.authentication import (
 )
 
 def register_user(data, db: Session):
+    if data.password != data.password_confirm:
+        raise HTTPException(
+            status_code=400,
+            detail="Password and password confirmation do not match"
+        )
+    
+
     if not check_password_strength(data.password):
         raise HTTPException(
             status_code=400,
