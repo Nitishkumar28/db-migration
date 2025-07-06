@@ -7,6 +7,7 @@ import useDBStore from "../../../../store/dbStore";
 import { useFetch } from "../../../../hooks/useFetch";
 import { getHistoryForJobidAPI } from "../../../../hooks/urls";
 import { useEffect } from "react";
+import useDBStoreHistory from "../../../../store/dbStoreHistory";
 
 const GoBack = () => {
   const navigate = useNavigate();
@@ -27,7 +28,8 @@ const GoBack = () => {
 
 const SingleHistory = () => {
   const { job_id } = useParams();
-  const { selectedSource, selectedTarget, exportFinalStatus } = useDBStore();
+  const { selectedSource, selectedTarget } = useDBStore();
+  const { exportFinalStatus } = useDBStoreHistory();
   const {data: history_for_jobid, loading, error, refetch} = useFetch(job_id ? getHistoryForJobidAPI(job_id) : null);
   // const history_for_jobid = full_history.find(curr => curr.job_id === job_id);    // full_history from API
   useEffect(() => {
@@ -50,10 +52,10 @@ const SingleHistory = () => {
   }
 
   return (
-    <div className="w-full h-full flex flex-col justify-start items-start p-4 gap-y-4">
-      <div className="w-full flex justify-between items-center">
+    <div className="flex flex-col items-start justify-start w-full h-full p-4 gap-y-4">
+      <div className="flex items-center justify-between w-full">
         <GoBack />
-        <span className="font-semibold text-lg">Job ID: {job_id}</span>
+        <span className="font-semibold text-md">Job ID: {job_id}</span>
       </div>
 
       <ExportHeader

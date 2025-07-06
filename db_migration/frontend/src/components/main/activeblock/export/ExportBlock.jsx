@@ -6,8 +6,6 @@ import HistoryBlock from "../history/HistoryBlock";
 import ExportHeader from "./ExportHeader";
 
 
-
-
 const ExportBlock = () => {
   const { selectedSource, selectedTarget } = useDBStore();
   const { setPipelineOption } = useUIStore();
@@ -22,9 +20,9 @@ const ExportBlock = () => {
       style={{ fontSize: header_sizes.normal }}
       className="w-full h-full"
     >
-      <div className="w-full h-full flex flex-col justify-around items-center gap-4 py-2">
+      <div className="flex flex-col items-center justify-around w-full h-full gap-4 py-2">
         <ExportHeader selectedSource={selectedSource} selectedTarget={selectedTarget}   />
-        <div className="w-full h-full flex-1 border-t pt-4 px-2">
+        <div className="flex-1 w-full h-full px-2 pt-4 border-t">
           <HistoryBlock />
         </div>
       </div>

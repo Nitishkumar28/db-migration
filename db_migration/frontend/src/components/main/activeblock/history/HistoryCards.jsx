@@ -3,12 +3,12 @@ import { getDBIcon } from "../../../../base/Icons";
 import { handle_datetime } from "../../../../base/utils";
 import { getHistoryBriefAPI } from "../../../../hooks/urls";
 import { useFetch } from "../../../../hooks/useFetch";
-import useDBStore from "../../../../store/dbStore";
+import useDBStoreHistory from "../../../../store/dbStoreHistory";
 
 const statusColors = {
   failed: "bg-red-200 text-red-800",
   completed: "bg-green-200 text-green-800",
-  running: "bg-blue-200 text-blue-800",
+  "in progress": "bg-blue-200 text-blue-800",
 };
 
 export const MigrationStatusTag = ({ status }) => (
@@ -24,7 +24,7 @@ const HistoryCards = ({ onSelect }) => {
     setHistoryCards,
     exportFinalStatus,
     activeJobID,
-  } = useDBStore();
+  } = useDBStoreHistory();
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
@@ -54,13 +54,13 @@ const HistoryCards = ({ onSelect }) => {
   }
 
   return (
-    <div className="w-full flex flex-col gap-4">
-      <div className="w-full flex justify-between items-center">
-        <h2 className="text-base font-semibold text-gray-700 mb-3">History</h2>
+    <div className="flex flex-col w-full gap-4">
+      <div className="flex items-center justify-between w-full">
+        <h2 className="mb-3 text-base font-semibold text-gray-700">History</h2>
         <input
           type="text"
           placeholder="Search by job ID, DB name, or status"
-          className="px-3 py-2 border outline-none focus:border-sky-600 border-gray-400 rounded-md text-sm w-full max-w-sm"
+          className="w-full max-w-sm px-3 py-2 text-sm border border-gray-400 rounded-md outline-none focus:border-sky-600"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
@@ -73,8 +73,8 @@ const HistoryCards = ({ onSelect }) => {
             className="relative h-40 w-[250px] flex flex-col justify-between items-center p-2 bg-white border border-cyan-300 rounded-lg shadow cursor-pointer hover:shadow-md transition"
             onClick={() => onSelect(card.job_id)}
           >
-            <div className="w-full flex justify-between items-center mb-2">
-              <h3 className="leading-7 tracking-wider font-medium">
+            <div className="flex items-center justify-between w-full mb-2">
+              <h3 className="font-medium leading-7 tracking-wider">
                 Job ID: {card.job_id}
               </h3>
               <MigrationStatusTag
@@ -86,13 +86,13 @@ const HistoryCards = ({ onSelect }) => {
               />
             </div>
 
-            <div className="w-full flex justify-evenly items-center gap-2">
-              <div className="flex flex-col justify-start items-center">
+            <div className="flex items-center w-full gap-2 justify-evenly">
+              <div className="flex flex-col items-center justify-start">
                 {getDBIcon(card.source_db_type.toLowerCase(), 45)}
                 <span className="text-xs">{card.source_db_name}</span>
               </div>
               ➝
-              <div className="flex flex-col justify-start items-center">
+              <div className="flex flex-col items-center justify-start">
                 {getDBIcon(card.target_db_type.toLowerCase(), 45)}
                 <span className="text-xs">{card.target_db_name}</span>
               </div>

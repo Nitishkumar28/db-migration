@@ -13,30 +13,8 @@ const useDBStore = create(
       selectSourceDetails: {},
       selectTargetDetails: {},
 
-      exportFinalStatus: "running",
-      activeJobID: null,
-
       // All connection entries
       connectionDetails: initialConnections,
-
-      // Local history cards
-      historyCardsLocal: [],
-
-      // --- History actions ---
-      setHistoryCards: (cards) =>
-        set(() => ({
-          historyCardsLocal: cards,
-        })),
-
-      addNewHistoryCard: (card) =>
-        set((state) => ({
-          historyCardsLocal: [card, ...state.historyCardsLocal],
-        })),
-
-      setExportFinalStatus: (status) =>
-        set(() => ({ exportFinalStatus: status })),
-
-      setActiveJobID: (job_id) => set(() => ({ activeJobID: job_id })),
 
       // --- Selected source/target handlers ---
       setSelectedSource: (source) => set(() => ({ selectedSource: source })),

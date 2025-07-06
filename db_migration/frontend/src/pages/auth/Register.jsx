@@ -2,11 +2,16 @@ import { useState } from "react";
 import { BaseButton } from "../../base/Base";
 import { AuthFooter, AuthHeader, BasePage, InputDiv, StatusMessage } from "./Common";
 import { useNavigate } from "react-router-dom";
+import { registerAPI } from "../../hooks/urls";
+import useUserStore from "../../store/userStore";
+import { usePost } from "../../hooks/usePost";
 
 const RegisterForm = () => {
   const navigator = useNavigate();
+  const { setUserDetails } = useUserStore();
   const [form, setForm] = useState({
-    fullName: "",
+    firstName: "",
+    lastName: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -16,7 +21,8 @@ const RegisterForm = () => {
 
   const validate = () => {
     const newErrors = {};
-    if (!form.fullName.trim()) newErrors.fullName = "Full name is required";
+    if (!form.firstName.trim()) newErrors.firstName = "Firstname is required";
+    if (!form.lastName.trim()) newErrors.lastName = "Lastname is required";
     if (!form.email.includes("@")) newErrors.email = "Invalid email";
     if (form.password.length < 6)
       newErrors.password = "Password must be at least 6 characters";
@@ -25,29 +31,78 @@ const RegisterForm = () => {
     return newErrors;
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setSuccess("");
-    const validationErrors = validate();
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
-    } else {
-      setErrors({});
-      console.log("REGISTER:", form);
+  // const handleSubmit = (e) => {
+  //   e.preventDefault();
+  //   setSuccess("");
+  //   const validationErrors = validate();
+  //   if (Object.keys(validationErrors).length > 0) {
+  //     setErrors(validationErrors);
+  //   } else {
+  //     setErrors({});
+  //     console.log("REGISTER:", form);
+  //     setSuccess("Registered successfully!");
+  //     navigator("/home/connections");
+  //   }
+  // };
+
+const { post, data, loading, error } = usePost(registerAPI());
+
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setSuccess("");
+  const validationErrors = validate();
+
+  if (Object.keys(validationErrors).length > 0) {
+    setErrors(validationErrors);
+    return;
+  }
+
+  setErrors({});
+
+  try {
+    const payload = {
+      first_name: form.firstName,
+      last_name: form.lastName,
+      email: form.email,
+      password: form.password,
+      confirm_password: form.confirmPassword,
+    };
+
+    const result = await post(payload);
+    console.log("Server response:", result);
+
+    if (result && result.success) {
+      localStorage.setItem("is_logged", "true");
+      setUserDetails(result);
       setSuccess("Registered successfully!");
       navigator("/home/connections");
+    } else {
+      setErrors({ form: result?.message || "Registration failed" });
     }
-  };
+  } catch (err) {
+    console.error("Register error:", err);
+    setErrors({ form: "Something went wrong. Please try again." });
+  }
+};
+
 
   return (
     <BasePage onSubmit={handleSubmit}>
+      {errors && <span className="font-light text-red-500 capitalize">{errors.form}</span>}
       <AuthHeader text="Create Your Account" />
       <InputDiv
-        label="Full Name"
+        label="Firstname"
         form={form}
-        field="fullName"
+        field="firstName"
         setForm={setForm}
-        errors={errors.fullName}
+        errors={errors.firstName}
+      />
+      <InputDiv
+        label="Lastname"
+        form={form}
+        field="lastName"
+        setForm={setForm}
+        errors={errors.lastName}
       />
       <InputDiv
         label="Email"
@@ -73,12 +128,6 @@ const RegisterForm = () => {
         type="password"
       />
     <AuthFooter success={success} type="register" />
-      {/* <BaseButton
-        type="submit"
-        text="Register"
-        className="rounded-lg px-3 py-2 border border-sky-500 hover:opacity-80 text-[#03729A]"
-      />
-      {success && <StatusMessage type="success" message={success} />} */}
     </BasePage>
   );
 };

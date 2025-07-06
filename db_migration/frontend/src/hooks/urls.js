@@ -8,8 +8,14 @@ const BASE_URL = "http://localhost:8000/api";
 // http://127.0.0.1:8000/api/get-stats
 
 export const healthCheck = () => `${BASE_URL}/`;
+export const cookieTestAPI = () => `${BASE_URL}/test-cookie`;
 export const testAPI = () => `${BASE_URL}/test`;
 export const patchTestAPI = (id) => `${BASE_URL}/test/${id}`;
+
+export const loginAPI = () => `${BASE_URL}/login`;
+export const registerAPI = () => `${BASE_URL}/register`;
+export const userDetailsAPI = () => `${BASE_URL}/get-user`;
+
 export const checkConnectionAPI = () => `${BASE_URL}/check-connection`;
 export const exportAPI = () => `${BASE_URL}/export`;
 export const getStatsAPI = () => `${BASE_URL}/get-stats`;

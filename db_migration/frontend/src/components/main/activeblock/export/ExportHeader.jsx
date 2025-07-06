@@ -14,6 +14,7 @@ import {
 import { usePost } from "../../../../hooks/usePost";
 import { useFetch } from "../../../../hooks/useFetch";
 import { useParams } from "react-router-dom";
+import useDBStoreHistory from "../../../../store/dbStoreHistory";
 
 const ExportCard = ({ text, children }) => {
   const activeConnection = useDBStore((state) =>
@@ -22,10 +23,10 @@ const ExportCard = ({ text, children }) => {
 
   return (
     <div className="w-[20%] h-full flex flex-col justify-start items-start -space-y-1.5">
-      <span className="text-sm font-medium border border-gray-300 bg-white pb-0 px-2 ml-1 leading-7 tracking-wider">
+      <span className="px-2 pb-0 ml-1 text-sm font-medium leading-7 tracking-wider bg-white border border-gray-300">
         {text}
       </span>
-      <div className="w-full h-full flex flex-col justify-center items-center rounded border border-gray-300 bg-white">
+      <div className="flex flex-col items-center justify-center w-full h-full bg-white border border-gray-300 rounded">
         {activeConnection ? children : <span>No {text} is selected</span>}
       </div>
     </div>
@@ -43,7 +44,7 @@ const ExportHeader = ({
     setExportFinalStatus,
     exportFinalStatus,
     setActiveJobID,
-  } = useDBStore();
+  } = useDBStoreHistory();
   const shouldFetch = !!job_id;
   const {
     data: history_for_jobid,
@@ -56,7 +57,7 @@ const ExportHeader = ({
     if (history_for_jobid) {
       console.log("status changed");
       const currStatus =
-        shouldFetch && history_for_jobid ? history_for_jobid.status : "running";
+        shouldFetch && history_for_jobid ? history_for_jobid.status : "in progress";
       setExportFinalStatus(currStatus);
     }
   }, [shouldFetch, history_for_jobid]);
@@ -115,15 +116,18 @@ const ExportHeader = ({
       };
 
       const job = await initialPost(jobPayload);
-      console.log(`Job result: ${JSON.stringify(job)}`);
+
+      // console.log(`Job result: ${JSON.stringify(job)}`);
+
       if (!job?.job_id) throw new Error("Job creation failed");
 
       addNewHistoryCard(job);
+
       await delay(5000);
 
       setActiveJobID(job?.job_id);
 
-      console.log(`Job card ${job?.job_id} added!`);
+      // console.log(`Job card ${job?.job_id} added!`);
 
       const basePayload = {
         job_id: job.job_id,
@@ -144,18 +148,21 @@ const ExportHeader = ({
           db_type: targetDetails.db_type,
         },
       };
-      console.log(`export request body: ${JSON.stringify(basePayload)}`);
+
+      // console.log(`export request body: ${JSON.stringify(basePayload)}`);
+      
       const exportResult = await exportPost(basePayload);
-      console.log(`Export API called: ${exportResult}`);
+
+      console.log(`Export API called: ${exportResult} ${exportJobError}`);
 
       await delay(5000);
 
       await statsPost({ ...basePayload, durations: exportResult?.durations });
-      console.log(`Stat API called!`);
+      // console.log(`Stat API called!`);
       const validation = await validatePost(basePayload);
-      console.log(`Validation API called: ${validation}`);
+      // console.log(`Validation API called: ${validation}`);
       setExportFinalStatus(
-        exportJobError || statsJobError ? "failed" : validation
+        (exportJobError || statsJobError) ? "failed" : validation
       );
     } catch (error) {
       console.error("Export failed:", error);

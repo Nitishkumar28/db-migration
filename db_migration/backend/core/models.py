@@ -10,7 +10,7 @@ class MigrationHistory(Base):
     target_db_type = Column(String)
     source_db_name = Column(String)
     target_db_name = Column(String)
-    status = Column(String, default="running")
+    status = Column(String, default="in progress")
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     completed_at = Column(String)
     total_migration_time = Column(String)

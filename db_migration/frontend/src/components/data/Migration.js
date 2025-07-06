@@ -397,8 +397,8 @@ export const history_cards = [
 ];
 
 export const history_columns = [
-  { key: "id", label: "ID" },
-  { key: "name", label: "Name" },
+  // { key: "id", label: "ID" },
+  { key: "name", label: "Table Name" },
   { key: "source_total_rows", label: "Source Total Rows" },
   { key: "target_total_rows", label: "Target Total Rows" },
   { key: "index_validation", label: "Indexes" },

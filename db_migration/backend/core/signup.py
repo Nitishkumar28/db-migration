@@ -10,13 +10,13 @@ from core.authentication import (
 )
 
 def register_user(data, db: Session):
-    if data.password != data.password_confirm:
+    print("register")
+    if data.password != data.confirm_password:
         raise HTTPException(
             status_code=400,
             detail="Password and password confirmation do not match"
         )
     
-
     if not check_password_strength(data.password):
         raise HTTPException(
             status_code=400,
@@ -39,7 +39,7 @@ def register_user(data, db: Session):
     db.commit()
     db.refresh(user)
 
-    return create_session_token(user.email)
+    return create_session_token(user.email), f"{user.first_name} {user.last_name}", user.email
 
 
 def authenticate_user(data, db: Session):
@@ -48,4 +48,4 @@ def authenticate_user(data, db: Session):
     if not user or not verify_password_checker(data.password, user.hashed_password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
-    return create_session_token(user.email)
+    return create_session_token(user.email), f"{user.first_name} {user.last_name}", user.email

@@ -18,7 +18,7 @@ def create_job_record(db,source_db_type,source_db_name,target_db_type,target_db_
         source_db_name=source_db_name,
         target_db_type=target_db_type,
         target_db_name=target_db_name,
-        status="running",
+        status="in progress",
         created_at=now
     )
     db.add(job)

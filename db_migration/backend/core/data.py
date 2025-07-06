@@ -2,6 +2,27 @@ from pydantic import BaseModel
 from typing import List, Optional, Dict
 from datetime import datetime
 
+class SignUpRequest(BaseModel):
+    first_name: str
+    last_name: str
+    email: str
+    password: str
+    confirm_password: str
+    
+class LoginRequest(BaseModel):
+    email: str
+    password:   str
+
+class TokenRequest(BaseModel):
+    access_token: str
+    token_type:   str = "bearer"
+
+class UserDetails(BaseModel):
+    first_name: str
+    last_name: str
+    email: str
+    # is_active: Optional[str]
+
 class TableModel(BaseModel):
     db_name: str
     tables: List[str]

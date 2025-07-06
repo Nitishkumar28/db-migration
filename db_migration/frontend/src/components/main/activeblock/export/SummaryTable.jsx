@@ -41,12 +41,12 @@ const SummaryTable = ({ columns, data }) => {
   }, [filteredData, sortKey, sortAsc]);
 
   return (
-    <div className="w-full h-full overflow-x-auto rounded-md border-0 border-sky-300 shadow-sm bg-white">
+    <div className="w-full h-full overflow-x-auto text-[0.8rem] bg-white border-0 rounded-md shadow-sm border-sky-300">
       {/* Search Bar */}
-      <div className="p-2 flex justify-start items-center gap-10">
+      <div className="flex items-center justify-start gap-10 p-2">
         <div className="w-[30%] flex justify-start items-center divide-x divide-sky-800 gap-3">
-          <h2 className="w-full text-base font-semibold text-gray-700">Migration Summary</h2>
-          <h2 className="w-full text-base font-light text-gray-700">Total rows: {data.length}</h2>
+          <h2 className="w-full font-semibold text-gray-700">Migration Summary</h2>
+          <h2 className="w-full font-light text-gray-700">Total rows: {data.length}</h2>
         </div>
         <input
           type="text"
@@ -59,14 +59,14 @@ const SummaryTable = ({ columns, data }) => {
 
       {/* Table or Empty Message */}
       {sortedData.length !== 0 ? (
-        <table className="min-w-full divide-y divide-sky-200 text-sm">
+        <table className="min-w-full divide-y text-[0.72rem] divide-sky-200">
           <thead className="bg-sky-100">
             <tr>
               {columns.map((col) => (
                 <th
                   key={col.key}
                   onClick={() => handleSort(col.key)}
-                  className="px-4 py-2 text-left font-medium text-gray-700 cursor-pointer hover:text-blue-600"
+                  className="px-4 py-2 font-medium text-left text-gray-700 cursor-pointer hover:text-blue-600"
                 >
                   {col.label}
                   {sortKey === col.key && (
@@ -89,7 +89,7 @@ const SummaryTable = ({ columns, data }) => {
           </tbody>
         </table>
       ) : (
-        <span className="block p-4 text-gray-500 text-sm">No data to display</span>
+        <span className="block p-4 text-sm text-gray-500">No data to display</span>
       )}
     </div>
   );
