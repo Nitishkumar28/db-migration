@@ -2,6 +2,18 @@ from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, func, Bool
 from sqlalchemy.orm import relationship
 from .database import Base
 
+class LoginUser(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String, unique=True, index=True, nullable=False)
+    first_name = Column(String, nullable=False)
+    last_name = Column(String, nullable=False)
+    hashed_password = Column(String, nullable=False)
+    is_active = Column(Boolean, default=True)
+    
+    histories = relationship("MigrationHistory", back_populates="user")
+
 class MigrationHistory(Base):
     __tablename__ = "migration_history"
 
@@ -14,10 +26,12 @@ class MigrationHistory(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     completed_at = Column(String)
     total_migration_time = Column(String)
-    started_by = Column(String)
+    started_by = Column(Integer, ForeignKey("users.id")) # started_by = Column(String)
     description = Column(String)
     tags = Column(String)
-
+    
+    user = relationship("LoginUser", back_populates="histories")
+    
     items = relationship("MigrationItem", back_populates="history", cascade="all, delete-orphan")
 
 
@@ -46,15 +60,3 @@ class TestModel(Base):
     name = Column(String)
     email = Column(String)
     phone = Column(String)
-
-
-
-class LoginUser(Base):
-    __tablename__ = "users"
-
-    id              = Column(Integer, primary_key=True, index=True)
-    first_name      = Column(String, nullable=False)
-    last_name       = Column(String, nullable=False)
-    email           = Column(String, unique=True, index=True, nullable=False)
-    hashed_password = Column(String, nullable=False)
-    is_active       = Column(Boolean, default=True)

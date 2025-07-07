@@ -97,7 +97,7 @@ class MigrationHistorySchemaBrief(BaseModel):
     source_db_name: Optional[str]
     target_db_name: Optional[str]
     status: Optional[str]
-    started_by: Optional[str]
+    started_by: Optional[int]
     created_at: Optional[datetime]
 
     class Config:
@@ -121,7 +121,7 @@ class MigrationHistoryUpdateSchema(BaseModel):
     created_at: Optional[datetime] = datetime.now()
     completed_at: Optional[str] = ""
     total_migration_time: Optional[str] = ""
-    started_by: Optional[str] = ""
+    started_by: int
     description: Optional[str] = ""
     tags: Optional[List[str]] = []
     items: Optional[List[MigrationHistoryItemSchema]] = []
@@ -136,7 +136,7 @@ class MigrationHistorySchema(BaseModel):
     created_at: Optional[datetime]
     completed_at: Optional[str]
     total_migration_time: Optional[str]
-    started_by: Optional[str]
+    started_by: Optional[int]
     description: Optional[str]
     tags: Optional[str]
     items: List[MigrationHistoryItemSchema] = []
@@ -150,7 +150,7 @@ class MigrationItemSchema(BaseModel):
     target_db_type: str
     source_db_name: str
     target_db_name: str
-    started_by: str
+    started_by: int
     status: str
 
 

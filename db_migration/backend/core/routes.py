@@ -352,7 +352,6 @@ def stats_display(request: StatRequest, db: Session = Depends(get_db)):
     set_db_secrets_for_db(target_details["db_type"], target_details)
     durations = request.durations
     stats = collect_combined_stats(source_details, target_details)
-    print("HI STATS")
     for stat in stats:
         current_stat = {
             "job_id": request.job_id,
@@ -372,20 +371,24 @@ def stats_display(request: StatRequest, db: Session = Depends(get_db)):
 
 
 @router.post("/migration-history/create", response_model=MigrationHistorySchemaBrief, dependencies=[Depends(get_current_user)])
-def create_migration(history: MigrationHistorySchemaBriefInput, db: Session = Depends(get_db)):
-    created_obj = create_initial_job(history, db)
+def create_migration(request: Request, history: MigrationHistorySchemaBriefInput, db: Session = Depends(get_db)):
+    user = get_current_user(request, db)
+    created_obj = create_initial_job(history, db, started_by=user.id)
     return created_obj
 
 @router.get("/migration-history/", response_model=List[MigrationHistorySchema], dependencies=[Depends(get_current_user)])
-def get_migrations(db: Session = Depends(get_db)):
-    return get_full_history(db)
+def get_migrations(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request, db)
+    print(user)
+    return get_full_history(db, user)
 
 
 @router.get("/migration-history/{job_id}", response_model=MigrationHistoryUpdateSchema, dependencies=[Depends(get_current_user)])
-def get_migration(job_id: int, db: Session = Depends(get_db)):
-    data = get_migration_for_jobid(job_id, db)
+def get_migration(request: Request, job_id: int, db: Session = Depends(get_db)):
+    user = get_current_user(request, db)
+    data = get_migration_for_jobid(job_id, db, user)
     if data is None:
-        raise HTTPException(status_code=404, detail="Job not found")
+        raise HTTPException(status_code=404, detail="Job not found for this user")
     return data
 
 @router.patch("/migration-history/{job_id}", response_model=MigrationHistoryUpdateSchema, dependencies=[Depends(get_current_user)])
@@ -405,8 +408,9 @@ def delete_migration(job_id: int, db: Session = Depends(get_db)):
     return
 
 @router.get("/migration-history/brief/", response_model=List[MigrationHistorySchemaBrief], dependencies=[Depends(get_current_user)])
-def get_migrations_brief(db: Session = Depends(get_db)):
-    return get_full_history_brief(db)
+def get_migrations_brief(request: Request, db: Session = Depends(get_db)):
+    user = get_current_user(request, db)
+    return get_full_history_brief(db, user)
 
 
 # History Items

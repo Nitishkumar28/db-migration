@@ -4,9 +4,11 @@ import { Icon } from "@iconify/react";
 import UserDropdown from "./UserDropdown";
 import useUserStore from "../store/userStore";
 import { useNavigate } from "react-router-dom";
+import useDBStoreHistory from "../store/dbStoreHistory";
 
 const Navbar = () => {
   const { isLogged, userDetails, setUserDetails } = useUserStore();
+  const { setActiveJobID, setHistoryCards } = useDBStoreHistory();
   const navigate = useNavigate();
   return (
     <div className="flex justify-between items-center gap-1 w-full border-b border-gray-200 px-2.5 py-2">
@@ -26,6 +28,8 @@ const Navbar = () => {
           onLogout={() => {
             console.log("Logging out");
             setUserDetails(null)
+            setHistoryCards([])
+            setActiveJobID(null)
             localStorage.setItem("is_logged", "false");
             navigate("/login");
           }}

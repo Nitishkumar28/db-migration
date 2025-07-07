@@ -18,9 +18,12 @@ def generate_unique_code():
             return code
         
 
-def create_initial_job(request_obj, db):
+def create_initial_job(request_obj, db, started_by=None):
+    if started_by is None:
+        print("No user found")
+        return None
     job_id = generate_unique_code()
-    current_data = {"job_id": job_id, **dict(request_obj)}
+    current_data = {"job_id": job_id, "started_by": started_by, **dict(request_obj)}
     print(current_data)
     history_obj = MigrationHistory(**current_data)
     db.add(history_obj)
@@ -29,16 +32,16 @@ def create_initial_job(request_obj, db):
     return history_obj
 
 
-def get_migration_for_jobid(job_id, db):
-    history = db.query(MigrationHistory).options(joinedload(MigrationHistory.items)).filter_by(job_id=job_id).first()
+def get_migration_for_jobid(job_id, db, user):
+    history = db.query(MigrationHistory).options(joinedload(MigrationHistory.items)).filter_by(job_id=job_id, started_by=user.id).first()
     return history
 
 
-def get_full_history(db):
-    return db.query(MigrationHistory).order_by(desc(MigrationHistory.created_at)).all()
+def get_full_history(db, user):
+    return db.query(MigrationHistory).order_by(desc(MigrationHistory.created_at)).filter_by(started_by=user.id)
 
-def get_full_history_brief(db):
-    history_objs = db.query(MigrationHistory).order_by(desc(MigrationHistory.created_at)).all()
+def get_full_history_brief(db, user):
+    history_objs = db.query(MigrationHistory).order_by(desc(MigrationHistory.created_at)).filter_by(started_by=user.id)
     result = []
     for history in history_objs:
         curr = {
