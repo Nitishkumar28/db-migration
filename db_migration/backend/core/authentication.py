@@ -30,7 +30,10 @@ def check_password_strength(password):
 
 
 def generate_hash_salting(plain_password):
-    return bcrypt.hashpw(plain_password.encode("utf-8"), bcrypt.gensalt())
+    return bcrypt.hashpw(
+            plain_password.encode("utf-8"),
+            bcrypt.gensalt()
+        )
 
 def verify_password_checker(password, hashed_password):
     return bcrypt.checkpw(
