@@ -8391,3 +8391,117 @@ Log - 2025-07-09 14:34:21
 [2025-07-09 14:41:19] [INFO] [07e19fc6] === ✅ Triggers exported: 0; errors: 0 ===
 
 [2025-07-09 14:41:19] [INFO] [07e19fc6] API `/export/` succeeded: exported_tables={'page_views', 'users', 'sessions', 'events'}, exported_triggers=[]
+
+Log - 2025-07-17 12:23:48
+
+Log - 2025-07-17 12:25:30
+
+Log - 2025-07-17 13:32:43
+[2025-07-17 13:33:52] [INFO] [685815bf] === Section: Export Tables & Data ===
+[2025-07-17 13:33:52] [INFO] [685815bf] Begin exporting tables from `analytics_db` to `analytics_db`
+[2025-07-17 13:33:52] [INFO] [685815bf] - Dropping `users` if exists
+[2025-07-17 13:33:53] [INFO] [685815bf] - Created table `users`
+[2025-07-17 13:34:15] [INFO] [685815bf] - Loaded data into `users`
+[2025-07-17 13:34:15] [INFO] [685815bf] - Creating index `users_email_key` on `users`
+[2025-07-17 13:34:16] [INFO] [685815bf] Created index `users_email_key` on `users`
+[2025-07-17 13:34:16] [INFO] [685815bf]   -> Indexes created for `users`
+[2025-07-17 13:34:16] [INFO] [685815bf]   -> Foreign keys added for `users`
+[2025-07-17 13:34:16] [INFO] [685815bf] - Dropping `sessions` if exists
+[2025-07-17 13:34:18] [INFO] [685815bf] - Created table `sessions`
+[2025-07-17 13:35:11] [INFO] [685815bf] - Loaded data into `sessions`
+[2025-07-17 13:35:11] [INFO] [685815bf] - Creating index `idx_sessions_user_id` on `sessions`
+[2025-07-17 13:35:13] [INFO] [685815bf] Created index `idx_sessions_user_id` on `sessions`
+[2025-07-17 13:35:13] [INFO] [685815bf]   -> Indexes created for `sessions`
+[2025-07-17 13:35:13] [INFO] [685815bf]   -> Foreign keys added for `sessions`
+[2025-07-17 13:35:13] [INFO] [685815bf] - Dropping `page_views` if exists
+[2025-07-17 13:35:15] [INFO] [685815bf] - Created table `page_views`
+[2025-07-17 13:36:30] [INFO] [685815bf] - Loaded data into `page_views`
+[2025-07-17 13:36:30] [INFO] [685815bf] - Creating index `idx_page_views_session_id` on `page_views`
+[2025-07-17 13:36:33] [INFO] [685815bf] Created index `idx_page_views_session_id` on `page_views`
+[2025-07-17 13:36:33] [INFO] [685815bf]   -> Indexes created for `page_views`
+[2025-07-17 13:36:33] [INFO] [685815bf]   -> Foreign keys added for `page_views`
+[2025-07-17 13:36:33] [INFO] [685815bf] - Dropping `events` if exists
+[2025-07-17 13:36:36] [INFO] [685815bf] - Created table `events`
+[2025-07-17 13:38:30] [INFO] [685815bf] - Loaded data into `events`
+[2025-07-17 13:38:30] [INFO] [685815bf] - Creating index `idx_events_user_id` on `events`
+[2025-07-17 13:38:34] [INFO] [685815bf] Created index `idx_events_user_id` on `events`
+[2025-07-17 13:38:34] [INFO] [685815bf]   -> Indexes created for `events`
+[2025-07-17 13:38:34] [INFO] [685815bf]   -> Foreign keys added for `events`
+[2025-07-17 13:38:34] [INFO] [685815bf]  ✅ Export complete: 4 tables exported, 0 skipped
+[2025-07-17 13:38:34] [INFO] [685815bf] === Tables exported: 4; skipped: 0 ===
+
+[2025-07-17 13:38:34] [INFO] [685815bf] === Section: Export Triggers ===
+[2025-07-17 13:38:34] [INFO] [685815bf] === ✅ Triggers exported: 0; errors: 0 ===
+
+[2025-07-17 13:38:34] [INFO] [685815bf] API `/export/` succeeded: exported_tables={'page_views', 'events', 'users', 'sessions'}, exported_triggers=[]
+
+Log - 2025-07-17 13:40:02
+
+Log - 2025-07-17 13:40:45
+
+Log - 2025-07-17 13:42:59
+
+Log - 2025-07-17 13:43:05
+
+Log - 2025-07-17 13:43:15
+[2025-07-17 13:44:12] [INFO] [aa006e57] === Section: Export Tables & Data ===
+[2025-07-17 13:44:12] [INFO] [aa006e57] Begin exporting tables from `demo` to `demo`
+[2025-07-17 13:44:12] [INFO] [aa006e57] - Dropping `conversion` if exists
+[2025-07-17 13:44:12] [INFO] [aa006e57] - Created table `conversion`
+[2025-07-17 13:44:12] [INFO] [aa006e57] - Loaded data into `conversion`
+[2025-07-17 13:44:12] [INFO] [aa006e57]   -> Indexes created for `conversion`
+[2025-07-17 13:44:12] [INFO] [aa006e57]   -> Foreign keys added for `conversion`
+[2025-07-17 13:44:12] [INFO] [aa006e57] - Dropping `teachers` if exists
+[2025-07-17 13:44:12] [INFO] [aa006e57] - Created table `teachers`
+[2025-07-17 13:44:12] [INFO] [aa006e57] - Loaded data into `teachers`
+[2025-07-17 13:44:12] [INFO] [aa006e57]   -> Indexes created for `teachers`
+[2025-07-17 13:44:12] [INFO] [aa006e57]   -> Foreign keys added for `teachers`
+[2025-07-17 13:44:12] [INFO] [aa006e57] - Dropping `courses` if exists
+[2025-07-17 13:44:12] [INFO] [aa006e57] - Created table `courses`
+[2025-07-17 13:44:12] [INFO] [aa006e57] - Loaded data into `courses`
+[2025-07-17 13:44:12] [INFO] [aa006e57]   -> Indexes created for `courses`
+[2025-07-17 13:44:12] [INFO] [aa006e57]   -> Foreign keys added for `courses`
+[2025-07-17 13:44:12] [INFO] [aa006e57] - Dropping `students` if exists
+[2025-07-17 13:44:12] [INFO] [aa006e57] - Created table `students`
+[2025-07-17 13:44:12] [INFO] [aa006e57] - Loaded data into `students`
+[2025-07-17 13:44:12] [INFO] [aa006e57] - Creating index `student_class` on `students`
+[2025-07-17 13:44:12] [INFO] [aa006e57] Created index `student_class` on `students`
+[2025-07-17 13:44:12] [INFO] [aa006e57]   -> Indexes created for `students`
+[2025-07-17 13:44:12] [INFO] [aa006e57]   -> Foreign keys added for `students`
+[2025-07-17 13:44:12] [INFO] [aa006e57]  ✅ Export complete: 4 tables exported, 0 skipped
+[2025-07-17 13:44:12] [INFO] [aa006e57] === Tables exported: 4; skipped: 0 ===
+
+[2025-07-17 13:44:12] [INFO] [aa006e57] === Section: Export Triggers ===
+[2025-07-17 13:44:12] [INFO] [aa006e57] === ✅ Triggers exported: 3; errors: 0 ===
+
+[2025-07-17 13:44:12] [INFO] [aa006e57] API `/export/` succeeded: exported_tables={'conversion', 'students', 'teachers', 'courses'}, exported_triggers=['trg_students_audit_insert_insert', 'trg_students_audit_update_update', 'trg_students_audit_delete_delete']
+
+Log - 2025-07-17 13:45:35
+
+Log - 2025-07-17 13:45:37
+
+Log - 2025-07-17 13:48:10
+
+Log - 2025-07-17 13:51:15
+
+Log - 2025-07-17 13:51:19
+
+Log - 2025-07-17 13:51:25
+
+Log - 2025-07-17 13:54:52
+
+Log - 2025-07-17 13:54:56
+
+Log - 2025-07-17 13:57:21
+
+Log - 2025-07-17 13:57:53
+
+Log - 2025-07-17 14:03:36
+
+Log - 2025-07-17 14:03:40
+
+Log - 2025-07-17 14:03:42
+
+Log - 2025-07-17 14:03:44
+
+Log - 2025-07-17 14:03:53

@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import os
 import uvicorn
 
-from . import routes
+from core import routes
 
 from core.database import Base, engine
 from core import models
@@ -20,8 +20,10 @@ app.add_middleware(
 
 app.include_router(routes.router, prefix="/api")
 
-Base.metadata.create_all(bind=engine)
-print("✅ Tables created.")
+@app.on_event("startup")
+def on_startup():
+    Base.metadata.create_all(bind=engine)
+    print("✅ Tables created.")
 
 if __name__ == "__main__":
     # Get the port from the environment variable

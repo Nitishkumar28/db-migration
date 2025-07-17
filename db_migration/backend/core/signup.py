@@ -44,6 +44,11 @@ def register_user(data, db: Session):
 
 def authenticate_user(data, db: Session):
     user = db.query(LoginUser).filter(LoginUser.email == data.email).first()
+    print(f"authenticate_user: looking up {data.email!r}")
+    print("found user? ", bool(user))
+    if user:
+        print("stored hash:", user.hashed_password, "| type:", type(user.hashed_password))
+        print("password check:", verify_password_checker(data.password, user.hashed_password))
 
     if not user or not verify_password_checker(data.password, user.hashed_password):
         raise HTTPException(status_code=401, detail="Invalid credentials")

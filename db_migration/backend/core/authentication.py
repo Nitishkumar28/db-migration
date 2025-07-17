@@ -36,10 +36,28 @@ def generate_hash_salting(plain_password):
         )
 
 def verify_password_checker(password, hashed_password):
-    return bcrypt.checkpw(
+    if isinstance(hashed_password, str):
+        hp = hashed_password
+        if hp.startswith("\\x"):
+            try:
+                hashed_bytes = bytes.fromhex(hp[2:])
+            except ValueError:
+                return False
+        else:
+            hashed_bytes = hp.encode("utf-8")
+    else:
+        try:
+            hashed_bytes = bytes(hashed_password)
+        except Exception:
+            return False
+
+    try:
+        return bcrypt.checkpw(
             password.encode("utf-8"),
-            hashed_password
+            hashed_bytes
         )
+    except (ValueError, TypeError):
+        return False
 
 def create_session_token(token_target):
     expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
